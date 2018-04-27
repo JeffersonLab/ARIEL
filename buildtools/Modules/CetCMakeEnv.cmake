@@ -59,20 +59,7 @@ macro(cet_cmake_env)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
   endif()
 
-
-  if( ${product}_full_qualifier )
-    # extract base qualifier
-    STRING( REGEX REPLACE ":debug" "" Q1 "${${product}_full_qualifier}" )
-    STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
-    STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
-    set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
-    if(qualifier)
-      # NOP to quell warning
-    endif()
-    message( STATUS "full qual ${${product}_full_qualifier} reduced to ${qualifier}")
-  endif()
-
-  message(STATUS "Product is ${product} ${version} ${${product}_full_qualifier}")
+  message(STATUS "Product is ${product} ${version}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
   set_install_root()
@@ -97,7 +84,6 @@ macro(cet_cmake_env)
   include(FindUpsGeant4)
   include(ParseUpsVersion)
   include(SetCompilerFlags)
-  include(SetFlavorQual)
   include(InstallSource)
   include(InstallLicense)
   include(InstallFiles)
@@ -127,8 +113,6 @@ macro(cet_cmake_env)
   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
   set(CET_REPORT ${cetbuildtools_BINDIR}/cet_report)
   message(STATUS "CET_REPORT: ${CET_REPORT}")
-  #define flavorqual and flavorqual_dir
-  set_flavor_qual( ${arch} )
   cet_set_lib_directory()
   cet_set_bin_directory()
   cet_set_inc_directory()
