@@ -9,7 +9,7 @@ function(cet_get_product_info_item ITEM OUTPUT_VAR)
     message(FATAL_ERROR "cet_get_product_info_item: PROJECT_BINARY_DIR is not defined")
   endif()
   execute_process(COMMAND ${GET_PRODUCT_INFO}
-    ${PROJECT_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}/ups
     ${ITEM}
     OUTPUT_VARIABLE output
     OUTPUT_STRIP_TRAILING_WHITESPACE
