@@ -39,12 +39,7 @@ function( cet_install_files )
   _cet_debug_message( "cet_install_files: files will be installed in ${this_install_dir}" )
 
   # copy to build directory
-  set( mrb_build_dir $ENV{MRB_BUILDDIR} )
-  if( mrb_build_dir )
-    set( this_build_path ${mrb_build_dir}/${product}/${IFG_DIRNAME} )
-  else()
-    set( this_build_path ${CETPKG_BUILD}/${IFG_DIRNAME} )
-  endif()
+  set( this_build_path ${CETPKG_BUILD}/${IFG_DIRNAME} )
 
   cet_copy( ${IFG_LIST} DESTINATION "${this_build_path}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
   INSTALL ( FILES  ${IFG_LIST}

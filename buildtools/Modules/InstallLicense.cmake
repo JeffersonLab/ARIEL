@@ -13,7 +13,11 @@ include(CetCurrentSubdir)
 
 macro( install_license   )
   _cet_current_subdir( CURRENT_SUBDIR )
-  set(license_install_dir ${product}/${version} )
+  if (JERM_INSTALL_DATADIR)
+    set(license_install_dir ${JERM_INSTALL_DATADIR} )
+  else()
+    set(license_install_dir share/${product} )
+  endif()
   _cet_debug_message( "install_license: files will be installed in  ${license_install_dir}" )
   FILE(GLOB license_files
 	    README LICENSE
