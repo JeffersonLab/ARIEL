@@ -1,0 +1,6 @@
+
+test -d "$CETPKG_BUILD/bin" || mkdir -p $CETPKG_BUILD/bin
+tnotnull CETPKG_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${CETPKG_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv PATH ${CETPKG_BUILD}/bin:${PATH}
+setenv PATH `dropit -D`
+echo $CETPKG_BUILD/bin has been added to PATH

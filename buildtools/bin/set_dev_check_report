@@ -1,0 +1,48 @@
+
+test "x$1" = xnoarch && set_ have_noarch=true || set_ have_noarch=false
+
+# check to make sure we don't have empty variables
+set_ merr1='ERROR: CETPKG_SOURCE is undefined'
+set_ merr2='ERROR: CETPKG_BUILD is undefined'
+set_ merr3='ERROR: CETPKG_NAME is undefined'
+set_ merr4='ERROR: CETPKG_VERSION is undefined'
+set_ merr5='ERROR: CETPKG_QUAL is undefined'
+set_ merr6='ERROR: CETPKG_TYPE is undefined'
+set_ merr7='ERROR: CETPKG_CC is undefined'
+set_ merr8='ERROR: CETPKG_CXX is undefined'
+set_ merr9='ERROR: CETPKG_FC is undefined'
+
+test -z "$CETPKG_SOURCE" && ( echo ""; echo "$merr1"; echo "" ) 
+test -z "$CETPKG_BUILD" && ( echo ""; echo "$merr2"; echo "" ) 
+test -z "$CETPKG_NAME" && ( echo ""; echo "$merr3"; echo "" ) 
+test -z "$CETPKG_VERSION" && ( echo ""; echo "$merr4"; echo "" ) 
+test $have_noarch = false -a -z "$CETPKG_QUAL" && ( echo ""; echo "$merr5"; echo "" ) 
+test $have_noarch = false -a -z "$CETPKG_TYPE" && ( echo ""; echo "$merr6"; echo "" ) 
+test $have_noarch = false -a -z "$CETPKG_CC" && ( echo ""; echo "$merr7"; echo "" )
+test $have_noarch = false -a -z "$CETPKG_CXX" && ( echo ""; echo "$merr8"; echo "" )
+test $have_noarch = false -a -z "$CETPKG_FC" && ( echo ""; echo "$merr9"; echo "" )
+
+# cleanup
+unset merr1 merr2 merr3 merr4 merr5 merr6 merr7 merr8 merr9
+
+# Show what we've done
+echo
+echo CETPKG_SOURCE=$CETPKG_SOURCE
+echo CETPKG_BUILD=$CETPKG_BUILD
+echo CETPKG_NAME=$CETPKG_NAME
+echo CETPKG_VERSION=$CETPKG_VERSION
+test $have_noarch = "false" && echo CETPKG_QUAL=$CETPKG_QUAL
+test $have_noarch = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
+test $have_noarch = "false" && echo CETPKG_CC=$CETPKG_CC
+test $have_noarch = "false" && echo CETPKG_CXX=$CETPKG_CXX
+test $have_noarch = "false" && echo CETPKG_FC=$CETPKG_FC
+echo
+test $have_noarch = "false" && echo Please use \"buildtool\" for preference \(see \"buildtool -h\" or \"buildtool --usage\"\), or this cmake command:
+test -n "${CETPKG_INSTALL}" && set_ iprefix="\${CETPKG_INSTALL}" || set_ iprefix=/install/path
+test $have_noarch = "false" && echo env CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC} cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" -DCMAKE_BUILD_TYPE=\${CETPKG_TYPE} \"\${CETPKG_SOURCE}\"
+test $have_noarch = "true" && echo Use the following cmake command:
+test $have_noarch = "true" && echo cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" \"\${CETPKG_SOURCE}\"
+# note that the buildtool command works for both cases
+echo OR:
+echo buildtool -I \"${iprefix}\" -bti [-jN]
+unset iprefix

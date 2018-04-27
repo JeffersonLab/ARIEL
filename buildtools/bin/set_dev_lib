@@ -1,0 +1,20 @@
+
+set_ osname=`uname -s`
+test -d "$CETPKG_BUILD/lib" || mkdir -p $CETPKG_BUILD/lib
+test $osname = "Darwin" && tnotnull CETPKG_BUILD && setenv DYLD_LIBRARY_PATH `echo :${DYLD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'` 
+test $osname = "Darwin" && tnotnull CETPKG_BUILD && setenv DYLD_LIBRARY_PATH ${CETPKG_BUILD}/lib:${DYLD_LIBRARY_PATH}
+test $osname = "Darwin" && setenv DYLD_LIBRARY_PATH `dropit -D -p "$DYLD_LIBRARY_PATH"`
+tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH ${CETPKG_BUILD}/lib:${LD_LIBRARY_PATH}
+setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
+# report library path
+test $osname = "Darwin" && echo $CETPKG_BUILD/lib has been added to DYLD_LIBRARY_PATH
+test $osname = "Darwin" || echo $CETPKG_BUILD/lib has been added to LD_LIBRARY_PATH
+# set ROOT_INCLUDE_PATH
+tnotnull CETPKG_BUILD && setenv ROOT_INCLUDE_PATH `echo :${ROOT_INCLUDE_PATH}: | sed -e "s|:${CETPKG_BUILD}:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv ROOT_INCLUDE_PATH ${CETPKG_BUILD}:${ROOT_INCLUDE_PATH}
+tnotnull CETPKG_SOURCE && setenv ROOT_INCLUDE_PATH ${CETPKG_SOURCE}:${ROOT_INCLUDE_PATH}
+setenv ROOT_INCLUDE_PATH `dropit -D -p $ROOT_INCLUDE_PATH`
+echo $CETPKG_BUILD has been added to ROOT_INCLUDE_PATH
+# cleanup
+unset osname 

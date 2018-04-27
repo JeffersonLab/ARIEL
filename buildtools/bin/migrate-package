@@ -1,0 +1,132 @@
+#!/usr/bin/perl -w
+########################################################################
+# migrate-package
+#
+# Make necessary changes to product_deps and setup_for_development to
+# make a package compliant with cetbuildtools v4.
+#
+# 2014/08/14 CHG.
+########################################################################
+use strict;
+
+use File::Basename;
+
+my $cetb_line = q&set_ cetb=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | grep  only_for_build| awk '{ print $1 }' `&;
+my $cetv_line = q&set_ cetv=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | grep  only_for_build| awk '{ print $2 }' `&;
+
+sub usage() {
+  print STDERR "migrate-package <pkg-top-dir>+\n";
+  exit 1;
+}
+
+if (not $ENV{CETBUILDTOOLS_VERSION}) {
+  die "ERROR: Must be executed in an environment where cetbuildtools is set up.";
+}
+
+foreach my $dir (@ARGV) {
+  ($dir) or die "ERROR: Directory specification may not be empty.";
+  (-d $dir) or die "ERROR: $dir is not a directory.";
+  (-w $dir) or die "ERROR: $dir is not writable.";
+  (-w "$dir/ups") or die "ERROR: $dir/ups is not writable.";
+  my $pd = "$dir/ups/product_deps";
+  my $sfd = "$dir/ups/setup_for_development";
+  my $sd = "$dir/ups/setup_deps";
+  (-w "$pd") or die "ERROR: ups/product_deps does not exist under $dir or is not writable.";
+  (-w "$sfd") or die "ERROR: ups/setup_for_development does not exist under $dir or is not writable.";
+  print "INFO: Updating files in $dir.\n";
+  update_pd($pd);
+  update_sfd($sfd);
+  if (-f "$sd") {
+    (-w "$sd") or die "ERROR: ups/setup_deps exists, but is not writable.";
+    update_sd($sd);
+  }
+}
+
+1;
+
+sub update_pd {
+  my $pd = shift;
+  my $ups_dir=dirname($pd);
+  my $gcmd = sprintf(q{grep -qe '^[ 	]*end_product_list[ 	]*\(#.*\)*$' "%s"}, $pd);
+  if (system($gcmd) == 0) {
+    print "INFO: product_deps is already apparently compliant in $ups_dir.\n";
+    return;
+  }
+  system("cp \"$pd\" \"$pd.bak\"") == 0 or die "ERROR: Unable to make temporary file for $pd.\n";
+  open(PD_IN, "$pd.bak") or die "ERROR: Unable to read temporary file for conversion in $ups_dir.";
+  open(PD_OUT, ">$pd") or die "ERROR: Unable to open product_deps for write in $ups_dir.";
+  my ($in_ofb, $in_qual_table);
+  my %ofb_packages = ();
+  while (<PD_IN>) {
+    next if m&list products required ONLY&;
+    next if m&must NOT have qualifiers&;
+    if (m&^\s*only_for_build\s&) {
+      $in_ofb = 1;
+      my ($pkg, $version) = (m&^\s*only_for_build\s+(\S+)\s+(\S+)&);
+      if (not $pkg or not $version) {
+        chomp;
+        die "ERROR: Unable to obtain package and version from line \"$_\"";
+      }
+      $ofb_packages{$pkg} = $version;
+      next;
+    } elsif (m&^\s*qualifier\s&) {
+      $in_qual_table = 1;
+      if ($in_ofb) {
+        undef $in_ofb;
+        close_out_product_list(\*PD_OUT, \%ofb_packages);
+      }
+    } elsif ($in_ofb and m&^\s*$&) {
+      undef $in_ofb;
+      close_out_product_list(\*PD_OUT, \%ofb_packages);
+    } elsif ($in_qual_table) {
+      if (m&^\s*$& or m&^\s*table_fragment_begin\s+& or m&^\s*# Preserve tabs\s+& or m&^\s*###\s+Local&) {
+        print PD_OUT "end_qualifier_list\n";
+        undef $in_qual_table;
+      }
+    }
+    print PD_OUT;
+  }
+  if ($in_qual_table) {
+    print PD_OUT "end_qualifier_list\n";
+  }
+  close(PD_OUT);
+  close(PD_IN);
+}
+
+sub close_out_product_list {
+  my ($out_handle, $ofb_packages) = @_;
+  if (exists $ofb_packages->{cetbuildtools}) {
+    # Update version while we're at it.
+    $ofb_packages->{cetbuildtools} = $ENV{CETBUILDTOOLS_VERSION};
+  }
+  foreach my $pkg (sort keys %$ofb_packages) {
+    print PD_OUT "$pkg	$ofb_packages->{$pkg}	-	only_for_build\n";
+  }
+  print PD_OUT "end_product_list\n\n";
+}
+
+sub update_sfd {
+  my $sfd = shift;
+  my $ups_dir=dirname($sfd);
+  my $sfd_base = basename($sfd);
+  system("cp \"$sfd\" \"$sfd.bak\"") == 0 or die "ERROR: Unable to make temporary file for $sfd.\n";
+  open(SFD_IN, "$sfd.bak") or die "ERROR: Unable to read temporary file for conversion in $ups_dir.";
+  open(SFD_OUT, ">$sfd") or die "ERROR: Unable to open ${sfd_base} for write in $ups_dir.";
+  while (<SFD_IN>) {
+    if (m&^\s*set_\s+cetb\b.*&) {
+      print SFD_OUT "$cetb_line\n";
+      next;
+    } elsif (m&^\s*set_\s+cetv\b.*&) {
+      print SFD_OUT "$cetv_line\n";
+      next;
+    }
+    print SFD_OUT;
+  }
+  close(SFD_OUT);
+  close(SFD_IN);
+}
+
+sub update_sd {
+  my $sd = shift;
+  update_sfd($sd); # All we need to do for now.
+}

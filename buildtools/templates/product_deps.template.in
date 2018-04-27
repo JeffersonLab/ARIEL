@@ -1,0 +1,66 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent xxx v1_00_00
+defaultqual e14
+
+# These optional lines define the installed directories where headers,
+# libraries, and executables will be found.
+# Use them only if your product does not conform to the defaults
+#
+# Format: directory_type directory_path directory_name
+#
+# The only recognized values of the first field are listed under Defaults
+# The only recognized values of the second field are product_dir, fq_dir, and -
+# The third field is not constrained.
+#
+# Defaults:
+# incdir  product_dir  include
+# fcldir  product_dir  fcl
+# libdir  fq_dir       lib
+# bindir  fq_dir       bin
+# gdmldir  -
+# fwdir    -
+# set_fwdir -
+#
+# If a particular directory_type is not specified that item will not be
+# defined in the UPS table file.
+incdir product_dir include
+fcldir -
+libdir fq_dir      lib
+bindir fq_dir      bin
+
+# if define_pythonpath is enabled, the PYTHONPATH variable will be set
+#define_pythonpath
+
+# list all products here
+# the 4th field may contain the keyword optional or only_for_build
+product         version
+art             v2_08_02
+someprod        vx_yy_zz
+anotherprod     va_bb_cc
+noqualprod	vh_ii_jj
+cetbuildtools   @version@  -  only_for_build
+end_product_list
+ 
+# e14  - with gcc 6.3.0 and -std=c++14 
+# -nq- here means there is no qualifier
+# a single dash here means the dependent product is not required by the parent and will not be setup
+qualifier       art             someprod      anotherprod  noqualprod	notes
+e14:debug       e14:debug       e14:debug     -            -nq-         -std=c++14
+e14:prof        e14:prof        e14:prof      -            -nq-         -std=c++14
+nu:e14:debug    nu:e14:debug    e14:debug     gcc630       -nq-         -std=c++14
+nu:e14:prof     nu:e14:prof     e14:prof      gcc630       -nq-         -std=c++14
+end_qualifier_list
+
+table_fragment_begin
+# this is a table file fragment
+# it will be copied verbatim
+table_fragment_end
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:

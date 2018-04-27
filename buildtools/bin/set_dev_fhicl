@@ -1,0 +1,8 @@
+
+fcldir=`$CETBUILDTOOLS_DIR/bin/cet_report fcldir_base ${CETPKG_SOURCE}/ups`
+tnotnull FHICL_FILE_PATH || setenv FHICL_FILE_PATH '.'
+test "$fcldir" = "DEFAULT" && setenv fcldir 'fcl'
+test "$fcldir" = "NONE" && unset fcldir 
+tnotnull fcldir && setenv FHICL_FILE_PATH .:${CETPKG_BUILD}/${fcldir}:${FHICL_FILE_PATH}
+setenv FHICL_FILE_PATH `dropit -D -p "$FHICL_FILE_PATH"`
+echo FHICL_FILE_PATH is now ${FHICL_FILE_PATH}

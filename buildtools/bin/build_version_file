@@ -1,0 +1,72 @@
+#!/usr/bin/env perl
+#
+
+use strict;
+use warnings;
+
+use POSIX;
+use File::Basename qw(dirname);
+
+if( $#ARGV < 4 ) {
+    print "\n";
+    print "ERROR: missing parameters - only have $#ARGV\n";
+    print "USAGE: build_version_file <output-file> <product> <version> <default_verson> <flavor> <qual>\n";
+    print "\n";
+    exit 1;
+}
+my $verfile = $ARGV[0];
+my $product = $ARGV[1];
+my $version = $ARGV[2];
+my $default_version = $ARGV[3];
+my $flvr    = $ARGV[4];
+my $full_qual;
+if( $#ARGV > 4 ) {
+    $full_qual = $ARGV[5];
+} else {
+    $full_qual = "";
+}
+
+print "creating version file for $product $version $flvr\n";
+
+my $datime = &POSIX::strftime('%a %b %d %H:%M:%S %Z %Y',localtime);
+print "date $datime\n";
+open(TBL, "> $verfile") or die "Couldn't open $verfile";
+
+print TBL "FILE = version\n";
+print TBL "PRODUCT = $product\n";
+print TBL "VERSION = $version\n";
+print TBL "\n";
+print TBL "FLAVOR = $flvr\n";
+print TBL "QUALIFIERS = $full_qual\n";
+print TBL "  DECLARER = CET\n";
+print TBL "  DECLARED = $datime\n";
+print TBL "  MODIFIER = CET\n";
+print TBL "  MODIFIED = $datime\n";
+print TBL "  PROD_DIR = $product/$version\n";
+print TBL "  UPS_DIR = ups\n";
+print TBL "  TABLE_FILE = $product.table\n";
+
+close(TBL);
+
+if( $default_version eq "current" ) {
+    my $mydir=dirname($verfile);
+    my $curfile=$mydir."/".$flvr;
+    open(TBL, "> $curfile") or die "Couldn't open $curfile";
+
+    print TBL "FILE = chain\n";
+    print TBL "PRODUCT = $product\n";
+    print TBL "CHAIN = $default_version\n";
+    print TBL "\n";
+    print TBL "#\n";
+    print TBL "  FLAVOR = $flvr\n";
+    print TBL "  VERSION = $version\n";
+    print TBL "  QUALIFIERS = \"$full_qual\"\n";
+    print TBL "    DECLARER = CET\n";
+    print TBL "    DECLARED = $datime\n";
+    print TBL "    MODIFIER = CET\n";
+    print TBL "    MODIFIED = $datime\n";
+
+    close(TBL);
+}
+
+exit 0;

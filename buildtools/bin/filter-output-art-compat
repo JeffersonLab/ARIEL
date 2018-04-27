@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+########################################################################
+# filter-output-art-compat.
+#
+# For older arts only (newer arts do this themselves).
+#
+# Filter out some art-specific things that would affect the utility of a
+# comparison with reference.
+#
+# 2014/12/16 CHG.
+########################################################################
+use strict;
+
+my ($in_tt, $in_mm, $mm_format, $final_mm_clause, $in_ev_list);
+my $n_sep = 0;
+
+while (<>) {
+  ########################################################################
+  # TimeTracker summary lines
+  if ($in_tt) {
+    if (m&^={20}& and ++$n_sep == 2) {
+      $n_sep = 0;
+      undef $in_tt;
+      next;
+    }
+    s&^((?:Full event|\S+))\s+(?:\S+\s+){5}&${1}\t<duration> <duration> <duration> <duration> <duration> &;
+  }
+  m&^TimeTracker printout& and $in_tt = 1;
+  ########################################################################
+  # MemoryTracker summary lines
+  if ($in_mm) {
+    if ($final_mm_clause and m&^={20}& and ++$n_sep == 2) {
+      # Done. Clean up.
+      undef $in_mm;
+      undef $final_mm_clause;
+      undef $mm_format;
+      $n_sep = 0;
+    } elsif ($mm_format == 1) {
+      s&\s+(Peak virtual memory usage \(VmPeak\):)\s+(.*)$&${1}\t<mem-size>&;
+      s&^(Module \S+|Event \S+)\s+(\[ (?:MOD \] \S+|EVT \]\s+#:\s+\d+)).*$&${1}\t${2}\t<mem-size>\t<mem-size>&;
+    } else { # $mm_format == 2
+      if (m&^\s*\[&) {
+        if (not $in_ev_list) {
+          $in_ev_list = 1;
+        }
+        next;
+      } else {
+        if ($in_ev_list) {
+          undef $in_ev_list;
+          print " <ev-info>\n";
+        }
+      }
+    }
+  }
+  if (m&^MemoryTracker General SUMMARY&) {
+    $in_mm = 1;
+    $mm_format = 1;
+  } elsif ($in_mm and m&^MemoryTracker Per-event SUMMARY&) {
+    $mm_format = 2;
+  } elsif ($in_mm and m&^Modules with large Vsize&) {
+    $final_mm_clause = 1;
+  }
+  ########################################################################
+  print;
+}

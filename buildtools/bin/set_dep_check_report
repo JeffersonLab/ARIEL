@@ -1,0 +1,33 @@
+
+test "x$1" = xnoarch && set_ have_noarch=true || set_ have_noarch=false
+
+# check to make sure we don't have empty variables
+set_ merr1='ERROR: CETPKG_SOURCE is undefined'
+set_ merr3='ERROR: CETPKG_NAME is undefined'
+set_ merr4='ERROR: CETPKG_VERSION is undefined'
+set_ merr5='ERROR: CETPKG_QUAL is undefined'
+set_ merr6='ERROR: CETPKG_TYPE is undefined'
+
+test -z "$CETPKG_SOURCE" && ( echo ""; echo "$merr1"; echo "" ) 
+test -z "$CETPKG_NAME" && ( echo ""; echo "$merr3"; echo "" ) 
+test -z "$CETPKG_VERSION" && ( echo ""; echo "$merr4"; echo "" ) 
+test $have_noarch = false -a -z "$CETPKG_QUAL" && ( echo ""; echo "$merr5"; echo "" ) 
+test $have_noarch = false -a -z "$CETPKG_TYPE" && ( echo ""; echo "$merr6"; echo "" ) 
+
+# cleanup
+unset merr1 merr2 merr3 merr4 merr5 merr6
+
+# Show what we've done
+echo
+#echo CETPKG_SOURCE=$CETPKG_SOURCE
+#echo CETPKG_NAME=$CETPKG_NAME
+#echo CETPKG_VERSION=$CETPKG_VERSION
+#test $have_noarch = "false" && echo CETPKG_QUAL=$CETPKG_QUAL
+#test $have_noarch = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
+#echo
+#ups active
+#echo
+echo "IF YOU ARE GOING TO BUILD THIS PACKAGE, "
+echo "YOU MUST USE setup_for_development INSTEAD OF setup_deps"
+echo
+

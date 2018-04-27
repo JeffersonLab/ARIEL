@@ -1,0 +1,15 @@
+
+set( @product@_VERSION @cet_dot_version@ )
+set( @product@_UPS_VERSION @version@ )
+
+@PACKAGE_INIT@
+
+set_and_check(@product@_BINDIR "@PACKAGE_bin_dir@")
+
+list(APPEND CMAKE_MODULE_PATH "${PACKAGE_PREFIX_DIR}/@product@/@version@/Modules")
+
+@CONFIG_FIND_UPS_COMMANDS@
+
+@CONFIG_FIND_LIBRARY_COMMANDS@
+
+check_required_components(@product@)

@@ -1,0 +1,46 @@
+
+INSTALL(FILES
+  BasicPlugin.cmake
+  BuildDictionary.cmake
+  BuildSubdirectories.cmake
+  CetBasicConfigVersion-AnyNewerVersion.cmake.in
+  CetBasicConfigVersion-ExactVersion.cmake.in
+  CetBasicConfigVersion-SameMajorVersion.cmake.in
+  CetBuildTable.cmake
+  CetCMakeConfig.cmake
+  CetCMakeEnv.cmake
+  CetCMakeUtils.cmake
+  CetCopy.cmake
+  CetCurrentSubdir.cmake
+  CetGetProductInfo.cmake
+  CetExclude.cmake
+  CetHaveQual.cmake
+  CetMake.cmake
+  CetMakeCompletions.cmake
+  CetPackagePath.cmake
+  CetParseArgs.cmake
+  CetPrepend.cmake
+  CetRegexEscape.cmake
+  CetRootCint.cmake
+  CetTest.cmake
+  CheckClassVersion.cmake
+  CheckUpsVersion.cmake
+  EnsureOutOfSourceBuild.cmake
+  FindCompilerVersion.cmake
+  FindUpsBoost.cmake
+  FindUpsGeant4.cmake
+  FindUpsPackage.cmake
+  FindUpsRoot.cmake
+  InstallFiles.cmake
+  InstallLicense.cmake
+  InstallPerllib.cmake
+  InstallPython.cmake
+  InstallSource.cmake
+  ParseUpsVersion.cmake
+  ProcessSmc.cmake
+  RunAndCompare.cmake
+  SetCompilerFlags.cmake
+  SetFlavorQual.cmake
+  UseCPack.cmake
+  DESTINATION ${product}/${version}/Modules
+  )

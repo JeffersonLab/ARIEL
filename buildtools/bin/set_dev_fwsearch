@@ -1,0 +1,15 @@
+# both fwdir and gdmldir set FW_SEARCH_PATH
+
+fwdir=`$CETBUILDTOOLS_DIR/bin/cet_report fwdir_base ${CETPKG_SOURCE}/ups`
+tnotnull FW_SEARCH_PATH || setenv FW_SEARCH_PATH '.'
+test "$fwdir" = "NONE" && unset fwdir 
+tnotnull fwdir && setenv FW_SEARCH_PATH ${CETPKG_BUILD}/${fwdir}:${FW_SEARCH_PATH}
+
+gdmldir=`$CETBUILDTOOLS_DIR/bin/cet_report gdmldir_base ${CETPKG_SOURCE}/ups`
+tnotnull FW_SEARCH_PATH || setenv FW_SEARCH_PATH '.'
+test "$gdmldir" = "DEFAULT" && setenv gdmldir 'gdml'
+test "$gdmldir" = "NONE" && unset gdmldir 
+tnotnull gdmldir && setenv FW_SEARCH_PATH ${CETPKG_BUILD}/${gdmldir}:${FW_SEARCH_PATH}
+
+setenv FW_SEARCH_PATH `dropit -D -p "$FW_SEARCH_PATH"`
+echo FW_SEARCH_PATH is now ${FW_SEARCH_PATH}

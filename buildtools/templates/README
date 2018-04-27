@@ -1,0 +1,13 @@
+This directory contains templates for cmake.
+
+To use the templates in this directory,  where XXX is the product name:
+1. cp setup_for_development.template <your-source-code>/ups/setup_for_development
+2. cp setup_deps.template <your-source-code>/ups/setup_deps
+3. cp product-config.cmake.in.template <your-source-code>/ups/product-config.cmake.in
+4. cp product_deps.template <your-source-code>/ups/product_deps
+5. Edit the list of required products and qualifiers in product_deps
+6. The ups convention is that product names will be all lower case.
+
+See example/ToyCmake for a complete example which uses cmake to build hello world
+and create a relocateable product tarball.
+

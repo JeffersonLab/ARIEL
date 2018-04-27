@@ -1,0 +1,391 @@
+#!/usr/bin/env perl
+#
+# use product_deps
+
+package build_table;
+
+use File::Basename;
+use lib dirname($0);
+
+use parse_deps;
+
+use strict;
+use warnings;
+
+my $inputdir;
+my $outputdir;
+
+if( $#ARGV >= 0 ) {
+   $inputdir = $ARGV[0];
+   if( $#ARGV > 0 ) {
+       $outputdir = $ARGV[1];
+   } else {
+       $outputdir = ".";
+   }
+} else {
+    print "\n";
+    print "ERROR: directory not specified\n";
+    print "USAGE: build_table <input-directory> [output-directory]\n";
+    print "       input-directory  = directory containing product_deps\n";
+    print "\n";
+    exit 1;
+}
+
+$build_table::debug = "false";
+
+my $pfile=$inputdir."/product_deps";
+my $flagfile=$outputdir."/cet_base_flags";
+my $have_flagfile = -e $flagfile;
+
+my $tmpfl = $outputdir."/table_diagnostics";
+open(TERR, "> $tmpfl") or die "Couldn't open $tmpfl";
+
+my $i;
+my $j;
+
+my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
+my ($have_fragment, @flist) = check_for_fragment( $pfile );
+my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
+my @plist=@$plist_ref;
+my @dqlist=@$dqlist_ref;
+my ($ndeps, @qlist) = get_qualifier_list( $pfile, $build_table::TERR );
+
+print "creating table file for $product $version\n";
+print "   default qualifier: $default_qual\n";
+print "   default version: $default_ver\n";
+if ( $build_table::debug eq "true" ) {
+  print "   number of dependencies: $ndeps\n";
+  for $i ( 0 .. $dqlen ) {
+    print "  distinguishing qualifier: $dqlist[$i]\n";
+  }
+  for $i ( 0 .. $plen ) {
+      if ( $plist[$i][2] ) {
+      print " $plist[$i][0] $plist[$i][1] $plist[$i][2] \n";
+      } else {
+      print " $plist[$i][0] $plist[$i][1] \n";
+      }
+  }
+  foreach $i ( 0 .. $#qlist ) {
+    print "qualifiers  $i:";
+    foreach $j ( 1 .. $ndeps ) {
+      print " $qlist[$i][$j]";
+    }
+    print "\n";
+  }
+}
+
+my $table = $outputdir."/".$product.".table";
+open(TBL, "> $table") or die "Couldn't open $table";
+create_table_top();
+if ( $ndeps ) {
+  if ( $qlist[1][0] eq "-nq-"  ) {
+    no_quals();
+  } else {
+    create_quals();
+  }
+} else {
+  no_quals();
+}
+
+create_table_bottom();
+close(TBL);
+close(TERR);
+
+exit 0;
+
+
+
+sub create_table_top {
+  print TBL "File    = table\n";
+  print TBL "Product = $product\n";
+  print TBL "\n";
+  print TBL "#*************************************************\n";
+  print TBL "# Starting Group definition\n";
+  print TBL "Group:\n";
+  print TBL "\n";
+
+}
+
+sub print_no_qual_setup {
+  my @params = @_;
+  my $qiter=$params[0];
+  my $piter=$params[1];
+  foreach $print_no_qual_setup::k ( 0 .. $#plist ) {
+    if( $plist[$print_no_qual_setup::k][0] eq $qlist[0][$piter] ) {
+      my $thisver = $plist[$print_no_qual_setup::k][1];
+      if ( $plist[$print_no_qual_setup::k][1] eq "-" ) { $thisver = ""; }
+      if ( $plist[$print_no_qual_setup::k][2] ) {
+	my @kwords = split(/:/,$qlist[$qiter][0]);
+	foreach $print_qual_setup::j ( 0 .. $#kwords ) {
+	  if ( $plist[$print_no_qual_setup::k][2] eq $kwords[$print_qual_setup::j] ) {
+	    if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
+	    } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
+	      print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
+	    } else {
+	      print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
+	    }
+	  }
+	}
+      } else {
+	  if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
+	  } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
+	    print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
+	  } else {
+	    print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
+	  }
+       }
+    }
+  }
+}
+
+sub print_qual_setup {
+  my @params = @_;
+  my $qiter=$params[0];
+  my $piter=$params[1];
+  my @qwords = split(/:/,$qlist[$qiter][$piter]);
+  my $ql="+".$qwords[0];
+  foreach $print_qual_setup::j ( 1 .. $#qwords ) {
+    $ql = $ql.":+".$qwords[$print_qual_setup::j];
+  }
+  foreach $print_no_qual_setup::k ( 0 .. $#plist ) {
+     if( $plist[$print_no_qual_setup::k][0] eq $qlist[0][$piter] ) {
+       if ( $plist[$print_no_qual_setup::k][2] ) {
+         my @kwords = split(/:/,$qlist[$qiter][0]);
+	 foreach $print_qual_setup::j ( 0 .. $#kwords ) {
+	   if ( $plist[$print_no_qual_setup::k][2] eq $kwords[$print_qual_setup::j] ) {
+	     if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
+	     } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
+	       print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
+	     } else {
+	       print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
+	     }
+	   }
+	 }
+       } else {
+	 if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
+	 } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
+	   print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
+	 } else {
+	   print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
+	 }
+       }
+     }
+  }
+}
+
+sub no_quals {
+  print TBL "Flavor     = ANY\n";
+  print TBL "Qualifiers = \"\"\n";
+  print TBL "\n";
+  print TBL "  Action = GetProducts\n";
+  foreach $no_quals::i ( 1 .. $#qlist ) {
+    foreach $no_quals::j ( 1 .. $ndeps ) {
+      if ( $qlist[$no_quals::i][$no_quals::j] eq "-" ) {
+      } elsif ( $qlist[$no_quals::i][$no_quals::j] eq "-nq-" ) {
+	print_no_qual_setup( $no_quals::i, $no_quals::j );
+      } elsif ( $qlist[$no_quals::i][$no_quals::j] eq "-b-" ) {
+      } else {
+	print_qual_setup( $no_quals::i, $no_quals::j );
+      }
+    }
+  }
+  print TBL "\n";
+}
+
+sub create_quals {
+  foreach $create_quals::i ( 1 .. $#qlist ) {
+    my @words = split(/:/,$qlist[$create_quals::i][0]);
+    my $qdot = $qlist[$create_quals::i][0];
+    $qdot =~ s/:/\./g;
+    # skip this bit if $flagfile does not exist
+    if ( $have_flagfile ) {
+      $create_quals::cxxflag = "";
+      $create_quals::cflag = "";
+      foreach $create_quals::j ( 0 .. $#words ) {
+	if( $words[$create_quals::j] eq "debug" ) {
+           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
+	} elsif( $words[$create_quals::j] eq "opt" ) {
+           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
+	} elsif( $words[$create_quals::j] eq "prof" ) {
+           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
+	}
+      }
+      $create_quals::cxxflag =~ s/;/ /g;
+      $create_quals::cflag =~ s/;/ /g;
+    }
+    print TBL "Flavor     = ANY\n";
+    print TBL "Qualifiers = \"$qlist[$create_quals::i][0]\"\n";
+    print TBL "\n";
+    if( $have_fq ) {
+      print TBL <<EOF;
+
+  Action = GetFQDir
+    if ( printenv CET_SUBDIR > /dev/null )
+      envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\${CET_SUBDIR}.${qdot} )
+    else()
+      envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\`get-directory-name subdir\`.${qdot} )
+    endif ( printenv CET_SUBDIR > /dev/null )
+    fileTest( \${\${UPS_PROD_NAME_UC}_FQ_DIR}, -d, \"\${\${UPS_PROD_NAME_UC}_FQ_DIR} directory not found: SETUP ABORTED\")
+
+EOF
+    }
+    print TBL "  Action = GetProducts\n";
+    foreach $create_quals::j ( 1 .. $ndeps ) {
+      next if $qlist[0][$create_quals::j] eq "compiler";
+      if ( $qlist[$create_quals::i][$create_quals::j] eq "-" ) {
+      } elsif ( $qlist[$create_quals::i][$create_quals::j] eq "-nq-" ) {
+	print_no_qual_setup( $create_quals::i, $create_quals::j );
+      } elsif ( $qlist[$create_quals::i][$create_quals::j] eq "-b-" ) {
+      } else {
+	print_qual_setup( $create_quals::i, $create_quals::j );
+      }
+    }
+    print TBL "\n";
+  }
+}
+
+sub table_ld_library {
+
+  print TBL "    if ( test \`uname\` = \"Darwin\" )\n";
+  print TBL "      pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  print TBL "    else()\n";
+  print TBL "      pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  print TBL "    endif ( test \`uname\` = \"Darwin\" )\n";
+
+}
+
+sub create_table_bottom {
+
+  my $include_directory = get_include_directory( $pfile );
+  my $lib_directory = get_lib_directory( $pfile );
+  my $fcl_directory = get_fcl_directory( $pfile );
+  my $bin_directory = get_bin_directory( $pfile );
+  my $def_python_path = get_python_path( $pfile );
+  my $fw_directory = get_fw_directory( $pfile );
+  my $gdml_directory = get_gdml_directory( $pfile );
+  my $prl_directory = get_perllib( $pfile );
+  my ($fwlen, $fwlist_ref, $fwdir_ref) = get_setfw_list( $pfile );
+  my @fwlist=@$fwlist_ref;
+  my @fwdirs=@$fwdir_ref;
+
+  my $pvername = $product."_VERSION";
+  print TBL "\n";
+  print TBL "Common:\n";
+  print TBL "  Action = setup\n";
+  print TBL "    prodDir()\n";
+  print TBL "    setupEnv()\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_VERSION, $version)\n";
+  print TBL "    # cetpkgsupport has get-directory-name and find-path\n";
+  print TBL "    # cetpkgsupport also defines the CET_SUBDIR variable\n";
+  print TBL "    setupRequired(cetpkgsupport)\n";
+  if( $have_fq ) {
+  print TBL "    exeActionRequired(GetFQDir)\n";
+  }
+  if( $include_directory eq "default" ) {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, \${UPS_PROD_DIR}/include) \n";
+  } elsif ( $include_directory eq "none" )   {
+  } else {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
+  }
+  # need to setup dependencies BEFORE prepending to any paths
+  print TBL "\n";
+  print TBL "    exeActionRequired(GetProducts)\n";
+  print TBL "\n";
+  if( $lib_directory eq "default" ) {
+    print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
+    table_ld_library();
+    if( $def_python_path ne "none" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH,  \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib )\n";
+    }
+    print TBL "\n";
+  } elsif ( $lib_directory eq "none" )   {
+    if( $def_python_path ne "none" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib )\n";
+    }
+  } else {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
+  table_ld_library();
+    if( $def_python_path eq "setme" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH, $lib_directory )\n";
+    }
+  print TBL "\n";
+  }
+  if( $bin_directory eq "default" ) {
+  print TBL "    # add the bin directory to the path\n";
+  print TBL "    pathPrepend(PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/bin )\n";
+  print TBL "    # dropit -E removes non-existent directories\n";
+  print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
+  print TBL "\n";
+  } elsif ( $bin_directory eq "none" )   {
+  } else {
+  print TBL "    # add the bin directory to the path\n";
+  print TBL "    pathPrepend(PATH, $bin_directory )\n";
+  }
+  if( $fcl_directory eq "default" ) {
+  print TBL "    # add the fcl directory to the fhicl file path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, \${UPS_PROD_DIR}/fcl )\n";
+  print TBL "\n";
+  } elsif ( $fcl_directory eq "none" )   {
+  } else {
+  print TBL "    # add the fcl directory to the path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, $fcl_directory )\n";
+  }
+  if ( $fw_directory eq "none" )   {
+  } else {
+  print TBL "    # add $fw_directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, $fw_directory )\n";
+  }
+  if( $gdml_directory eq "default" ) {
+  print TBL "    # add the gdml directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, \${UPS_PROD_DIR}/gdml )\n";
+  print TBL "\n";
+  } elsif ( "$gdml_directory" eq "none" )   {
+  } else {
+  print TBL "    # add $gdml_directory directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, $gdml_directory )\n";
+  }
+  foreach $i ( 0 .. $fwlen ) {
+    if( $fwdirs[$i]  eq  "product_dir" ) {
+      print TBL "    pathPrepend(FW_SEARCH_PATH, \${UPS_PROD_DIR}$fwlist[$i] )\n";
+    } elsif( $fwdirs[$i]  eq  "fq_dir" ) {
+      print TBL "    pathPrepend(FW_SEARCH_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}$fwlist[$i] )\n";
+    }
+  }
+  if( $prl_directory eq "default" ) {
+  print TBL "    # add the perllib directory to PERL5LIB\n";
+  print TBL "    pathPrepend(PERL5LIB, \${UPS_PROD_DIR}/perllib )\n";
+  print TBL "\n";
+  } elsif ( "$prl_directory" eq "none" )   {
+  ##print TBL "    # no perllib directory\n";
+  } else {
+  print TBL "    # add $prl_directory directory to PERL5LIB\n";
+  print TBL "    pathPrepend(PERL5LIB, $prl_directory )\n";
+  }
+  # CMake directory is determined by whether product is flavour qualified or not
+  # If flavour qualified, need to search in fq dir, otherwise in base product_dir
+  if( $have_fq ) {
+  print TBL "    # Prepend CMAKE_PREFIX_PATH for flavour qualified product\n";
+  print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR})\n";
+  print TBL "    pathPrepend(PKG_CONFIG_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR})\n";
+    if ( $include_directory ne "none" )   {
+    print TBL "    # Prepend ROOT_INCLUDE_PATH for dictionaries\n";
+    print TBL "    pathPrepend(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
+    }
+  } else {
+  print TBL "    # Prepend CMAKE_PREFIX_PATH for null flavour product\n";
+  print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${UPS_PROD_DIR} )\n";
+  print TBL "    pathPrepend(PKG_CONFIG_PATH, \${UPS_PROD_DIR} )\n";
+  }
+  print TBL "\n";
+  if( $have_fragment ) {
+    foreach $i ( 0 .. $#flist ) {
+       print TBL "$flist[$i]\n";
+    }
+  }
+  print TBL "End:\n";
+  print TBL "# End Group definition\n";
+  print TBL "#*************************************************\n";
+}
