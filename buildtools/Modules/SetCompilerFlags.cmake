@@ -532,37 +532,37 @@ macro(cet_set_compiler_flags)
   set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${C_FLAGS_OMNIBUS}" )
   set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CXX_FLAGS_OMNIBUS}" )
   # OPT
-  set( CMAKE_C_FLAGS_OPT "-g ${GDWARF} -O3 ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for optimized builds." FORCE)
-  set( CMAKE_CXX_FLAGS_OPT "-g ${GDWARF} -O3 ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for optimized builds." FORCE)
-  # PROF
-  set( CMAKE_C_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for profile builds." FORCE)
-  set( CMAKE_CXX_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for profile builds." FORCE)
-  MARK_AS_ADVANCED(
-    CMAKE_CXX_FLAGS_OPT
-    CMAKE_C_FLAGS_OPT
-    CMAKE_EXE_LINKER_FLAGS_OPT
-    CMAKE_STATIC_LINKER_FLAGS_OPT
-    CMAKE_SHARED_LINKER_FLAGS_OPT
-    CMAKE_CXX_FLAGS_PROF
-    CMAKE_C_FLAGS_PROF
-    CMAKE_EXE_LINKER_FLAGS_PROF
-    CMAKE_SHARED_LINKER_FLAGS_PROF
-    CMAKE_STATIC_LINKER_FLAGS_PROF
-    )
+  # set( CMAKE_C_FLAGS_OPT "-g ${GDWARF} -O3 ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for optimized builds." FORCE)
+  # set( CMAKE_CXX_FLAGS_OPT "-g ${GDWARF} -O3 ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for optimized builds." FORCE)
+  # # PROF
+  # set( CMAKE_C_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for profile builds." FORCE)
+  # set( CMAKE_CXX_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for profile builds." FORCE)
+  # MARK_AS_ADVANCED(
+  #   CMAKE_CXX_FLAGS_OPT
+  #   CMAKE_C_FLAGS_OPT
+  #   CMAKE_EXE_LINKER_FLAGS_OPT
+  #   CMAKE_STATIC_LINKER_FLAGS_OPT
+  #   CMAKE_SHARED_LINKER_FLAGS_OPT
+  #   CMAKE_CXX_FLAGS_PROF
+  #   CMAKE_C_FLAGS_PROF
+  #   CMAKE_EXE_LINKER_FLAGS_PROF
+  #   CMAKE_SHARED_LINKER_FLAGS_PROF
+  #   CMAKE_STATIC_LINKER_FLAGS_PROF
+  #   )
 
   # Linker Flags
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZE_OPTIONS}" )
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULELINKER_FLAGS} ${SANITIZE_OPTIONS}" )
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZE_OPTIONS}" )
 
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
+  endif()
+
   # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
   SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
-    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
     FORCE )
-
-  if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Prof CACHE STRING "" FORCE)
-  endif()
 
   # Leave this in definitions.
   cet_remove_compiler_flags(-DNDEBUG)
@@ -618,8 +618,8 @@ function( cet_query_system )
   _report_var(CMAKE_CXX_FLAGS_RELEASE)
   _report_var(CMAKE_CXX_FLAGS_MINSIZEREL)
   _report_var(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_CXX_FLAGS_OPT)
-  _report_var(CMAKE_CXX_FLAGS_PROF)
+  # _report_var(CMAKE_CXX_FLAGS_OPT)
+  # _report_var(CMAKE_CXX_FLAGS_PROF)
   _report_var(CMAKE_CXX_STANDARD_LIBRARIES)
   _report_var(CMAKE_CXX_LINK_FLAGS)
   _report_var(CMAKE_C_COMPILER)
@@ -628,8 +628,8 @@ function( cet_query_system )
   _report_var(CMAKE_C_FLAGS_RELEASE)
   _report_var(CMAKE_C_FLAGS_MINSIZEREL)
   _report_var(CMAKE_C_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_C_FLAGS_OPT)
-  _report_var(CMAKE_C_FLAGS_PROF)
+  # _report_var(CMAKE_C_FLAGS_OPT)
+  # _report_var(CMAKE_C_FLAGS_PROF)
   _report_var(CMAKE_C_OUTPUT_EXTENSION)
   _report_var(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
   _report_var(CMAKE_SHARED_MODULE_CXX_FLAGS)
@@ -640,29 +640,29 @@ function( cet_query_system )
   _report_var(CMAKE_SHARED_LINKER_FLAGS_RELEASE)
   _report_var(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL)
   _report_var(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_SHARED_LINKER_FLAGS_OPT)
-  _report_var(CMAKE_SHARED_LINKER_FLAGS_PROF)
+  # _report_var(CMAKE_SHARED_LINKER_FLAGS_OPT)
+  # _report_var(CMAKE_SHARED_LINKER_FLAGS_PROF)
   _report_var(CMAKE_STATIC_LINKER_FLAGS)
   _report_var(CMAKE_STATIC_LINKER_FLAGS_DEBUG)
   _report_var(CMAKE_STATIC_LINKER_FLAGS_RELEASE)
   _report_var(CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL)
   _report_var(CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_STATIC_LINKER_FLAGS_OPT)
-  _report_var(CMAKE_STATIC_LINKER_FLAGS_PROF)
+  # _report_var(CMAKE_STATIC_LINKER_FLAGS_OPT)
+  # _report_var(CMAKE_STATIC_LINKER_FLAGS_PROF)
   _report_var(CMAKE_MODULE_LINKER_FLAGS)
   _report_var(CMAKE_MODULE_LINKER_FLAGS_DEBUG)
   _report_var(CMAKE_MODULE_LINKER_FLAGS_RELEASE)
   _report_var(CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL)
   _report_var(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_MODULE_LINKER_FLAGS_OPT)
-  _report_var(CMAKE_MODULE_LINKER_FLAGS_PROF)
+  # _report_var(CMAKE_MODULE_LINKER_FLAGS_OPT)
+  # _report_var(CMAKE_MODULE_LINKER_FLAGS_PROF)
   _report_var(CMAKE_EXE_LINKER_FLAGS)
   _report_var(CMAKE_EXE_LINKER_FLAGS_DEBUG)
   _report_var(CMAKE_EXE_LINKER_FLAGS_RELEASE)
   _report_var(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL)
   _report_var(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
-  _report_var(CMAKE_EXE_LINKER_FLAGS_OPT)
-  _report_var(CMAKE_EXE_LINKER_FLAGS_PROF)
+  # _report_var(CMAKE_EXE_LINKER_FLAGS_OPT)
+  # _report_var(CMAKE_EXE_LINKER_FLAGS_PROF)
   message( STATUS "cet_query_system: end compiler report")
 endfunction( cet_query_system )
 
