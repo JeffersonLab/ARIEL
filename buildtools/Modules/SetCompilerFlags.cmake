@@ -342,10 +342,11 @@ function(_std_flag_from_qual OUT_VAR)
 endfunction()
 
 macro(_remove_extra_std_flags VAR)
+  # Remove all but the last -std=nnnn definition from VAR
   string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${VAR}}")
   list(LENGTH found_std_flags fsf_len)
   if (fsf_len GREATER 1)
-    list(REMOVE_AT found_std_flags -1)
+    list(REMOVE_AT found_std_flags -1)  # Removes last item
     foreach (flag ${found_std_flags})
       cet_regex_escape("${flag}" flag)
       _rm_flag_trim_whitespace(${VAR} "${flag}")
@@ -361,13 +362,13 @@ macro(cet_set_compiler_flags)
     ${ARGN}
     )
 
-  if (CSCF_DEFAULT_ARGS)
+  if (CSCF_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
 
   _verify_cxx_std_flag(CSCF_EXTRA_CXX_FLAGS QUAL_STD_FLAG)
 
-  # turn a colon separated list into a space separated string
+  # turn a semicolon separated list into a space separated string
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_FLAGS "${CSCF_EXTRA_FLAGS}")
