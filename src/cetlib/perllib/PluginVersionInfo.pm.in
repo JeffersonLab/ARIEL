@@ -1,0 +1,9 @@
+use strict;
+
+package CetSkelPlugins::@product@::PluginVersionInfo;
+
+sub product { return "@product@"; }
+
+sub version { return "@version@"; }
+
+1;

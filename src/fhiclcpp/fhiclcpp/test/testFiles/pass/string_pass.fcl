@@ -1,0 +1,12 @@
+#===========================================
+# Testing String Syntax
+#===========================================
+
+a : hello
+b : "hello"
+c : 'hello'
+
+aa: hello
+bb: "hello, my name is..."
+cc: 'hello, my name is...'
+ccc: 'hello1!'

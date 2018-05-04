@@ -1,0 +1,19 @@
+message : {
+   destinations : {
+      log_zeroSeverity    : { type : file  filename : "threshold_zeroSeverity.log"      threshold : "--"       }
+      log_incidental      : { type : file  filename : "threshold_incidental.log"        threshold : ".."       }
+      log_success         : { type : file  filename : "threshold_success.log"           threshold : "Debug"    }
+      log_info            : { type : file  filename : "threshold_info.log"              threshold : "Info"     }
+      log_warning         : { type : file  filename : "threshold_warning.log"           threshold : "Warning"  }
+      log_warning2        : { type : file  filename : "threshold_warning2.log"          threshold : "Warning!" }
+      log_error           : { type : file  filename : "threshold_error.log"             threshold : "Error"    }
+      log_error2          : { type : file  filename : "threshold_error2.log"            threshold : "Error!"   }
+      log_next            : { type : file  filename : "threshold_next.log"              threshold : "Next"     }
+      log_unspecified     : { type : file  filename : "threshold_unspecified.log"       threshold : "??"       }
+      log_severe          : { type : file  filename : "threshold_severe.log"            threshold : "System"   }
+      log_severe2         : { type : file  filename : "threshold_severe2.log"           threshold : "Severe!"  }
+      log_abort           : { type : file  filename : "threshold_abort.log"             threshold : "Abort!"   }
+      log_fatal           : { type : file  filename : "threshold_fatal.log"             threshold : "Fatal!"   }
+      log_highestSeverity : { type : file  filename : "threshold_highestSeverity.log"   threshold : "!!"       }
+   }
+}

@@ -1,0 +1,10 @@
+Product: fhiclcpp
+
+fhiclcpp is distributed under the terms of the standard BSD open source license.
+
+Author:  The art Team   artists@fnal.gov
+
+Description:
+FHiCL is a domain-specific language to describe hierarchical configuration 
+documents. It is intended to be simple but flexible. 
+https://cdcvs.fnal.gov/redmine/projects/fhiclcpp/wiki

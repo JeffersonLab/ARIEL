@@ -1,0 +1,12 @@
+pset: {
+   delegated_table: {
+      everything: [that]
+      you: could
+      imagine: {}
+   }
+   delegated_sequence: [1,2,3]
+   s: {
+      delegated_atom: 3
+      optional_delegated_atom: "Hello, Billy"
+   }
+}

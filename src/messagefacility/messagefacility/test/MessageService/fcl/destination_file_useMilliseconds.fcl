@@ -1,0 +1,11 @@
+message: {
+  destinations: {
+    log_useMilliseconds: {
+      type: file
+      filename: "useMilliseconds.log"
+      format: {
+        timestamp: default_ms
+      }
+    }
+  }
+}

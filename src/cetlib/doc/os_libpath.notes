@@ -1,0 +1,9 @@
+% Multi-threading report for cetlib/os_libpath.h
+% Chris Green.
+% 2016-10-13 (on commit 110a927).
+
+* Function `cet::os_libpath()`{.cpp} is `constexpr`{.cpp}.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

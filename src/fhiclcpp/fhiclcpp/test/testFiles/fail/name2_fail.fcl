@@ -1,0 +1,7 @@
+#=========================================
+# Testing mutliple lines, one bad.
+# What's wrong: Line 2 has an invalid name
+#=========================================
+x : 5
+1 : a
+b : 6

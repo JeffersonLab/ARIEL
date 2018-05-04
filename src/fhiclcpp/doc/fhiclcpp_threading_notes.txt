@@ -1,0 +1,401 @@
+Thread-safety summary
+
+Safe
+
+binding_modifier.h
+exception.cc
+exception.h
+fwd.h
+ParameterArgumentTypes.h
+parse_shims.cc
+parse_shims.h
+parse_shims_opts.h
+print_mode.h
+Protection.cc
+Protection.h
+tokens.h
+type_traits_error_msgs.h
+type_traits.h
+validationException.h (unused)
+
+Not Safe
+
+Atom.h
+Atom.icc
+AtomBase.h
+Comment.h
+ConfigPredicate.h
+DatabaseSupport.cc
+DatabaseSupport.h
+DelegateBase.h
+DelegatedParameter.cc
+DelegatedParameter.h
+Indentation.h
+KeyAssembler.cc
+KeyAssembler.h
+KeysToIgnore.h (testing only)
+MaybeDisplayParent.cc
+MaybeDisplayParent.h
+Name.cc
+Name.h
+NameStackRegistry.cc
+NameStackRegistry.h
+OptionalAtom.h
+OptionalAtom.icc
+OptionalDelegatedParameter.cc
+OptionalDelegatedParameter.h
+OptionalSequence.h
+OptionalSequence.icc
+OptionalTable.h
+OptionalTable.icc
+OptionalTuple.h
+OptionalTupleAs.h
+ParameterBase.h
+ParameterMetadata.h
+ParameterSet.cc
+ParameterSet.h
+ParameterSetID.cc
+ParameterSetID.h
+ParameterSetImplHelpers.h
+ParameterSetRegistry.cc
+ParameterSetRegistry.h
+ParameterSetWalker.h
+ParameterWalker.h
+Prettifier.cc
+Prettifier.h
+PrettifierAnnotated.cc
+PrettifierAnnotated.h
+PrettifierPrefixAnnotated.cc
+PrettifierPrefixAnnotated.h
+PrintAllowedConfiguration.cc
+PrintAllowedConfiguration.h
+SeqVectorBase.h
+Sequence.h
+Sequence.icc
+SequenceBase.h
+Table.h
+Table.icc
+TableBase.h
+TableFragment.h
+TableMemberRegistry.h
+Tuple.h
+TupleAs.h
+ValidateThenSet.cc
+ValidateThenSet.h
+coding.cc
+coding.h
+encode_extended_value.cc
+encode_extended_value.h
+extended_value.cc
+extended_value.h
+intermediate_table.cc
+intermediate_table.h
+make_ParameterSet.cc
+make_ParameterSet.h
+optional_parameter_message.h
+ostream_helpers.cc
+ostream_helpers.h
+parse.cc
+parse.h
+printing_helpers.cc
+printing_helpers.h
+stdmap_shims.h
+strip_containing_names.cc
+strip_containing_names.h
+try_blocks.h
+
+-----
+
+Thread-safety summary by subsystem and component.
+
+
+Parameter File Parsing
+
+// The value held by an intermediate table,
+// which is the result of a fhicl file parse,
+// and the internal sub-components of the
+// parse.
+// Used by public.
+// THREADING - Not thread-safe.
+extended_value.cc
+extended_value.h
+// handles protect clauses.
+// Used only by extended_value.h
+// THREADING - Is thread-safe.
+Protection.cc
+Protection.h
+// Support snippet mode.  (what is that?)
+// Used only by extended_value.h
+// THREADING - Not thread-safe.
+stdmap_shims.h
+
+// The result of a fhicl file parse.
+// Used by public.
+// THREADING - Not thread-safe.
+intermediate_table.cc
+intermediate_table.h
+
+// The fhicl file parser, the stream parser,
+// and the string parser.
+// Note: For greater code isolation the
+// Note: public part (top-level parsing
+// Note: for strings, files, and streams)
+// Note: should be separated out.
+// Used by public.
+// THREADING - Not thread-safe - can modify passed value.
+parse.cc
+parse.h
+// The tokens used by the fhicl parser.
+// Used only by parse.cc
+// THREADING - Is thread-safe.
+tokens.h
+// support for the fhicl parser,
+// handles protect clauses.
+// Used only by parse.cc and tokens.h
+// THREADING - Is thread-safe.
+binding_modifier.h
+// Support snippet mode.  (what is that?)
+// Used only by parse.cc
+// THREADING - Is thread-safe.
+parse_shims.cc
+parse_shims.h
+
+// Support snippet mode.  (what is that?)
+// Used by parse_shims.h, parse_shims.cc, stdmap_shims.h
+// THREADING - Is thread-safe.
+parse_shims_opts.h
+
+// supports ParameterSet::put(extended_value)
+// for conversion of result of fhicl file
+// parsing (intermediate_table).
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe.
+encode_extended_value.cc
+encode_extended_value.h
+
+// supports ParameterSet::put()
+// FIXME: Should probably only be used by ParameterSet!
+// Used by public.
+// THREADING - Not thread-safe.
+coding.cc
+coding.h
+
+
+Parameter Storage/Retrieval
+
+// Used only by tools/fhicl-write-db.cc
+// THREADING - Not thread-safe.
+DatabaseSupport.cc
+DatabaseSupport.h
+
+// Holds a representation of configuration
+// values.  Can be parsed from a fhicl file,
+// or built by hand.
+// Used by public.
+// THREADING - Not thread-safe.
+ParameterSet.cc
+ParameterSet.h
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe - find_an_any is passed an iterator
+ParameterSetImplHelpers.h
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe - passed an executable object
+try_blocks.h
+// Used only by ParameterSet.cc
+// THREADING - Not thread-safe
+KeyAssembler.cc
+KeyAssembler.h
+
+// The unique name of a ParameterSet.
+// Implemented as the sha1 hash of the
+// contents of the ParameterSet::mapping_.
+// Used by public.
+// THREADING - Not thread-safe.
+ParameterSetID.cc
+ParameterSetID.h
+
+// Master registry of ParameterSets.
+// Keyed by ParameterSetID.
+// Backed by in-memory and on-file dbs.
+// THREADING - Not thread-safe.
+ParameterSetRegistry.cc
+ParameterSetRegistry.h
+
+// Almost not used, can probably be eliminated.
+// forward declares: ParameterSet, ParameterSetID,
+// extended_value, intermediate_table
+// Used by public.
+// THREADING - Is thread-safe.
+fwd.h
+
+// Factory functions to create a ParameterSet
+// from a string, file, or intermediate_table.
+// Used by public.
+// THREADING - Not thread-safe.
+make_ParameterSet.cc
+make_ParameterSet.h
+
+
+Parameter Validation
+
+// THREADING - Not thread-safe.
+Atom.h
+Atom.icc
+
+// THREADING - Not thread-safe.
+AtomBase.h
+
+// THREADING - Not thread-safe - public data member
+Comment.h
+
+// THREADING - Not thread-safe - deref arbitrary pointer, calls arbitrary member function
+ConfigPredicate.h
+
+// THREADING - Not thread-safe.
+DelegateBase.h
+
+// THREADING - Not thread-safe.
+DelegatedParameter.cc
+DelegatedParameter.h
+
+// THREADING - Not thread-safe.
+KeysToIgnore.h (testing only)
+
+// THREADING - Not thread-safe. - public data member
+Name.cc
+Name.h
+
+// THREADING - Not thread-safe.
+NameStackRegistry.cc
+NameStackRegistry.h
+
+// THREADING - Not thread-safe.
+OptionalAtom.h
+OptionalAtom.icc
+
+// THREADING - Not thread-safe.
+OptionalDelegatedParameter.cc
+OptionalDelegatedParameter.h
+
+// THREADING - Not thread-safe.
+OptionalSequence.h
+OptionalSequence.icc
+
+// THREADING - Not thread-safe.
+OptionalTable.h
+OptionalTable.icc
+
+// THREADING - Not thread-safe.
+OptionalTuple.h
+
+// THREADING - Not thread-safe.
+OptionalTupleAs.h
+
+// THREADING - Is thread-safe.
+ParameterArgumentTypes.h
+
+// THREADING - Not thread-safe.
+ParameterBase.h
+
+// THREADING - Not thread-safe.
+ParameterMetadata.h
+
+// THREADING - Not thread-safe.
+ParameterWalker.h
+
+// THREADING - Not thread-safe.
+PrintAllowedConfiguration.cc
+PrintAllowedConfiguration.h
+
+// THREADING - Not thread-safe.
+SeqVectorBase.h
+
+// THREADING - Not thread-safe.
+Sequence.h
+Sequence.icc
+
+// THREADING - Not thread-safe.
+SequenceBase.h
+
+// THREADING - Not thread-safe.
+Table.h
+Table.icc
+
+// THREADING - Not thread-safe.
+TableBase.h
+
+// THREADING - Not thread-safe.
+TableFragment.h
+
+// THREADING - Not thread-safe.
+TableMemberRegistry.h
+
+// THREADING - Not thread-safe.
+Tuple.h
+
+// THREADING - Not thread-safe.
+TupleAs.h
+
+// THREADING - Not thread-safe.
+ValidateThenSet.cc
+ValidateThenSet.h
+
+// THREADING - Not thread-safe.
+optional_parameter_message.h
+
+// THREADING - Not thread-safe. - public datamembers
+ostream_helpers.cc
+ostream_helpers.h
+
+// THREADING - Not thread-safe. - uses passed-by-ref non-thread-safe container member functions
+strip_containing_names.cc
+strip_containing_names.h
+
+// THREADING - Is thread-safe.
+type_traits_error_msgs.h
+
+// THREADING - Is thread-safe.
+validationException.h (unused)
+
+
+Parameter Pretty-Printing
+
+// THREADING - Not thread-safe.
+Indentation.h
+
+// THREADING - Not thread-safe.
+MaybeDisplayParent.cc
+MaybeDisplayParent.h
+
+// THREADING - Not thread-safe.
+PrettifierAnnotated.cc
+PrettifierAnnotated.h
+
+// THREADING - Not thread-safe.
+Prettifier.cc
+Prettifier.h
+
+// THREADING - Not thread-safe.
+PrettifierPrefixAnnotated.cc
+PrettifierPrefixAnnotated.h
+
+// THREADING - Not thread-safe. - uses passed-by-ref non-thread-safe container member functions
+printing_helpers.cc
+printing_helpers.h
+
+// THREADING - Is thread-safe.
+print_mode.h
+
+
+Parameter Utility Routines
+
+// THREADING - Not thread-safe. - calls arbitrary provided functions
+ParameterSetWalker.h
+
+// THREADING - Is thread-safe.
+exception.cc
+exception.h
+
+// THREADING - Is thread-safe.
+type_traits.h
+

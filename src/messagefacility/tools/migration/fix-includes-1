@@ -1,0 +1,10 @@
+#!/bin/bash
+
+TOP="${1:-${MESSAGEFACILITY_SOURCE}/messagefacility}"
+
+{ [[ -n "${TOP}" ]] && [[ -d "${TOP}" ]]; } || \
+  { echo "Invalid start directory $TOP" 1>&2; exit 2; }
+
+find "${TOP}" -type f | \
+  xargs grep -le '^[ \t]*#include[ \t]\{1,\}"' | \
+  xargs perl -wapi\~ -e 's&^(\s*#\s*include\s+")((?:MessageLogger|MessageService|Utilities)/.*?)(?:interface|src)/(.*?".*)$&${1}messagefacility/${2}${3}&'

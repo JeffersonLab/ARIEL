@@ -1,0 +1,15 @@
+
+Cross-compile Message Facility Extension package for LinuxPPC
+
+1. setup cmake
+2. setup boost v1_42_0 -f LinuxPPC -q GCC_4_5_0
+3. setup osdds v4_3 -f LinuxPPC -q GCC_4_5_0
+4. setup fhiclcpp v1_1_0 -f LinuxPPC -q GCC_4_5_0
+5. setup messagefacility v1_4_0 -f LinuxPPC -q GCC_4_5_0
+6. mkdir build; cd build
+7. cmake -DCMAKE_INSTALL_PREFIX=/install/path 
+         -DCMAKE_TOOLCHAIN_FILE=/path/to/source/xcompile/LinuxPPC.cmake
+         /path/to/source
+8. setup osdds # this step is to setup the run environment for host idlpp
+9. make
+10. make install

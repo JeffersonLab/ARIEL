@@ -1,0 +1,65 @@
+# FIXME: this file should be updated!
+#
+# The input files use the following characters:
+
+r  Run
+s  SubRun
+e  Event
+
+# 01
+
+--> Make sure we can deal with runs and subruns that contain nothing.
+
+# 02
+
+--> Empty files, some of which trigger closing output files.
+    File with an empty run.
+    File with empty subrun.
+
+# 03
+
+--> Test of continuing runs (3 files).
+
+# 04
+
+--> Another test of continuing runs (2 files).
+
+# 05
+
+--> Testing of continuing run and subrun across file boundary.
+    Going from empty subrun to a non-empty subrun in the second file.
+
+# 06
+
+--> Testing switching files while continuing run and subrun and adding
+    an event to the continuation.
+
+# 07
+
+--> Continue subrun with no additional event, then a new non-empty
+    subrun.
+
+# 08
+
+--> Same as 07, but with empty subrun 2 in the first file.
+
+# 09
+
+--> Continuing run and subrun across three files while continually
+    adding events.
+
+# 10
+
+--> Tests restart.
+
+# 11
+
+--> Tests restart and a bunch of file transitions.
+
+# 12
+
+--> Tests non-contiguous continuation of subruns.
+
+# 13
+
+--> Tests flush-Event, -SubRun, and -Run behavior.

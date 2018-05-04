@@ -1,0 +1,5 @@
+## Multi-threading analysis of `compiler_macros`{.cpp}
+
+Entirely preprocessor macros.
+
+No threading issues.

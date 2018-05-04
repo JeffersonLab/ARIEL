@@ -1,0 +1,8 @@
+message : {
+   destinations : {
+      log : {
+         type             : cerr
+         outputStatistics : true
+      }
+   }
+}

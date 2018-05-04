@@ -1,0 +1,37 @@
+## Multi-threading analysis of `cet::exempt_ptr`{.cpp}
+
+### Private members
+
+* `pointer p`{.cpp}
+
+where `pointer` for `exempt_ptr<Element>` is `std::add_pointer_t<Element>`.
+
+### Public member functions
+
+The next three member functions are marked `const`{.cpp} but return a reference or pointer corresponding to the data member.
+
+* `reference operator*() const noexcept`{.cpp}
+* `pointer operator->() const noexcept`{.cpp}
+* `pointer get() const noexcept`{.cpp}
+
+The thread-safety issues involved with bare C++ pointers also
+apply here.  There is nothing inherently thread unsafe with the class;
+but there are many safety issues involved with how it is used.
+
+The next two functions are inherently thread safe:
+
+* `bool empty() const noexcept`{.cpp}
+* `explicit operator bool() const noexcept`{.cpp}	
+
+Use of the remaining three modifier functions is inherently not thread safe:
+
+* `pointer release() noexcept`{.cpp}
+* `void reset(pointer t = nullptr) noexcept`{.cpp}
+* `void swap(exempt_ptr& other) noexcept`{.cpp}
+
+It is incumbent on users of these member functions to account for any threading concerns.
+
+### General observations:
+
+* Does the `release()` semantic make sense for an `exempt_ptr`?
+

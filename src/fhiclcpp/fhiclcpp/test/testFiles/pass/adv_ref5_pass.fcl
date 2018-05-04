@@ -1,0 +1,6 @@
+BEGIN_PROLOG
+a :6
+tab1: { a:1 b:2 }
+END_PROLOG
+a : 6
+tab1.a : 7

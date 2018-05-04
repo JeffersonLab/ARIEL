@@ -1,0 +1,18 @@
+message : {
+   destinations : {
+
+      statistics : {
+         dest1 : {
+            type  : cerr
+            reset : true
+         }
+
+         dest2 : {
+            type     : file
+            filename : "statistics.log"
+            reset    : true
+         }
+      }
+
+   }
+}

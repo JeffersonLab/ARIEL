@@ -1,0 +1,36 @@
+message : {
+   destinations : {
+      log1 : {
+         type : file
+         filename : "none.log"
+         format : {
+            timestamp : none
+         }
+      }
+
+      log2 : {
+         type : file
+         filename : "default.log"
+         format : {
+            timestamp : default
+         }
+      }
+
+      log3 : {
+         type : file
+         filename : "default_ms.log"
+         format : {
+            timestamp : default_ms
+         }
+      }
+
+      log4 : {
+         type : file
+         filename : "user.log"
+         format : {
+            timestamp : "%Y.%m.%d %H:%M:%S %Z"
+         }
+      }
+
+   }
+}

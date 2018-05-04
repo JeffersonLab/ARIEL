@@ -1,0 +1,17 @@
+message: {
+  debugModules: [ "*" ]
+  suppressInfo: []
+  destinations: {
+    d1: {
+      #type: file
+      #filename: "d1.txt"
+      #append: false
+      type: cout
+      threshold: DEBUG
+      format: {
+        timestamp: ""
+      }
+    }
+  }
+}
+

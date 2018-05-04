@@ -1,0 +1,16 @@
+This directory contains ups templates for cmake.
+These templates support 32bit and 64bit SL4 and SL5.
+They will need modification to support more flavors.
+Writing version and table files for NULL flavored products is left as an exercise for the developer.
+
+To use them,  where XXX is the product name:
+1. cp generic.table.in XXX/ups/XXX.table.in
+2. cp generic.version.in XXX/ups/XXX.version.in
+3. Replace XXX in each file with your product name (e.g., art, fhiclcpp, etc.)
+The ups convention is that product names will be all lower case.
+Edit the list of required products in XXX.table.in.
+
+See example/ToyCmake for a complete example which uses cmake to build hello world
+and create a relocateable ups tarball.
+(As of right now, you have to build the tarball yourself, but that will change.)
+

@@ -1,0 +1,52 @@
+process_name: "TEST"
+services: {
+   CatalogInterface: {
+      service_provider: "TrivialFileDelivery"
+      service_type: "CatalogInterface"
+   }
+   FileTransfer: {
+      service_provider: "TrivialFileTransfer"
+      service_type: "FileTransfer"
+   }
+   message: {
+      destinations: {
+         STDOUT: {
+            categories: {
+               ArtReport: {
+                  limit: 100
+               }
+               MTdiagnostics: {
+                  limit: 0
+               }
+               default: {
+                  limit: -1
+               }
+            }
+            threshold: "INFO"
+            type: "cout"
+         }
+      }
+   }
+   scheduler: {
+      debugConfig: {
+         fileName: "config.out"
+         printMode: "raw"
+      }
+      errorOnFailureToPut: true
+      errorOnMissingConsumes: false
+      errorOnSIGINT: true
+      num_threads: 1
+   }
+}
+source: {
+   fileNames: [
+      "f1.root",
+      "f2.root",
+      "f3.root"
+   ]
+   firstEvent: 5
+   maxEvents: 4
+   module_label: "source"
+   module_type: "RootInput"
+   skipEvents: 2
+}

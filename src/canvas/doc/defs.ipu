@@ -1,0 +1,10 @@
+!ifndef PARTICIPANTS
+!define PARTICIPANTS Module, Ptr
+!endif
+!define TRUE <font color="green">""true""</font>
+!define FALSE <font color="red">""false""</font>
+!define FUNC(func) <font color="blue">""func""</font>
+!define NULLPTR <font color="red">""nullptr""</font>
+!define RESULT_OF(action) <font color="magenta">//action//</font>
+!define STAGE(stage) note over PARTICIPANTS #FCA0FC : stage
+!define STAGE(begin,end,stage) note over begin, end #FCA0FC : stage

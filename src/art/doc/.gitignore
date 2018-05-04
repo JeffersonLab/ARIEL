@@ -1,0 +1,11 @@
+*.html
+*.pdf
+*.vpp~*
+PolymorphismAndDataProducts.out
+PolymorphismAndDataProducts.toc
+PolymorphismAndDataProducts.aux
+PolymorphismAndDataProducts.log
+PolymorphismAndDataProducts.fdb_latexmk
+PolymorphismAndDataProducts.fls
+slidy
+tutorial.tar.gz

@@ -1,0 +1,14 @@
+
+Cross-compile Message Facility for LinuxPPC on novatest01
+
+1. source /nova/novadaq/setup/setup_novadaq_nt1.sh -r current --xcompile
+2. cp -r $MESSAGEFACILITY_DIR/src/. ~/messagefacility/
+3. cp ~/messagefacility
+4. mkdir bin
+5. cd bin
+6. cmake -DCMAKE_TOOLCHAIN_FILE=../xcompile/novaLinuxPPC.cmake ..
+7. setup osdds -f Linux64bit+2.6-2.5
+8. make
+9. make install
+
+The LinuxPPC version of MessagFacility is now in ~/messagefacility/build/.

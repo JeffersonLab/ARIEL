@@ -1,0 +1,9 @@
+% Multi-threading report for cetlib/maybe_ref.h
+% Chris Green.
+% 2016-10-13 (on commit 110a927).
+
+* `template <typename T> cet::maybe_ref`{.cpp} has semantics similar to a smart pointer. Non-`const`{.cpp} functions are `swap()`{.cpp}, `reseat()`{.cpp}, and one of two `ref()`{.cpp} functions that provides non-`const`{.cpp} access to the referent. The resulting threading issues are therefore in addition to the threading issues inherent in possible simultaneous access to the referent.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

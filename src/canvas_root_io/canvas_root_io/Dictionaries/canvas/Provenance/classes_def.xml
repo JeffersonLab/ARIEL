@@ -1,0 +1,200 @@
+<lcgdict>
+  <class pattern="art::Transient<*>">
+    <field name="value_" transient="true"/>
+  </class>
+  <class name="art::History" ClassVersion="10">
+    <version ClassVersion="10" checksum="1835436919"/>
+  </class>
+  <class name="art::EventSelectionIDVector"/>
+  <class name="art::ProcessHistoryID"/>
+  <class name="std::vector<art::ProductProvenance>"/>
+  <class name="art::ProductProvenance" ClassVersion="11">
+    <version ClassVersion="11" checksum="4148564992"/>
+    <version ClassVersion="10" checksum="1364826586"/>
+  </class>
+  <ioread sourceClass="art::ProductProvenance" version="[-10]"
+          targetClass="art::ProductProvenance"
+          source="art::BranchID branchID_"
+          target="productID_"
+          include="canvas/Persistency/Provenance/BranchID.h">
+    <![CDATA[ productID_ = art::ProductID{onfile.branchID_.id()}; ]]>
+  </ioread>
+  <class name="art::ProductProvenance::Transients"/>
+  <class name="art::BranchID" ClassVersion="10">
+    <version ClassVersion="10" checksum="2476990556"/>
+  </class>
+  <class name="art::ParentageID"/>
+  <class name="art::FileFormatVersion" ClassVersion="10">
+    <version ClassVersion="10" checksum="2316305675"/>
+  </class>
+  <class name="art::FileIndex" ClassVersion="10">
+    <version ClassVersion="10" checksum="2437688295"/>
+  </class>
+  <class name="art::FileIndex::Element" ClassVersion="11">
+    <version ClassVersion="11" checksum="3565390397"/>
+    <version ClassVersion="10" checksum="2106446510"/>
+  </class>
+  <class name="std::vector<art::FileIndex::Element>"/>
+  <class name="art::FileIndex::Transients"/>
+  <class name="std::vector<art::ProcessConfiguration>"/>
+  <class name="art::ProcessConfiguration" ClassVersion="11">
+    <version ClassVersion="11" checksum="2746056774"/>
+    <version ClassVersion="10" checksum="877610178"/>
+  </class>
+  <class name="std::vector<art::ProcessHistory>"/>
+  <class name="art::ProcessHistory" ClassVersion="10">
+    <field name="mutex_" transient="true"/>
+    <version ClassVersion="10" checksum="2473205264"/>
+  </class>
+  <class name="art::ProcessHistory::Transients"/>
+  <class name="art::BranchChildren" ClassVersion="11">
+    <version ClassVersion="11" checksum="2534407299"/>
+    <version ClassVersion="10" checksum="1681313459"/>
+  </class>
+  <ioread sourceClass="art::BranchChildren" version="[-10]"
+          targetClass="art::BranchChildren"
+          source="std::map<art::BranchID, std::set<art::BranchID>> childLookup_;"
+          target="childLookup_"
+          include="canvas/Persistency/Provenance/BranchID.h">
+    <![CDATA[
+        childLookup_.clear();
+        for (auto const& lookup : onfile.childLookup_) {
+          std::set<art::ProductID> descendents;
+          for (art::BranchID const desc : lookup.second) {
+            descendents.emplace(desc.id());
+          }
+          childLookup_[art::ProductID{lookup.first.id()}] = descendents;
+        }
+    ]]>
+  </ioread>
+  <class name="std::set<art::BranchID>"/>
+  <class name="std::pair<art::BranchID, std::set<art::BranchID> >"/>
+  <class name="std::map<art::BranchID, std::set<art::BranchID> >"/>
+  <class name="std::map<art::ProductID, std::set<art::ProductID> >"/>
+  <class name="art::ProductRegistry" ClassVersion="12">
+    <version ClassVersion="12" checksum="2309607360"/>
+    <version ClassVersion="11" checksum="2309607360"/>
+    <version ClassVersion="10" checksum="1533689113"/>
+  </class>
+  <ioread sourceClass="art::ProductRegistry" version="[-11]"
+          targetClass="art::ProductRegistry"
+          source="art::ProductList productList_;"
+          target="productList_"
+          include="canvas/Persistency/Provenance/ProductList.h">
+    <![CDATA[
+        auto it  = onfile.productList_.cbegin();
+        auto end = onfile.productList_.cend();
+        for (; it != end ; ++it) {
+          art::BranchKey key{it->first};
+          key.branchType_ = it->second.branchType();
+          productList_.emplace(key, it->second);
+        }
+    ]]>
+  </ioread>
+  <class name="art::BranchKey" ClassVersion="11">
+    <version ClassVersion="11" checksum="363573437"/>
+    <version ClassVersion="10" checksum="2938245437"/>
+  </class>
+  <class name="art::BranchDescription" ClassVersion="15">
+    <version ClassVersion="15" checksum="1969003144"/>
+    <version ClassVersion="14" checksum="1426833576"/>
+    <version ClassVersion="13" checksum="2315032926"/>
+    <version ClassVersion="12" checksum="544968977"/>
+    <version ClassVersion="11" checksum="1740239918"/>
+    <version ClassVersion="10" checksum="3580977508"/>
+  </class>
+  <ioread sourceClass="art::BranchDescription" version="[-14]"
+          targetClass="art::BranchDescription"
+          source="std::string producedClassName_"
+          target="supportsView_"
+          include="canvas_root_io/Utilities/TypeTools.h">
+    <![CDATA[
+      // Look in the class of the product for a typedef named "value_type" or "mapped_type".
+      using namespace art::root;
+      TypeWithDict const TY {onfile.producedClassName_};
+      if (TY.category() != TypeWithDict::Category::CLASSTYPE) {
+        supportsView_ = false;
+      }
+      else {
+        TClass* const TYc = TY.tClass();
+        supportsView_ = mapped_type_of(TYc) || value_type_of(TYc);
+      }
+    ]]>
+  </ioread>
+  <ioread sourceClass="art::BranchDescription" version="[-13]"
+          targetClass="art::BranchDescription"
+          source="art::BranchID branchID_;"
+          target="productID_">
+    <![CDATA[productID_ = art::ProductID{onfile.branchID_.id()};]]>
+  </ioread>
+  <ioread sourceClass="art::BranchDescription" version="[-10]"
+          targetClass="art::BranchDescription"
+          source="std::string fullClassName_;" target="producedClassName_">
+    <![CDATA[producedClassName_ = onfile.fullClassName_; ]]>
+  </ioread>
+  <class name="art::BranchDescription::Transients"/>
+  <class name="std::set<fhicl::ParameterSetID>"/>
+  <class name="art::ProcessConfigurationID"/>
+  <class name="std::set<art::ProcessConfigurationID>"/>
+  <class name="std::pair<art::BranchKey, art::BranchDescription>"/>
+  <class name="art::ProductList"/>
+  <class name="std::vector<art::ProductID>"/>
+  <class name="std::pair<art::ProductID, std::set<art::ProductID>>"/>
+  <class name="art::Parentage" ClassVersion="11">
+    <version ClassVersion="11" checksum="1829758938"/>
+    <version ClassVersion="10" checksum="3473129795"/>
+  </class>
+  <ioread sourceClass="art::Parentage" version="[-10]"
+          targetClass="art::Parentage"
+          source="std::vector<art::BranchID> parents_;"
+          target="parents_"
+          include="canvas/Persistency/Provenance/BranchID.h">
+    <![CDATA[
+        parents_.resize(onfile.parents_.size());
+        for (std::size_t i = 0; i < parents_.size(); ++i) {
+          parents_[i] = art::ProductID{onfile.parents_[i].id()};
+        }
+    ]]>
+  </ioread>
+  <class name="std::vector<art::BranchID>"/>
+  <class name="art::EventAuxiliary" ClassVersion="11">
+    <version ClassVersion="11" checksum="731591074"/>
+    <version ClassVersion="10" checksum="3057204332"/>
+  </class>
+  <class name="art::EventID" ClassVersion="12">
+    <version ClassVersion="12" checksum="784191624"/>
+    <version ClassVersion="11" checksum="3432767131"/>
+    <version ClassVersion="10" checksum="784191624"/>
+  </class>
+  <class name="art::Timestamp" ClassVersion="10">
+    <version ClassVersion="10" checksum="2438251709"/>
+  </class>
+  <class name="art::SubRunAuxiliary" ClassVersion="11">
+    <version ClassVersion="11" checksum="1706997496"/>
+    <version ClassVersion="10" checksum="832515965"/>
+  </class>
+  <class name="art::SubRunID" ClassVersion="10">
+    <version ClassVersion="10" checksum="2879307132"/>
+  </class>
+  <class name="art::RunAuxiliary" ClassVersion="11">
+    <version ClassVersion="11" checksum="632272083"/>
+    <version ClassVersion="10" checksum="156856400"/>
+  </class>
+  <class name="art::ResultsAuxiliary" ClassVersion="10">
+    <version ClassVersion="10" checksum="1769416444"/>
+  </class>
+  <class name="art::RunID" ClassVersion="10">
+    <version ClassVersion="10" checksum="1627543759"/>
+  </class>
+  <class name="std::set<art::ProcessHistoryID>"/>
+  <class name="art::ProcessHistoryMap"/>
+  <class name="std::pair<const art::ProcessHistoryID, art::ProcessHistory>"/>
+  <class name="art::ParameterSetBlob" ClassVersion="10">
+    <version ClassVersion="10" checksum="1823408429"/>
+  </class>
+  <class name="art::ParameterSetMap"/>
+  <class name="std::pair<fhicl::ParameterSetID, art::ParameterSetBlob>"/>
+  <class name="art::ProductID" ClassVersion="10">
+    <version ClassVersion="10" checksum="2026026665"/>
+  </class>
+</lcgdict>

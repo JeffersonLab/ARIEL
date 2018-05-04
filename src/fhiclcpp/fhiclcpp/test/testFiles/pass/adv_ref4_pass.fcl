@@ -1,0 +1,5 @@
+BEGIN_PROLOG
+t:{ a:1 }
+t.a: 5
+END_PROLOG
+t.b: 3

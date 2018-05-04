@@ -1,0 +1,29 @@
+#include "to_indented_string_annotated_prolog.fcl"
+
+some_number : 7
+
+table1 : {
+   table: { @table::test.table }
+   seq1: [ @sequence::test.seq_prolog ]
+   foo : bar1
+   books : [
+      [ nested,sequence,does,this,"work?"],
+      { is: this },
+      [ okay ],
+      { just : { suppose : no } },
+      { nose : { where : would} },
+      { all  : { our : [ glasses, sit, "they'd", all ] } },
+      { fall : [ off, just, think, of, it ] }
+   ]
+   foo : bar6
+}
+
+table1.seq1[7] : it
+table2 : { @table::test.table }
+
+success : { table3 : { @table::test } }
+
+any_more_success: { table4 : @local::test }
+
+table1.table.foo: bar_none
+table1.this.can.be.extended : "What to do here?"

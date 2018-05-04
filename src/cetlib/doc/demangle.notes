@@ -1,0 +1,6 @@
+## Multi-threading analysis of `cetlib/demangle`{.cpp}
+
+Utilities for demangling mangled typenames.  The demangling utilites
+call `malloc`, which is probably thread-safe on the POSIX systems we
+support (see
+http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_09).

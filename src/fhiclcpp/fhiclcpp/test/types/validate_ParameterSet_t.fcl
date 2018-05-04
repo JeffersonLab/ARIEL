@@ -1,0 +1,28 @@
+pset: {
+
+   pset2 : {
+      test  : "Brahms is a German composer."
+      sequence : [ 1, 2, 3, 7 ]
+   }
+
+   vecOfVecs: [
+      [ 1,4,6,8 ],
+      [ 1,3],
+      [ 6 ]
+   ]
+
+   vecOfTables : [
+      {  a: "a"
+         b: [ "b1", "b4" ]
+      }
+      ,
+      {  a: "a2" 
+         b: [ "b2", "b5" ]
+      }
+      , 
+      {  a: "a3"
+         B: [ "b10" ]
+      }
+   ]
+
+}

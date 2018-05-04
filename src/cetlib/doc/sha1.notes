@@ -1,0 +1,48 @@
+## Multi-threading analysis of `cet::sha1`{.cpp}
+
+### Base classes
+
+None
+
+
+### Public members
+
+None
+
+### Private members
+
+* `SHA_CTX context`{.cpp}
+
+    `SHA_CTX` resolves to a structure that depends on whether the `openssl` (Linux) or `CommonCrypto` (OSX) tools are used.
+
+### Public member functions
+
+Only non-`const` member functions:
+
+* `void reset()`
+
+* `sha1& operator<<(std::string const& msg)`{.cpp} or `sha1& operator<<(char const msg)`{.cpp}
+
+* `digest_t digest()`
+
+Each of these functions call `SHA1_*` C-functions from either `openssl` (Linux) or `CommonCrypto` (OSX).
+
+### Private member functions
+
+None
+
+### General observations:
+
+* As long as the supplied pointer to the `SHA1_*` functions is not
+  null (which creates a `static` allocation, it is likely that we can
+  use these functions in a multithreaded contexts.  I do not believe
+  we need to worry about some of the other steps to be taken when
+  using the `openssl` communication protocols in a multithreaded
+  environment.  I would like someone to check me on that, though.
+
+### Non-thread related observations:
+
+* The documentation states that we should not be directly calling the
+  `SHA1_*` functions, but should call (e.g.) `EVP_DigestInit` instead.
+  This is something we should consider.  Is changing to such an
+  interface compatible with using the `CommonCrypto` library on OSX?

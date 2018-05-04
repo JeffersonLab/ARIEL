@@ -1,0 +1,17 @@
+<lcgdict>
+ <class name="fhicl::ParameterSetID" ClassVersion="11">
+   <version ClassVersion="11" checksum="1018535707"/>
+   <version ClassVersion="10" checksum="1695960590"/>
+ </class>
+ <ioread sourceClass="fhicl::ParameterSetID" version="[-10]"
+         targetClass="fhicl::ParameterSetID"
+         source="boost::array<unsigned char, 20> id_"
+         target="id_"
+         include="boost/array.hpp">
+   <![CDATA[
+     for (std::size_t i{}; i < 20; ++i) {
+       id_[i] = onfile.id_[i];
+     }
+   ]]>
+ </ioread>
+</lcgdict>
