@@ -1,0 +1,4 @@
+# This file should yield 1 database record.
+a: [1, 2, 3]
+b: cow
+c: 10.3

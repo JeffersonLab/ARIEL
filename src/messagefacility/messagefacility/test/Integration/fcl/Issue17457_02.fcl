@@ -1,0 +1,11 @@
+message: {
+  destinations: {
+    issueTest: {
+      type: Issue17457TestDestination
+      application: "OverriddenApplication"
+      hostName: "OverriddenName"
+      hostAddr: "OverriddenAddr"
+      pid: -1
+    }
+  }
+}

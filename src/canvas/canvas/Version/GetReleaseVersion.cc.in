@@ -1,0 +1,11 @@
+// This is a comment
+#include "canvas/Version/GetReleaseVersion.h"
+
+namespace art {
+
+  std::string const & getCanvasReleaseVersion() {
+    static std::string const releaseVersion{"@version@"};
+    return releaseVersion;
+  }
+
+}

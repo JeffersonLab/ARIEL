@@ -1,0 +1,17 @@
+message : {
+   destinations : {
+
+      log : {
+         type     : file
+         filename : "file_wStatistics2.log"
+      }
+
+      statistics : {
+         stat1 : {
+            type     : file
+            filename : "file_wStatistics2.log"
+         }
+      }
+
+   }
+}

@@ -1,0 +1,4 @@
+## Multi-threading analysis of `cet::getenv`{.cpp}
+
+Wrapper around `std::getenv`, which is thread-safe as of C++11...assuming the user doesn't modify the environment, of course.
+

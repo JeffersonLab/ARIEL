@@ -1,0 +1,48 @@
+## Multi-threading analysis of `cet::BasicPluginFactory`{.cpp}
+
+### Base classes
+
+* `cet::PluginFactory`
+
+### Public members
+
+None
+
+### Private members
+
+
+* `std::string const makerName_`{.cpp}
+
+    Name of C-linkage function in plugin by which plugins are constructed.  
+	No direct threading implication.
+
+* `std::string const pluginTypeFuncName_`{.cpp}
+
+    Name of C-linkage function in plugin by which plugin types are deduced.  
+	No direct threading implication.
+
+### Public member functions
+
+* `template <typename RESULT_TYPE, typename... ARGS> RESULT_TYPE makePlugin(std::string const& libspec, ARGS&&... args)`{.cpp}
+
+	Direct invocation of `cet::PluginFactory::call`{.cpp}.  
+	No direct threading implication.
+
+* `std::string pluginType(std::string const& libspec)`{.cpp}
+
+	Direct invocation of `cet::PluginFactory::call`{.cpp}.  
+	No direct threading implication.
+
+### Private member functions
+
+None
+
+### General observations:
+
+By virtue of the private data members being `const`{.cpp}, and since
+public member functions directly invoke the base class member
+functions, there are no direct threading issues with this class.
+
+However, the `BasicPluginFactory::makePlugin` function template does
+receive universal references, which could cause multi-threading issues
+if an lvalue reference is provided to the function.

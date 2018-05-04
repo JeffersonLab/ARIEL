@@ -1,0 +1,11 @@
+Product: cetlib
+
+cetlib is distributed under the terms of the standard BSD open source license.
+
+Author:  The art Team   artists@fnal.gov
+
+Description:
+The cetlib C++ library serves as a home for numerous classes and functions 
+of general applicability.
+https://cdcvs.fnal.gov/redmine/projects/cetlib/wiki
+

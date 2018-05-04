@@ -1,0 +1,59 @@
+pset: {
+
+  atom : 5
+  vec  : [ 3, 5, 8 ]
+  arr  : [ 4, 9 ]
+
+  tuple : [ 5, 4.3, true ]
+
+  tupWithVec : [
+    [ 4, 1, 4, 67, 89 ],
+    4.56789,
+    false
+  ]
+
+  tupWithArr : [
+    [ 5, 16 ],
+    46.9,
+    true
+  ]
+
+  tupWithTup : [
+    [4,175.218],
+    87.03,
+    false
+  ]
+
+  vecWithTup : [
+    [ 11, "Decay in orbit" ],
+    [ 22, "Radiative pion capture" ]
+  ]
+
+  arrWithTup : [
+    [ "Tchaikovsky wrote ", 6, " symphonies" ],
+    [ "Mahler wrote ", 9, " symphonies" ]
+  ]
+
+  vecOfVec: [
+    [ 1,4,6,8 ],
+    [ 1,3],
+    [ 6 ]
+  ]
+
+  vecOfArr: [
+    [1,6],
+    [2,12],
+    [3,18]
+  ]
+
+  arrOfVec: [
+    [ 1, 2, 3, 4, 5, 6, 7],
+    [ 8, 9, 10]
+  ]
+
+  arrOfArr: [
+    [ 1, 0 ],
+    [ 0, 1 ]
+  ]
+
+}

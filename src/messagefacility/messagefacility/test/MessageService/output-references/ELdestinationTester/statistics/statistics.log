@@ -1,0 +1,50 @@
+
+=============================================
+
+MessageLogger Summary
+
+Process ELdestinationTester
+ type     category        sev    module        subroutine        count    total
+ ---- -------------------- -- ---------------- ----------------  -----    -----
+    1 catInfo              -i MFTest                                 5        5
+    2 MemoryCheck          -w MFTest                                 3        3
+    3 catWarning           -w MFTest                                 5        5
+    4 warning              -w MFTest                                 1        1
+    5 catError             -e MFTest                                 5        5
+    6 err1                 -e MFTest                                 1        1
+    7 err2                 -e MFTest                                 1        1
+    8 problem              -e MFTest                                 1        1
+    9 TimeEvent            -s module1                                1        1
+   10 TimeEvent            -s module5                                1        1
+   11 TimeModule           -s module1                                1        1
+   12 TimeModule           -s module5                                1        1
+   13 TimeReport           -s module1                                2        2
+   14 TimeReport           -s module5                                2        2
+   15 system               -s module1                                1        1
+   16 system               -s module5                                1        1
+
+ type    category    Examples: run/evt        run/evt          run/evt
+ ---- -------------------- ---------------- ---------------- ----------------
+    1 catInfo              pro-event        pro-event        pro-event
+    2 MemoryCheck          pre-event        pre-event        pre-event
+    3 catWarning           pro-event        pro-event        pro-event
+    4 warning              pre-event                         
+    5 catError             pro-event        pro-event        pro-event
+    6 err1                 pre-event                         
+    7 err2                 pre-event                         
+    8 problem              pro-event                         
+    9 TimeEvent            postEventProcess                  
+   10 TimeEvent            postEventProcess                  
+   11 TimeModule           postModule                        
+   12 TimeModule           postModule                        
+   13 TimeReport           postBeginJob     postEndJob       
+   14 TimeReport           postBeginJob     postEndJob       
+   15 system               postModule                        
+   16 system               postModule                        
+
+Severity    # Occurrences   Total Occurrences
+--------    -------------   -----------------
+Info                    5                   5
+Warning                 9                   9
+Error                   8                   8
+System                 10                  10

@@ -1,0 +1,32 @@
+message : {
+   destinations : {
+      dest1 : {
+
+         type     : file
+         filename : "file_categories.log"
+
+         categories : {
+
+            default  : {
+               limit       : 10 // some int
+               reportEvery : 10 // some int
+               timespan    : 10 // some int
+            }
+
+            MemoryCheck : {
+               limit       : 2
+               reportEvery : 1
+               timespan    : 2
+            }
+
+            debug : {
+               limit       : 10
+               reportEvery : 2
+            }
+
+
+         }
+
+      }
+   }
+}

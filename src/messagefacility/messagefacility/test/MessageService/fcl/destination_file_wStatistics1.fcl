@@ -1,0 +1,23 @@
+message : {
+   destinations : {
+      log1 : {
+         type             : file
+         filename         : "file_wStatistics1.log1"
+         outputStatistics : true
+      }
+
+      log2 : {
+         type             : file
+         filename         : "file_wStatistics1.log2"
+         outputStatistics : true
+         resetStatistics  : true
+      }
+
+      log3 : {
+         type             : file
+         filename         : "file_wStatistics1.log3"
+         resetStatistics  : false
+      }
+
+   }
+}

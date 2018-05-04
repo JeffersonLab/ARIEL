@@ -1,0 +1,25 @@
+% Multi-threading report for cetlib/Ntuple.
+% Chris Green.
+% 2016-10-12 (on commit 114f655).
+
+# Global notes #{-}
+
+* The header files in this directory would benefit from a refresh of their guards.
+
+# `Ntuple.h` #
+
+## `template <class ... ARGS> class Ntuple`{.cpp} ##
+
+### Private data members: ###
+
+`sqlite3_stmt * insert_statement`{.cpp}
+
+: Set in constructor with SQLite calls, used subsequently (check interface for const use of pointer). Should use RAII on this rather than explicit finalize call in destructor?
+
+### Non-thread-related observations. ###
+
+* The overload set `bind_one_parameter()`{.cpp} does not cover the pantheon of available basic types. The first time someone attempts to bind a non-supported parameter, a compile-time ambiguity is likely to arise.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

@@ -1,0 +1,54 @@
+%MSG-w MemoryCheck:  MFTest {Timestamp} pre-event ==> MemoryCheck: module G4:g4run VSIZE 1030.34 0 RSS 357.043 0.628906
+%MSG-w MemoryCheck:  MFTest {Timestamp} pre-event ==> MemoryCheck: module G4:g4run VSIZE 1030.34 0 RSS 357.25 0.199219
+%MSG-w MemoryCheck:  MFTest {Timestamp} pre-event ==> MemoryCheck: module G4:g4run VSIZE 1030.34 5.2 RSS 357.453 0.1875
+%MSG-e err1:  MFTest {Timestamp} pre-event ==> This is an ERROR message.
+%MSG-e err2:  MFTest {Timestamp} pre-event ==> This is an ERROR message.
+%MSG-w warning:  MFTest {Timestamp} pre-event ==> Followed by a WARNING message.
+%MSG-e catError:  MFTest {Timestamp} pro-event ==> Error information.
+%MSG-w catWarning:  MFTest {Timestamp} pro-event ==> Warning information.
+%MSG-i catInfo:  MFTest {Timestamp} pro-event ==> Info information.
+%MSG-d debug:  MFTest {Timestamp} pro-event ELdestinationTester.cc:154 ==> DEBUG information.
+%MSG-e catError:  MFTest {Timestamp} pro-event ==> Error information.
+%MSG-w catWarning:  MFTest {Timestamp} pro-event ==> Warning information.
+%MSG-i catInfo:  MFTest {Timestamp} pro-event ==> Info information.
+%MSG-d debug:  MFTest {Timestamp} pro-event ELdestinationTester.cc:154 ==> DEBUG information.
+%MSG-e catError:  MFTest {Timestamp} pro-event ==> Error information.
+%MSG-w catWarning:  MFTest {Timestamp} pro-event ==> Warning information.
+%MSG-i catInfo:  MFTest {Timestamp} pro-event ==> Info information.
+%MSG-d debug:  MFTest {Timestamp} pro-event ELdestinationTester.cc:154 ==> DEBUG information.
+%MSG-e catError:  MFTest {Timestamp} pro-event ==> Error information.
+%MSG-w catWarning:  MFTest {Timestamp} pro-event ==> Warning information.
+%MSG-i catInfo:  MFTest {Timestamp} pro-event ==> Info information.
+%MSG-d debug:  MFTest {Timestamp} pro-event ELdestinationTester.cc:154 ==> DEBUG information.
+%MSG-e catError:  MFTest {Timestamp} pro-event ==> Error information.
+%MSG-w catWarning:  MFTest {Timestamp} pro-event ==> Warning information.
+%MSG-i catInfo:  MFTest {Timestamp} pro-event ==> Info information.
+%MSG-d debug:  MFTest {Timestamp} pro-event ELdestinationTester.cc:154 ==> DEBUG information.
+%MSG-d debug2:  MFTest {Timestamp} pro-event ELdestinationTester.cc:165 ==> first line.
+second line.
+clever way to ensure persistence of temporary object
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+TimeReport> Time report complete in 0.0402123 seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+TimeModule> run: 1   subRun: 2    event: 456 someString module1 0.04404
+%MSG-s system:  module1 {Timestamp} postModule ==> This would be a major problem, I guess.
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+TimeReport> Time report complete in 0.0402123 seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+TimeModule> run: 1   subRun: 2    event: 456 someString module5 0.04404
+%MSG-s system:  module5 {Timestamp} postModule ==> This would be a major problem, I guess.
+%MSG-i info:  module5 {Timestamp} postModule ==>  vint contains: 1, 2, 5, 89, 3

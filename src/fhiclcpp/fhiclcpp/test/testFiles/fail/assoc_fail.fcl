@@ -1,0 +1,5 @@
+#----------------------------------------------------
+# Testing Incorrect Association Syntax
+# What's Wrong: No Value for Association.
+#----------------------------------------------------
+x : #include "filename.ext"

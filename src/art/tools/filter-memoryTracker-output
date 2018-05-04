@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+########################################################################
+# MemoryTracker filter-output.
+########################################################################
+use strict;
+
+my ($in_mm);
+
+while (<>) {
+  ########################################################################
+  # MemoryTracker summary lines
+  if ($in_mm) {
+    s&\s+(Peak virtual memory usage \(VmPeak\)\s*:)\s+(.*)$&${1}\t<mem-size>&;
+    s&\s+(Peak resident set size usage \(VmHWM\)\s*:)\s+(.*)$&${1}\t<mem-size>&;
+    s&^(Module \S+)\s+(\S+)\s+.*$&${1}\t${2}\t<mem-size>\t<mem-size>&;
+  }
+  if (m&^MemoryTracker summary&) {
+    $in_mm = 1;
+  }
+  ########################################################################
+  print;
+}

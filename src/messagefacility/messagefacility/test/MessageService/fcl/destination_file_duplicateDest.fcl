@@ -1,0 +1,14 @@
+message : {
+   destinations : {
+      dest1 : {
+         type     : file
+         filename : "output.log"
+      }
+
+
+      dest2 : {
+         type     : file
+         filename : "output.log"
+      }
+   }
+}

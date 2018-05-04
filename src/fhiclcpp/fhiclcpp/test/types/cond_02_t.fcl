@@ -1,0 +1,8 @@
+pset: {
+   flag: false
+   num2: 4
+   shape: "sphere"
+   parameters: {
+      radius: 7
+   }
+}

@@ -1,0 +1,6 @@
+BEGIN_PROLOG
+tab:{ a:1 b:2 c:3 }
+END_PROLOG
+
+a : @local::tab.a
+

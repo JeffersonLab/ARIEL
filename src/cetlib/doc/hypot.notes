@@ -1,0 +1,5 @@
+## Multi-threading analysis of `cet::hypot`{.cpp}
+
+Facility for checked/unchecked Euclidean planar hypotenuse calculations.
+
+No threading issues.

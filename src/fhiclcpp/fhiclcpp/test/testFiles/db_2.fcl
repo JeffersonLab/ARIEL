@@ -1,0 +1,4 @@
+# This file should yield 3 database records.
+a: [ { }, { b: 10 } ]
+
+

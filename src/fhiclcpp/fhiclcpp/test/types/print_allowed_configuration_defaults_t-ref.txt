@@ -1,0 +1,129 @@
+
+   ## Any parameters prefaced with '#' are optional.
+
+   pset: {
+
+      flag: true  # default
+
+      value: 7  # default
+
+      string: "hi mom"  # default
+
+      pair: [
+         2.23457,  # default
+         "Finally, I know what I'm doing."  # default
+      ]
+
+      tuple: [
+         5,  # default
+         "some string",  # default
+         16.0000  # default
+      ]
+
+      vecOfTuples: [
+         [
+            3,  # default
+            27.0000  # default
+         ]
+      ]
+
+      arrayOfTuples: [
+         [
+            4,  # default
+            15.0000  # default
+         ],
+         [
+            2,  # default
+            17.0000  # default
+         ]
+      ]
+
+      vecOfVecs: [
+         [
+            1,  # default
+            3,  # default
+            5  # default
+         ]
+      ]
+
+      vecOfArrays: [
+         [
+            1,  # default
+            2  # default
+         ]
+      ]
+
+      arrayOfVecs: [
+         [
+            1,  # default
+            2,  # default
+            3  # default
+         ],
+         [
+            1  # default
+         ]
+      ]
+
+      arrayOfArrays: [
+         [
+            0,  # default
+            2  # default
+         ],
+         [
+            2,  # default
+            3  # default
+         ]
+      ]
+
+      tupleWithVec: [
+         [
+            4.20000,  # default
+            7.30000  # default
+         ],
+         false,  # default
+         5  # default
+      ]
+
+      tupleWithArray: [
+         [
+            3.60000,  # default
+            5.30000  # default
+         ],
+         false,  # default
+         5  # default
+      ]
+
+      tupleWithTuple: [
+         [
+            4,  # default
+            5.90000  # default
+         ],
+         true,  # default
+         8  # default
+      ]
+
+      ## This should work now
+      ## double line even.
+
+      pset2: {
+
+         test: "a"  # default
+
+         ## Just to see if this works
+
+         sequence: [
+            1,  # default
+            3,  # default
+            67,  # default
+            5  # default
+         ]
+
+         array: [
+            1.40000,  # default
+            2.30000,  # default
+            4.00000,  # default
+            8.00000,  # default
+            123098.  # default
+         ]
+      }
+   }

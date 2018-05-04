@@ -1,0 +1,22 @@
+//comment
+BEGIN_PROLOG
+b:1
+c:2
+END_PROLOG
+#include "testFiles/pass/test2.fcl"
+//comment
+u:10
+v :8
+w: 5
+x : 5
+y : 5.5
+z : 05
+j:{ a:1 }
+za : 10
+zb : @local::b
+zc : @local::u
+zd: @local::j.a
+seq:[1,2,3]
+tab:{ a:1 b:2 c:3 }
+tab.a : 4
+tab1:{ a:{ d:1 } b:[1,2,3] }

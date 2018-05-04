@@ -1,0 +1,9 @@
+message : {
+  destinations : {
+    dest1 : {
+      type     : file
+      filename : "dest1.log"
+      append   : false
+    }
+  }
+}

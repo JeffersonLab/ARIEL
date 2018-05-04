@@ -1,0 +1,11 @@
+pset: {
+   numbers1 : [1,9,17]
+   toVector : [ 5, [1,2,3,4] ]
+   people : [
+      ["Alice", 1],
+      ["Bob", 2],
+      ["Charlie", 3],
+      ["Danielle", 4],
+      ["Edgar", 5]
+   ]
+}

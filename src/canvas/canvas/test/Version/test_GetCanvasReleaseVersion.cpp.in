@@ -1,0 +1,7 @@
+#include "canvas/Version/GetReleaseVersion.h"
+#include <cassert>
+
+int main()
+{
+  assert(art::getCanvasReleaseVersion() == std::string("@version@"));
+}

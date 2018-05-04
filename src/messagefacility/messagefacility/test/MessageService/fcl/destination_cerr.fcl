@@ -1,0 +1,3 @@
+message : {
+   destinations : { log : { type : cerr } }
+}

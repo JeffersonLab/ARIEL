@@ -1,0 +1,8 @@
+message : {
+   destinations :  {
+      sqliteDest : {
+         type     : sqlite
+         filename : "sqlite_plugin_t.db"
+      }
+   }
+}

@@ -1,0 +1,11 @@
+% Multi-threading report for cetlib/trim.h
+% Chris Green.
+% 2016-10-13 (on commit 889f6a2).
+
+* `cet::trim_right()`{.cpp}, `cet::trim_left()`{.cpp}, and `cet::trim()`{.cpp} all operate on an `std::string`{.cpp} in place, returning it by reference. Threading semantics are those of any non-const access to an `std::string`{.cpp}.
+
+* `cet::trim_right_copy()`{.cpp}, `cet::trim_left_copy()`{.cpp} and `cet::trim_copy()`{.cpp} all operate on a copy of the provided string, and have no threading implications.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

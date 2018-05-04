@@ -1,0 +1,6 @@
+The Class_Version() function should be made constexpr.
+
+map_vector is much like vector, in that multiple threads can safely
+read from the same map_vector simultaneously, but if anything is
+writing to a map_vector, nothing else can be reading that same
+map_vector. Such use must be protected externally.

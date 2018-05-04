@@ -1,0 +1,21 @@
+# test conflicting requests for statistics
+
+message : {
+   destinations : {
+
+      log : {
+         type            : file
+         filename        : "file_wStatistics3.log"
+         resetStatistics : false
+      }
+
+      statistics : {
+         stat : {
+            type     : file
+            filename : "file_wStatistics3.log"
+            reset    : true
+         }
+      }
+
+   }
+}

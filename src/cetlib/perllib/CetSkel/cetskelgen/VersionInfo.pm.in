@@ -1,0 +1,19 @@
+use strict;
+
+package CetSkel::cetskelgen::VersionInfo;
+
+use Exporter;
+
+use vars qw(@ISA @EXPORT);
+use vars qw($CetSkelProduct $CetSkelVersion);
+@ISA = qw(Exporter);
+@EXPORT = qw($CetSkelProduct $CetSkelVersion);
+
+$CetSkelProduct = "@product@"; # Configured via CMake.
+$CetSkelVersion = "@version@"; # Configured via CMake.
+
+1;
+
+### Local Variables:
+### mode: cperl
+### End:

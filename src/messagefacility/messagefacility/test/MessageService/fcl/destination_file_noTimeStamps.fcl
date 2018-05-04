@@ -1,0 +1,11 @@
+message: {
+  destinations: {
+    log_noTimeStamps: {
+      type: file
+      filename: "noTimeStamps.log"
+      format: {
+        timestamp: none
+      }
+    }
+  }
+}

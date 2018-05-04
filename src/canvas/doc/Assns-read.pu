@@ -1,0 +1,52 @@
+@startuml
+title Resolution of an art::Assns data product
+caption : N.B. Covers only the substantive code path where resolution is required and is successful.
+!define PARTICIPANTS Module,Assns
+!include assnsdefs.ipu
+participant Module
+participant Handle
+participant Event
+participant EventPrincipal
+participant Group
+create Handle
+Module -> Handle : <font color="blue">""art::Handle<art::Assns<A, B, C>>()""</font>
+Module -> Event : FUNC(getByLabel(..., h))
+Event -> Event : FUNC(getByLabel_(...))
+Event -> EventPrincipal : FUNC(getByLabel(...))
+participant Event
+participant EventPrincipal
+EventPrincipal -> EventPrincipal : FUNC(findGroupsForProduct(...))
+EventPrincipal -> EventPrincipal : FUNC(findGroups(...))
+EventPrincipal -> EventPrincipal : FUNC(findGroupsForProcess(...))
+EventPrincipal -> EventPrincipal : FUNC(getGroup(...))
+EventPrincipal -> AssnsGroup : FUNC(resolveProduct(...))
+EventPrincipal -> AssnsGroup : FUNC(resolveProductIfAvailable(...))
+alt RESULT_OF(wanted_wrapper_type == secondary_wrapper_type_)
+AssnsGroup -> AssnsGroup : FUNC(obtainDesiredProduct(...))
+group Body of FUNC(obtainDesiredProduct(...))
+AssnsGroup -> RootDelayedReader : FUNC(getProduct(...))
+note over RootDelayedReader : FUNC(configureRefCoreStreamer(groupFinder_))
+note over RootDelayedReader : FUNC(input::getEntry())
+activate AssnsStreamer
+AssnsStreamer -> AssnsTClass : FUNC(ReadBuffer(...))
+loop Over all ptrs
+activate RefCoreStreamer
+RefCoreStreamer -> RefCoreTClass : FUNC(ReadBuffer(...))
+RefCoreStreamer -> groupFinder_ : FUNC(getEDProductGetter(...))
+RefCoreStreamer -> RefCore : FUNC(setProductGetter(edProductGetter))
+RefCoreStreamer -> RefCore : FUNC(setProductPtr(nullptr))
+deactivate RefCoreStreamer
+end
+AssnsStreamer -> Assns : FUNC(fill_transients())
+deactivate AssnsStreamer
+note over RootDelayedReader : FUNC(configureRefCoreStreamer())
+end
+AssnsGroup -> AssnsGroup : FUNC(setProduct(...))
+AssnsGroup -> Assns : FUNC(makePartner(...))
+else RESULT_OF(wanted_wrapper_type != secondary_wrapper_type_)
+AssnsGroup -> AssnsGroup : FUNC(obtainDesiredProduct(...))
+CF(AssnsGroup,Assns,Body of FUNC(obtainDesiredProduct(...)))
+AssnsGroup -> AssnsGroup : FUNC(setProduct(...))
+end
+
+@enduml

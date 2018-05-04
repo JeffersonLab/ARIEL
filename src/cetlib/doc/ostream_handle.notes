@@ -1,0 +1,34 @@
+% Multi-threading report for cetlib/ostream_handle.h
+% Chris Green.
+% 2016-10-13 (on commit 889f6a2).
+
+* `cet::ostream_handle`{.cpp} is a pure abstract base class which, along with subclasses `cet::ostream_owner`{.cpp} and `cet::ostream_observer`{.cpp} provide resource-managed, symmetric access to non-owned instances of `std::ostream`{.cpp} and those attached to a file.
+
+* Access to the underlying `std::ostream`{.cpp} is non-const, therefore all the threading issues associated with same apply here. No new such issues are introduced by `cet::ostream_handle`{.cpp} or its subclasses.
+
+* As a general issue: rather than delegating to the user the responsibility for creating the correct subclass and utilizing the polymorphism directly, one might consider providing a concrete `cet::ostream_handle`{.cpp}, owning an `std::unique_ptr`{.cpp} to (renamed) base, the exact subclass of which to be determined by the constructor used, such as:
+
+    ~~~~~cpp
+    template <typename T, typename ... ARGS,
+             typename std::enable_if<std::is_base_of<std::ostream, T>::value>::type>
+    ostream_handle(ARGS && ... args);
+    ~~~~~
+
+    or
+
+    ~~~~~cpp
+    ostream_handle(std::ostream & os);
+    ~~~~~
+
+    The choice of subclass (and therefore resource management) would be automatic and correct, there is no ambiguity between ownership and non-ownership (specifying the template argument to the constructor implies ownership; omitting it implies non-ownership), and the result is much more flexible than the original wherein ownership is restricted particularly to `std::ofstream`{.cpp}.
+
+* Response to interface suggestion: although I very much like the idea of the `ostream_handle` choosing the correct subclass based on the provided c'tor arguments, the proposed solution will not work as intended.  A template constructor signature cannot have a template parameter that is not automatically deduced according to the provided c'tor arguments.  In other words, there is no way for the user to specify what `T` is, without specifying `cet::ostream_handle<T>` as the type of the object, in which case, you've lost the intended type-agnostic nature (to the user) of the class.  It is possible to provide factory functions (e.g. `ostream_handle::make<T>(...)`), to get around that hurdle.  But an additional complication (even if the proposed solution worked) is that the user must also provide a function to be called in the d'tor.  For example, `ostream_handle` currently calls `ofstream::close()` whenever the owning handle is destroyed.  There is precedent for allowing users to provide their own "deleters" (e.g. `std::unique_ptr`), but doing so seems like overkill at this point.  I propose that we keep such an option in mind, but adopt a simpler interface:
+
+    ~~~~~cpp
+    ostream_handle(std::ostream&) // non-owning
+    ostream_handle(std::string const&, ...) // owning by std::ofstream
+    ~~~~~
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

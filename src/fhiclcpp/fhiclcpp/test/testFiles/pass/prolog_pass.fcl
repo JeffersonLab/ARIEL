@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+x : 5
+y : @local::x
+END_PROLOG
+
+BEGIN_PROLOG
+z : @local::x
+END_PROLOG
+q : @local::z

@@ -1,0 +1,6 @@
+#===========================================
+# Testing Incorrect Table Syntax
+# What's Wrong: No Commas in Tables
+#===========================================
+
+tab:{ a:5, b:6, c:7 }

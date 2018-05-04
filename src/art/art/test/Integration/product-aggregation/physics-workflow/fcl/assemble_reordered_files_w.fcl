@@ -1,0 +1,6 @@
+#include "assemble_w.fcl"
+
+physics.producers.prod2 : {
+   @table::physics.producers.prod2
+   module_type: AssembleMoreProductsRobust
+}

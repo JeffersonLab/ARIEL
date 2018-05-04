@@ -1,0 +1,5 @@
+d : 1
+BEGIN_PROLOG
+a :1
+b:2
+END_PROLOG

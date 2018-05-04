@@ -1,0 +1,44 @@
+message : {
+
+  destinations :  {
+
+    dest1 : {
+
+      type       : file // or cerr, cout, syslog, sqlite   ### TEST DEVELOPED ###
+      filename   : "somefile.txt"                          ### TEST DEVELOPED ###
+
+      outputStatistics : false
+      resetStatistics  : false
+
+      categories : {
+
+        default : {
+          limit       : 10 // some int
+          reportEvery : 10 // some int
+          timespan    : 10 // some int
+        }
+
+      }
+
+      threshold       : "INFO" // some string  ### TEST DEVELOPED ###
+      format: {
+        timestamp: default_ms                  ### TEST DEVELOPED ###
+        noLineBreaks    : true                 ### TEST DEVELOPED ###
+      }
+
+    }
+
+    dest2: {
+      type: cout
+    }
+    statistics : {                             ### TEST DEVELOPED ###
+
+
+      dest1 : {                                ### TEST DEVELOPED ###
+        type      : file                       ### TEST DEVELOPED ###
+        filename  : "statistics.txt"           ### TEST DEVELOPED ###
+        reset     : true                       ### TEST DEVELOPED ###
+      }
+    }
+  }
+}

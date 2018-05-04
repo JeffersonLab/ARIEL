@@ -1,0 +1,3 @@
+!include defs.ipu
+!define CF(ref) note over PARTICIPANTS #CCCCFF : //cf// ref
+!define CF(begin,end,ref) note over begin,end #CCCCFF : //cf// ref

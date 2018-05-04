@@ -1,0 +1,15 @@
+#include "cetlib/shlib_utils.h"
+
+std::string
+cet::shlib_prefix()
+{
+  static std::string const shlib_prefix_s { "@CMAKE_SHARED_LIBRARY_PREFIX@" };
+  return shlib_prefix_s;
+}
+
+std::string
+cet::shlib_suffix()
+{
+  static std::string const shlib_suffix_s { "@CMAKE_SHARED_LIBRARY_SUFFIX@" };
+  return shlib_suffix_s;
+}

@@ -1,0 +1,10 @@
+<lcgdict>
+ <class name="cet::map_vector_key" ClassVersion="12">
+  <version ClassVersion="12" checksum="1096422203"/>
+  <version ClassVersion="11" checksum="3228785540"/>
+  <version ClassVersion="10" checksum="3701390079"/>
+ </class>
+ <class name="cet::map_vector<std::string>" mapped_type="std::string"/>
+ <class name="art::Ptr<cet::map_vector<std::string>::value_type>"/>
+ <class name="art::Wrapper<art::Ptr<cet::map_vector<std::string>::value_type>>"/>
+</lcgdict>

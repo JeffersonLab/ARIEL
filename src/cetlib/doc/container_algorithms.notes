@@ -1,0 +1,7 @@
+## Multi-threading analysis of `container_algorithms`{.cpp}
+
+Facilities that wrap the standard algorithms for containers.
+
+None of the algorithms have any local variables; the arguments are just forwarded to the `std` algorithms.  It is incumbent on the caller of these facilities to sort out any threading issues.
+
+No inherent threading issues.

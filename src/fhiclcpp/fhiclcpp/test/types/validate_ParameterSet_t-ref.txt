@@ -1,0 +1,294 @@
+Any parameters prefaced with '#' are optional.
+Missing parameters:
+
+ -    pair: [
+ -       <double>,
+ -       <string>
+ -    ]
+
+ -    tuple: [
+ -       <int>,
+ -       <string>,
+ -       <double>
+ -    ]
+
+ -    vecOfTuples: [
+ -       [
+ -          <int>,
+ -          <double>
+ -       ],
+ -       ...
+ -    ]
+
+ -    arrayOfTuples: [
+ -       [
+ -          <int>,
+ -          <double>
+ -       ],
+ -       [
+ -          <int>,
+ -          <double>
+ -       ]
+ -    ]
+
+ -    vecOfArrays: [
+ -       [
+ -          <int>,
+ -          <int>
+ -       ],
+ -       ...
+ -    ]
+
+ -    arrayOfVecs: [
+ -       [
+ -          <int>,
+ -          ...
+ -       ],
+ -       [
+ -          <int>,
+ -          ...
+ -       ]
+ -    ]
+
+ -    arrayOfArrays: [
+ -       [
+ -          <int>,
+ -          <int>
+ -       ],
+ -       [
+ -          <int>,
+ -          <int>
+ -       ]
+ -    ]
+
+ -    tupleWithVec: [
+ -       [
+ -          <double>,
+ -          ...
+ -       ],
+ -       <bool>,
+ -       <int>
+ -    ]
+
+ -    tupleWithArray: [
+ -       [
+ -          <double>,
+ -          <double>
+ -       ],
+ -       <bool>,
+ -       <int>
+ -    ]
+
+ -    tupleWithTuple: [
+ -       [
+ -          <int>,
+ -          <double>
+ -       ],
+ -       <bool>,
+ -       <int>
+ -    ]
+
+      vecOfTables: [  # index: 0
+         {
+ -          tableSequence2: [
+ -             {
+ -
+ -                c: <int>
+ -             },
+ -             ...
+ -          ]
+         }
+      ]
+
+      vecOfTables: [  # index: 1
+         {
+ -          tableSequence2: [
+ -             {
+ -
+ -                c: <int>
+ -             },
+ -             ...
+ -          ]
+         }
+      ]
+
+      vecOfTables: [  # index: 2
+         {
+ -          b: [
+ -             <string>,
+ -             ...
+ -          ]
+         }
+      ]
+
+      vecOfTables: [  # index: 2
+         {
+ -          tableSequence2: [
+ -             {
+ -
+ -                c: <int>
+ -             },
+ -             ...
+ -          ]
+         }
+      ]
+
+ -    tupleWithTable: [
+ -       {
+ -
+ -          a: <string>
+ -
+ -          b: [
+ -             <string>,
+ -             ...
+ -          ]
+ -
+ -          tableSequence2: [
+ -             {
+ -
+ -                c: <int>
+ -             },
+ -             ...
+ -          ]
+ -       },
+ -       <bool>,
+ -       <int>
+ -    ]
+
+ -    tupleWithVecTable: [
+ -       [
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          },
+ -          ...
+ -       ],
+ -       <double>
+ -    ]
+
+ -    tupleWithArrTable: [
+ -       [
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          },
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          }
+ -       ],
+ -       <double>
+ -    ]
+
+ -    vecWithTupleTable: [
+ -       [
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          },
+ -          <double>
+ -       ],
+ -       ...
+ -    ]
+
+ -    arrWithTupleTable: [
+ -       [
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          },
+ -          <double>
+ -       ],
+ -       [
+ -          {
+ -
+ -             a: <string>
+ -
+ -             b: [
+ -                <string>,
+ -                ...
+ -             ]
+ -
+ -             tableSequence2: [
+ -                {
+ -
+ -                   c: <int>
+ -                },
+ -                ...
+ -             ]
+ -          },
+ -          <double>
+ -       ]
+ -    ]
+
+Unsupported parameters:
+
+ + vecOfTables[2].B               [  ]
+ + vecOfTables[2].B[0]            [  ]
+
+

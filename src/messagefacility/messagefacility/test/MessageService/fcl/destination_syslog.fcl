@@ -1,0 +1,7 @@
+message : {
+   destinations : {
+      log : {
+         type : syslog
+      }
+   }
+}

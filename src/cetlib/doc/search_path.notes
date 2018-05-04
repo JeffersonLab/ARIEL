@@ -1,0 +1,7 @@
+search_path provides functions that give access to innards. However,
+all functions are const, so sharing a search_path object should be
+safe.
+
+The _dirs data member could be made 'const' by using a lambda to
+construct a vector<string> in the right state to be used in the
+initializer list. This may be more than is needed.

@@ -1,0 +1,34 @@
+pset: {
+
+   atom: 5
+   physics: {
+      energyCutoff: [ "QGSP", 14.6 ]
+      moniker: Johnny
+   }
+
+   list2: [1,2,4,8]
+
+   list3: [
+      [0,1],
+      [1,2],
+      [2,4],
+      [3,8]
+   ]
+
+   list4: [
+      {
+         composer: Mozart
+         aSymphonyMoniker: [ 41, "Jupiter" ]
+      },
+      {
+         composer: Beethoven
+         aSymphonyMoniker: [ 3, "Eroica" ]
+      },
+      { composer: Brahms },
+      {
+         composer: Mahler
+         aSymphonyMoniker: [ 8, "Symphony for a Thousand" ]
+      }
+   ]
+
+}

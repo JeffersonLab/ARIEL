@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+test: {
+   foo: bar
+   table: {
+      foo: bar
+   }
+   seq_prolog : [When, in, the, course, of, human, events, "..."]
+}
+
+END_PROLOG

@@ -1,0 +1,115 @@
+============================================================
+Notes on the use of FHiCL to configure framework executables
+============================================================
+
+The original version of the *art* framework executable was configured
+using the Python configuration system inherited from CMS. We have
+replaced that using FHiCL.
+
+Below is a sample of how we propose to use FHiCL to configure the
+framework executable. A real experiment would likely have some of
+these values supplied by files that are #include'd into the
+configuration file. Our example does not make any such use.
+
+::
+
+  # The "process" parameter is optional. The default is "DEFAULT"
+  process_name: SAMPLE
+
+  # The "source" block is optional. If it is missing, an EmptySource
+  # that emits one event, labeled as run 1, subrun 1, event 1 is
+  # produced.
+  source: { ... }
+
+  # The "services" block is optional, as is each block inside it.  The
+  # framework provides default settings that are used if nothing is
+  # provided by the user.
+  services:
+  {
+    # The following services are always created;
+    # default configurations are provided if none is given.
+    floating_point_control: { ... }
+    message:                { ... }
+    trigger_names:          { ... }
+
+    # The following services are created only when
+    # the user requests their creation, by including a
+    # block here. If the corresponding services provides
+    # complete default configuration, the associated block
+    # can be empty.
+    SimpleMemoryCheck:                 { ... }
+    TFileService:                  { ... }
+    Timing:                 { ... }
+
+    services: {
+      # Experiment- or user-defined service configurations
+      # go here
+    }
+
+    scheduler:
+    {
+      Rethrow: [OtherArt, StdException, Unknown, BadAlloc,
+                BadExceptionType, ProductNotFound, DictionaryNotFound,
+                InsertFailure, Configuration, LogicError, UnimplementedFeature,
+                InvalidReference, NullPointerError, NoProductSpecified, EventTimeout,
+                DataCorruption, ScheduleExecutionFailure, EventProcessorFailure,
+                FileInPathError, FileOpenError, FileReadError, FatalRootError,
+                MismatchedInputFiles, ProductDoesNotSupportViews,
+                ProductDoesNotSupportPtr, NotFound]
+      IgnoreCompletely: []
+      wantSummary: true
+      fileMode: FULLMERGE
+
+      handleEmptyRuns:    true
+      handleEmptySubRuns: true
+
+      maxEvents:  -1
+      maxSubRuns: -1
+
+      enableSigInt: true
+      unloadRootSigHandler: false
+      resetRootErrHandler: true
+      wantTracer: false
+    }
+  }
+
+  # The "physics" block is optional.
+  # The default analyzers, filters and producers are empty parameter sets.
+  #  The default trigger_paths and end_paths are empty sequences.
+  physics:
+  {
+     analyzers: { ... }
+     filters:   { ... }
+     producers: { ... }
+
+     # The following are needed now, but this need may be temporary.
+     trigger_paths: [ ... ]
+     end_paths:     [ ... ]
+  }
+
+  # The "outputs" block is optional.
+  outputs:
+  {
+    ....
+  }
+
+  # The following are currently required, but will probably be removed
+  # in a later version of art.
+  all_modules: [ ... ]
+  all_sources: [ source ]
+  paths: [ ... ]
+
+Historical Notes
+================
+
+CMS has *forced services* where we have *facilities*.
+
+The CMS *CurrentModuleService* has no configurable parameters, and
+must be present. Because it has no parameters to configure, and
+because it is always created, there is no reason for us to have a
+"current_module_facility" configuration element in the configuration
+file.
+
+The automatic loading of Root class information on demand
+and the initial loading of *all* dictionary libraries used to be
+optional and configurable: this is no longer the case.

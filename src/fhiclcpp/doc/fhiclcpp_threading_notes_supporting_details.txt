@@ -1,0 +1,1605 @@
+Thread-safety summary
+
+Safe
+
+binding_modifier.h
+exception.cc
+exception.h
+fwd.h
+ParameterArgumentTypes.h
+parse_shims.cc
+parse_shims.h
+parse_shims_opts.h
+print_mode.h
+Protection.cc
+Protection.h
+tokens.h
+type_traits_error_msgs.h
+type_traits.h
+validationException.h (unused)
+
+Not Safe
+
+Atom.h
+Atom.icc
+AtomBase.h
+Comment.h
+ConfigPredicate.h
+DatabaseSupport.cc
+DatabaseSupport.h
+DelegateBase.h
+DelegatedParameter.cc
+DelegatedParameter.h
+Indentation.h
+KeyAssembler.cc
+KeyAssembler.h
+KeysToIgnore.h (testing only)
+MaybeDisplayParent.cc
+MaybeDisplayParent.h
+Name.cc
+Name.h
+NameStackRegistry.cc
+NameStackRegistry.h
+OptionalAtom.h
+OptionalAtom.icc
+OptionalDelegatedParameter.cc
+OptionalDelegatedParameter.h
+OptionalSequence.h
+OptionalSequence.icc
+OptionalTable.h
+OptionalTable.icc
+OptionalTuple.h
+OptionalTupleAs.h
+ParameterBase.h
+ParameterMetadata.h
+ParameterSet.cc
+ParameterSet.h
+ParameterSetID.cc
+ParameterSetID.h
+ParameterSetImplHelpers.h
+ParameterSetRegistry.cc
+ParameterSetRegistry.h
+ParameterSetWalker.h
+ParameterWalker.h
+Prettifier.cc
+Prettifier.h
+PrettifierAnnotated.cc
+PrettifierAnnotated.h
+PrettifierPrefixAnnotated.cc
+PrettifierPrefixAnnotated.h
+PrintAllowedConfiguration.cc
+PrintAllowedConfiguration.h
+SeqVectorBase.h
+Sequence.h
+Sequence.icc
+SequenceBase.h
+Table.h
+Table.icc
+TableBase.h
+TableFragment.h
+TableMemberRegistry.h
+Tuple.h
+TupleAs.h
+ValidateThenSet.cc
+ValidateThenSet.h
+coding.cc
+coding.h
+encode_extended_value.cc
+encode_extended_value.h
+extended_value.cc
+extended_value.h
+intermediate_table.cc
+intermediate_table.h
+make_ParameterSet.cc
+make_ParameterSet.h
+optional_parameter_message.h
+ostream_helpers.cc
+ostream_helpers.h
+parse.cc
+parse.h
+printing_helpers.cc
+printing_helpers.h
+stdmap_shims.h
+strip_containing_names.cc
+strip_containing_names.h
+try_blocks.h
+
+-----
+
+Thread-safety summary by subsystem and component.
+
+
+Parameter File Parsing
+
+// The value held by an intermediate table,
+// which is the result of a fhicl file parse,
+// and the internal sub-components of the
+// parse.
+// Used by public.
+// THREADING - Not thread-safe.
+extended_value.cc
+extended_value.h
+// handles protect clauses.
+// Used only by extended_value.h
+// THREADING - Is thread-safe.
+Protection.cc
+Protection.h
+// Support snippet mode.  (what is that?)
+// Used only by extended_value.h
+// THREADING - Not thread-safe.
+stdmap_shims.h
+
+// The result of a fhicl file parse.
+// Used by public.
+// THREADING - Not thread-safe.
+intermediate_table.cc
+intermediate_table.h
+
+// The fhicl file parser, the stream parser,
+// and the string parser.
+// Note: For greater code isolation the
+// Note: public part (top-level parsing
+// Note: for strings, files, and streams)
+// Note: should be separated out.
+// Used by public.
+// THREADING - Not thread-safe - can modify passed value.
+parse.cc
+parse.h
+// The tokens used by the fhicl parser.
+// Used only by parse.cc
+// THREADING - Is thread-safe.
+tokens.h
+// support for the fhicl parser,
+// handles protect clauses.
+// Used only by parse.cc and tokens.h
+// THREADING - Is thread-safe.
+binding_modifier.h
+// Support snippet mode.  (what is that?)
+// Used only by parse.cc
+// THREADING - Is thread-safe.
+parse_shims.cc
+parse_shims.h
+
+// Support snippet mode.  (what is that?)
+// Used by parse_shims.h, parse_shims.cc, stdmap_shims.h
+// THREADING - Is thread-safe.
+parse_shims_opts.h
+
+// supports ParameterSet::put(extended_value)
+// for conversion of result of fhicl file
+// parsing (intermediate_table).
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe.
+encode_extended_value.cc
+encode_extended_value.h
+
+// supports ParameterSet::put()
+// FIXME: Should probably only be used by ParameterSet!
+// Used by public.
+// THREADING - Not thread-safe.
+coding.cc
+coding.h
+
+
+Parameter Storage/Retrieval
+
+// Used only by tools/fhicl-write-db.cc
+// THREADING - Not thread-safe.
+DatabaseSupport.cc
+DatabaseSupport.h
+
+// Holds a representation of configuration
+// values.  Can be parsed from a fhicl file,
+// or built by hand.
+// Used by public.
+// THREADING - Not thread-safe.
+ParameterSet.cc
+ParameterSet.h
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe - find_an_any is passed an iterator
+ParameterSetImplHelpers.h
+// Used only by ParameterSet.h
+// THREADING - Not thread-safe - passed an executable object
+try_blocks.h
+// Used only by ParameterSet.cc
+// THREADING - Not thread-safe
+KeyAssembler.cc
+KeyAssembler.h
+
+// The unique name of a ParameterSet.
+// Implemented as the sha1 hash of the
+// contents of the ParameterSet::mapping_.
+// Used by public.
+// THREADING - Not thread-safe.
+ParameterSetID.cc
+ParameterSetID.h
+
+// Master registry of ParameterSets.
+// Keyed by ParameterSetID.
+// Backed by in-memory and on-file dbs.
+// THREADING - Not thread-safe.
+ParameterSetRegistry.cc
+ParameterSetRegistry.h
+
+// Almost not used, can probably be eliminated.
+// forward declares: ParameterSet, ParameterSetID,
+// extended_value, intermediate_table
+// Used by public.
+// THREADING - Is thread-safe.
+fwd.h
+
+// Factory functions to create a ParameterSet
+// from a string, file, or intermediate_table.
+// Used by public.
+// THREADING - Not thread-safe.
+make_ParameterSet.cc
+make_ParameterSet.h
+
+
+Parameter Validation
+
+// THREADING - Not thread-safe.
+Atom.h
+Atom.icc
+
+// THREADING - Not thread-safe.
+AtomBase.h
+
+// THREADING - Not thread-safe - public data member
+Comment.h
+
+// THREADING - Not thread-safe - deref arbitrary pointer, calls arbitrary member function
+ConfigPredicate.h
+
+// THREADING - Not thread-safe.
+DelegateBase.h
+
+// THREADING - Not thread-safe.
+DelegatedParameter.cc
+DelegatedParameter.h
+
+// THREADING - Not thread-safe.
+KeysToIgnore.h (testing only)
+
+// THREADING - Not thread-safe. - public data member
+Name.cc
+Name.h
+
+// THREADING - Not thread-safe.
+NameStackRegistry.cc
+NameStackRegistry.h
+
+// THREADING - Not thread-safe.
+OptionalAtom.h
+OptionalAtom.icc
+
+// THREADING - Not thread-safe.
+OptionalDelegatedParameter.cc
+OptionalDelegatedParameter.h
+
+// THREADING - Not thread-safe.
+OptionalSequence.h
+OptionalSequence.icc
+
+// THREADING - Not thread-safe.
+OptionalTable.h
+OptionalTable.icc
+
+// THREADING - Not thread-safe.
+OptionalTuple.h
+
+// THREADING - Not thread-safe.
+OptionalTupleAs.h
+
+// THREADING - Is thread-safe.
+ParameterArgumentTypes.h
+
+// THREADING - Not thread-safe.
+ParameterBase.h
+
+// THREADING - Not thread-safe.
+ParameterMetadata.h
+
+// THREADING - Not thread-safe.
+ParameterWalker.h
+
+// THREADING - Not thread-safe.
+PrintAllowedConfiguration.cc
+PrintAllowedConfiguration.h
+
+// THREADING - Not thread-safe.
+SeqVectorBase.h
+
+// THREADING - Not thread-safe.
+Sequence.h
+Sequence.icc
+
+// THREADING - Not thread-safe.
+SequenceBase.h
+
+// THREADING - Not thread-safe.
+Table.h
+Table.icc
+
+// THREADING - Not thread-safe.
+TableBase.h
+
+// THREADING - Not thread-safe.
+TableFragment.h
+
+// THREADING - Not thread-safe.
+TableMemberRegistry.h
+
+// THREADING - Not thread-safe.
+Tuple.h
+
+// THREADING - Not thread-safe.
+TupleAs.h
+
+// THREADING - Not thread-safe.
+ValidateThenSet.cc
+ValidateThenSet.h
+
+// THREADING - Not thread-safe.
+optional_parameter_message.h
+
+// THREADING - Not thread-safe. - public datamembers
+ostream_helpers.cc
+ostream_helpers.h
+
+// THREADING - Not thread-safe. - uses passed-by-ref non-thread-safe container member functions
+strip_containing_names.cc
+strip_containing_names.h
+
+// THREADING - Is thread-safe.
+type_traits_error_msgs.h
+
+// THREADING - Is thread-safe.
+validationException.h (unused)
+
+
+Parameter Pretty-Printing
+
+// THREADING - Not thread-safe.
+Indentation.h
+
+// THREADING - Not thread-safe.
+MaybeDisplayParent.cc
+MaybeDisplayParent.h
+
+// THREADING - Not thread-safe.
+PrettifierAnnotated.cc
+PrettifierAnnotated.h
+
+// THREADING - Not thread-safe.
+Prettifier.cc
+Prettifier.h
+
+// THREADING - Not thread-safe.
+PrettifierPrefixAnnotated.cc
+PrettifierPrefixAnnotated.h
+
+// THREADING - Not thread-safe. - uses passed-by-ref non-thread-safe container member functions
+printing_helpers.cc
+printing_helpers.h
+
+// THREADING - Is thread-safe.
+print_mode.h
+
+
+Parameter Utility Routines
+
+// THREADING - Not thread-safe. - calls arbitrary provided functions
+ParameterSetWalker.h
+
+// THREADING - Is thread-safe.
+exception.cc
+exception.h
+
+// THREADING - Is thread-safe.
+type_traits.h
+
+-----
+
+boost::any
+boost::spirit
+boost::qi
+
+These boost libraries appear to be thread-safe.
+
+Ordinary C++ i/o using streams is thread-safe.
+
+-----
+
+The ParameterSetRegistry class follows the Singleton pattern and is intended
+to store information relevant to the entire art job in progress.
+
+----------------------------------------------------------------
+Interface of ParameterSetRegistry in pseudo-UML
+
+
+class HashParameterSetID
+
+  - hash_ : std::hash<std::string> hash_
+
+  -----
+
+  + operator()(ParameterSetID const& id) const : size_t
+
+
+class ParameterSetRegistry
+
+  THREADING - - primaryDB_ : sqlite3*
+  THREADING - - stmt_ : sqlite3_stmt*
+  THREADING - - registry_ : std::unordered_map<ParameterSetID, ParameterSet, detail::HashParameterSetID>
+
+  -----
+
+  + typedef collection_type : std::unordered_map<ParameterSetID, ParameterSet, detail::HashParameterSetID>
+  + typedef key_type : collection_type::key_type
+  + typedef mapped_type : collection_type::mapped_type
+  + typedef value_type : collection_type::value_type
+  + typedef size_type : collection_type::size_type
+  + typedef const_iterator : collection_type::const_iterator
+
+  -----
+
+  + ~ParameterSetRegistry(); - THREADING - CALLED ONLY AT lib unload, which is PROGRAM EXIT, global destructor time
+  - ParameterSetRegistry() - THREADING -
+  + ParameterSetRegistry(ParameterSet const&) = delete;
+  + ParameterSetRegistry(ParameterSet&&) = delete;
+  + operator=(ParameterSet const&) = delete : ParameterSetRegistry&
+  + operator=(ParameterSet&&) = delete : ParameterSetRegistry& 
+  - find_(ParameterSetID const& id) : const_iterator - THREADING - Can trigger a registry_.emplace(psid, pset) if not there, and then found in in-memory db, uses psid.to_string()
+  - static instance_() : ParameterSetRegistry& - THREADING -
+  + static importFrom(sqlite3* db) : void - THREADING -
+  + static exportTo(sqlite3* db) : void - THREADING -
+  + static stageIn() : void - THREADING -
+  + static empty() : bool - THREADING - // UNUSED
+  + static size() : size_type - THREADING - // UNUSED
+  + static begin() : const_iterator - THREADING - // UNUSED
+  + static end() : const_iterator - THREADING - // UNUSED
+  + static cbegin() : const_iterator - THREADING - // UNUSED
+  + static cend() : const_iterator - THREADING - USED (see find_ return value)
+  + static get() noexcept : collection_type const& - THREADING - // Used only by config_dumper
+  + static get(ParameterSetID const& id) : ParameterSet const&  - THREADING -
+  + static get(ParameterSetID const& id, ParameterSet& ps) : bool - THREADING -
+  + static put(collection_type const& c) : void - THREADING - // UNUSED
+  + static put(ParameterSet const& ps) : ParameterSetID const&  - THREADING -
+
+    // UNUSED
+  + template<typename FwdIt>
+    static
+    put(FwdIt begin, FwdIt end) : std::enable_if_t<std::is_same<typename std::iterator_traits<FwdIt>::value_type, mapped_type>::value>
+
+    // UNUSED
+  + template<typename FwdIt>
+    static
+    put(FwdIt begin, FwdIt end) : std::enable_if_t<std::is_same<typename std::iterator_traits<FwdIt>::value_type, value_type>::value>
+
+
+
+----------------------------------------------------------------
+Usage in art of the ParameterSetRegistry interface
+
+
+// config_dumper use (standalone executable, no threading issues)
+./art/art/Framework/IO/Root/config_dumper.cc:192:    fhicl::ParameterSetRegistry::put(pset);
+./art/art/Framework/IO/Root/config_dumper.cc:201:    fhicl::ParameterSetRegistry::importFrom(sqliteDB);
+./art/art/Framework/IO/Root/config_dumper.cc:202:    fhicl::ParameterSetRegistry::stageIn();
+./art/art/Framework/IO/Root/config_dumper.cc:231:  for (auto const& pr : fhicl::ParameterSetRegistry::get())
+
+// importFrom
+./art/art/Framework/IO/Root/RootInputFile.cc:231:        fhicl::ParameterSetRegistry::importFrom(sqliteDB_);
+
+// exportTo
+./art/art/Framework/IO/Root/RootOutputFile.cc:837:  fhicl::ParameterSetRegistry::exportTo(rootFileDB_);
+./fhiclcpp/fhiclcpp/DatabaseSupport.cc:57:  fhicl::ParameterSetRegistry::exportTo(out);
+
+// get
+./art/art/Framework/Services/System/TriggerNamesService_service.cc:56:  if (! ParameterSetRegistry::get(triggerResults.parameterSetID(), pset))
+./art/art/Framework/Services/UserInteraction/UserInteraction.cc:46:      fhicl::ParameterSetRegistry::get(md.parameterSetID(),
+./art/art/Framework/Principal/Provenance.cc:20:  return fhicl::ParameterSetRegistry::get( *psetIDs().begin() );
+./art/art/Framework/Principal/Event.cc:101:      ParameterSetRegistry::get(config.parameterSetID(), ps);
+./art/art/Framework/Principal/Run.cc:41:      ParameterSetRegistry::get(id, temp);
+./art/art/Framework/Core/OutputWorker.cc:20:                               fhicl::ParameterSetRegistry::get(description().parameterSetID()));
+./art/art/Framework/Core/detail/get_failureToPut_flag.cc:11:    auto const& main_pset   = fhicl::ParameterSetRegistry::get( md.mainParameterSetID() );
+./art/art/Framework/Core/detail/get_failureToPut_flag.cc:12:    auto const& pset        = fhicl::ParameterSetRegistry::get( md.parameterSetID() );
+./fhiclcpp/fhiclcpp/ParameterSet.cc:57:    return ParameterSetRegistry::get(psid);
+./fhiclcpp/fhiclcpp/ParameterSet.cc:71:    result = '{' + ParameterSetRegistry::get(psid).to_string() + '}';
+./fhiclcpp/fhiclcpp/coding.cc:215:  result = ParameterSetRegistry::get(id);
+
+// put
+./art/art/Framework/Services/System/TriggerNamesService_service.cc:36:  ParameterSetRegistry::put(trigger_pset_);
+./art/art/Framework/Art/run_art.cc:134:    fhicl::ParameterSetRegistry::put(main_pset);
+./art/art/Framework/Art/run_art.cc:179:    fhicl::ParameterSetRegistry::put(main_pset);
+./art/art/Framework/EventProcessor/ServiceDirector.cc:22:    fhicl::ParameterSetRegistry::put(tmp);
+./art/art/Framework/IO/Root/RootInputFile.cc:224:      fhicl::ParameterSetRegistry::put(pset);
+./fhiclcpp/fhiclcpp/DatabaseSupport.cc:56:  fhicl::ParameterSetRegistry::put(top);
+./fhiclcpp/fhiclcpp/coding.cc:126:  return ParameterSetRegistry::put(value);
+./fhiclcpp/fhiclcpp/detail/encode_extended_value.cc:54:    return ParameterSetRegistry::put(result);
+
+
+----------------------------------------------------------------
+
+Operation of ParameterSetRegistry::instance_()
+
+inline
+auto
+fhicl::ParameterSetRegistry::
+ParameterSetRegistry::instance_() -> ParameterSetRegistry&
+{
+  static ParameterSetRegistry s_registry;
+  return s_registry;
+}
+
+The instance_() private static member function manages a function-local static
+variable s_registry which is the process-wide single instance of the
+ParameterSetRegistry class.  This means the private default constructor with
+no arguments is run the first time the instance_() function is executed.
+
+It is worth noting that the C++ Standard guarantees that function local static
+initialization is thread-safe and that g++ does correctly implement this
+requirement using a critical section.
+
+The first time the instance_() function is run is in art::run_art()
+when the parameter set is created from the intermediate table at
+art/Framework/Art/run_art.cc:113 (verified by setting a breakpoint on the
+fhicl::ParameterSetRegistry::instance_() function and running an art job).
+
+See the discussion of make_ParameterSet() below.
+
+This parameter set creation not only creates the ParameterSetRegistry, but
+it also results in a complicated set of puts to the registry and uses of
+ParameterSet::id(), neither of which is thread-safe.
+
+THREADING - Creation of parameter set from the intermediate table is not thread-safe.
+
+THREADING - Point of construction of the ParameterSetRegistry singleton instance.
+
+fhicl::ParameterSetRegistry::
+ParameterSetRegistry()
+  : primaryDB_(openPrimaryDB())
+  , stmt_(nullptr)
+  , registry_()
+{
+}
+
+The private default constructor with no arguments first calls openPrimaryDB()
+to initialize the primaryDB_ data member, then sets stmt_ to the nullptr, and
+then default initializes the registry_ data member.
+
+FIXME: Note that openPrimaryDB() is called before stmt_ and registry_ have been
+FIXME: initialized, it would be better to initialize primaryDB_ to nullptr, and
+FIXME: later in the body of the constructor call openPrimaryDB() after stmt_
+FIXME: and registry_ have been safely initialized.
+
+The openPrimaryDB() function is in an unnamed namespace.  It calls sqlite3_open()
+to create an in-memory database, then calls sqlite3_exec() to create the
+ParameterSets table.  On failure of either step throwOnSQLiteFailure() is called.
+The creation of the ParameterSets table is done in a transaction so either it
+appears, or on error it does not, there will never be a partially created table.
+
+The throwOnSQLiteFailure() function is passed a local database pointer and a local
+pointer to the sql error message which was created by sqlite3.  It copies the
+message and uses sqlite3_free to release the message storage.  If the database
+pointer is the nullptr it throws a fhicl::exception.  Otherwise it calls
+sqlite3_errcode to retrieve the pending error code from sqlite and then uses
+sqlite3_errstr to translate the code to a message.  Then it calls sqlite3_errmsg
+passing it the local database pointer to retrieve further information.  Then it
+throws a fhicl::exception.
+
+THREADING - ParameterSetRegistry construction is not thread-safe.
+
+The uses of sqlite3 interfaces in the ParameterSetRegistry private default
+constructor with no arguments form a transaction that must not be interleaved
+with another attempted construction.  The thread-safety of sqlite3 is not clear,
+callgrind traces show that pthread mutexes are being used, so there is some
+attempt being made, must investigate interactions with tbb.
+
+THREADING - sqlite3 thread-safety uses pthread, is it compatible with tbb?
+
+Construction of the ParameterSetRegistry should not be interleaved with any
+other uses of the sqlite3 interfaces to manipulate the parameter set database.
+And possibly should not be mixed with any other used of sqlite3, this needs
+further investigation.
+
+Careful thought must also be given to the interaction of exception handling with
+the thread tasking system in use.
+
+THREADING - Must know how throwing an exception in a thread safely shuts down the other threads.
+
+THREADING - Nearly all ParameterSetRegistry interfaces use instance_() and so may result in construction of the singleton instance at a time when it is not safe.
+
+-----
+
+Detailed source-based analysis of ParameterSet::put(string const&, extended_value const&)
+
+// Encode extended value to a boost::any,
+// Throw if key contains '.',
+// Emplace (key, value(boost::any)) into mapping_,
+// Throw if key was already there,
+// Force future recalc of my id_ by invalidating it.
+// Copy value source info into srcMapping_.
+template<>
+void
+ParameterSet::
+put(string const& key, extended_value const& value)
+  auto insert = [this, &key, &value]()
+    // Encode extended value to a boost::any,
+    // Throw if key contains '.',
+    // Emplace (key, value(boost::any)) into mapping_,
+    // Throw if key was already there,
+    // Force future recalc of my id_ by invalidating it.
+    insert_(key, boost::any(detail::encode(value))); - THREADING - encode may do a ParameterSetRegistry::put(pset) for tables
+      insert_(string const& key, any const& value)
+        check_put_local_key(key);
+          check_put_local_key(string const& key)
+            if (key.find('.') != string::npos)
+              throw exception(unimplemented, "putXXX() for nested key.");
+        if (!mapping_.emplace(key, value).second) - THREADING -
+          throw exception(cant_insert) << "key " << key << " already exists.";
+        id_.invalidate(); - THREADING -
+    // Copy value source info into srcMapping_.
+    fill_src_info(value, key, srcMapping_);
+      fill_src_info(extended_value const& value, string const& key, ParameterSet::annot_t& src_map)
+        src_map[key] = value.src_info; - THREADING -
+        if (!value.is_a(SEQUENCE))
+          return;
+        size_t i(0);
+        for (auto const& xval : extended_value::sequence_t(value)) - THREADING -
+          ostringstream oss;
+          oss << key << "[" << i++ << "]";
+          src_map[oss.str()] = xval.src_info; - THREADING -
+          /*recursion*/ fill_src_info(xval, oss.str(), src_map); - THREADING -
+  detail::try_insert(insert, key);
+    ... runs insert(), throws on error, uses key for error msg
+
+-----
+
+Analyzed by callgrind.
+
+make_ParameterSet(intermediate_table const&, ParameterSet&)
+    // Set detailed source-based analysis above.
+    ParameterSet::put<extended_value>(string const& key, extended_value const& value)
+        // Convert the extended_value to a boost::any.
+        // May recurse into ParameterSet::put<extended_value(key, value).
+        // May calculate ParameterSetIDs which may query the ParameterSetRegistry.
+        // May register parameter sets in the registry.
+        detail::encode(extended_value const&)
+            ParameterSet::put<extended_value>(string const&, extended_value const&)
+                (cycle) back to ParameterSet::put
+                or join with next
+            ParameterSetRegistry::put(ParameterSet const&)
+                // Fetch the singleton.
+                THREADING - (already explained above) ParameterSetRegistry::instance_()
+                // Fetch the parameter set id.
+                ParameterSet::id()
+                    // If not yet calculated, calculate.
+                    THREADING - ParameterSetID::reset()
+                        // Fetch tables by their parameter set id.
+                        ParameterSetRegistry::get(ParameterSetID const&)
+                            ParameterSetRegistry::find_(ParameterSetID const&)
+                                THREADING - (registry_) unordered_map<ParameterSetID, ParameterSet>::find(ParameterSetID const&)
+                    // Hash the result and return.
+                // Insert the ParameterSet
+                THREADING - (registry_) unordered_map<ParameterSetID, ParameterSet>::emplace<ParameterSetID, ParameterSet const&>(ParameterSetID&&, ParameterSet const&)
+        // Emplace (key, value(boost::any)) into mapping_,
+        ParameterSet::insert_(string const& key, boost::any const& value)
+            THREADING - (mapping_) map<string, boost::any>::emplace(string const& key, boost::any const& value)
+        // Copy value source info into srcMapping_.
+        (anonymous)::fill_src_info(extended_value const&, string const&, (srcMapping_) unordered_map<string, string>&)
+            THREADING - (srcMapping_) unordered_map<string, string>::operator[](string const&)
+                    
+                    
+-----
+
+class Keys
+
+  - tables_ : vector<string>
+  - last_ : string
+
+  + Keys(vector<string> const& keys, string const& last) : tables_{keys} , last_{last} {}
+  + tables() const : auto const& { return tables_; }
+  + last() const : auto const& { return last_; }
+
+class SequenceKey
+
+  - name_ : string
+  - indices_ : vector<size_t>
+
+  + SequenceKey(string const& name, vector<size_t> const& indices) : name_{name} , indices_{indices} {}
+  + name() const : auto const& { return name_; }
+  + indices() const : auto const& { return indices_; }
+
+template<typename T>
+T
+ParameterSet::
+get(string const& key) const
+  T result;
+  return get_if_present(key, result) ? result : throw fhicl::exception(cant_find, key);
+  ... :template<typename T> bool ParameterSet::get_if_present(string const& key, T& value) const
+  ... auto keys = detail::get_names(key);
+  ... ... :inline Keys detail::get_names(string const& key)
+  ... ... vector<string> keys;
+  ... ... boost::algorithm::split(keys, key, boost::algorithm::is_any_of("."));
+  ... ... keys.erase(remove(keys.begin(), keys.end(), ""), keys.end());
+  ... ... if (keys.empty()) { throw fhicl::exception(cant_find, "vacuous key"); }
+  ... ... string const last = keys.back();
+  ... ... keys.pop_back();
+  ... ... return Keys{keys, last};
+  ... ParameterSet ps;
+  ... return descend_(keys.tables(), ps) ? ps.get_one_(keys.last(), value) : false; // See below for get_one_ call
+  ... ... :bool ParameterSet::descend_(vector<string> const& names, ParameterSet& ps) const
+  ... ... ParameterSet const* p{this};
+  ... ... ParameterSet tmp;
+  ... ... for (auto const& table : names)
+  ... ... ... if (!p->get_one_(table, tmp)) return false; // see below for get_one_ call
+  ... ... ... p = &tmp;
+  ... ... ps = *p;
+  ... ... return true;
+  ... :template<typename T> bool ParameterSet::get_one_(string const& key, T& value) const
+  ... try
+  ... ... auto skey = detail::get_sequence_indices(key);
+  ... ... ... :inline SequenceKey detail::get_sequence_indices(string const& key)
+  ... ... ... auto tokens = cet::split_by_regex(key, R"((\]\[|\[|\]))");
+  ... ... ... auto const name = tokens.front();
+  ... ... ... tokens.erase(tokens.begin());
+  ... ... ... vector<size_t> indices;
+  ... ... ... cet::transform_all(tokens, back_inserter(indices), [](string const & index) { return stoul(index); });
+  ... ... ... return SequenceKey{name, indices};
+  ... ... map<string, boost::any>::const_iterator iter = mapping_.find(skey.name()); - THREADING -
+  ... ... if (iter == mapping_.end()) return false - THREADING -
+  ... ... auto/*boost::any*/ a = iter->second;
+  ... ... if (!detail::find_an_any(skey.indices().cbegin(), skey.indices().cend(), a)) throw exception(error::cant_find);
+  ... ... ... :inline bool detail::find_an_any(cit_size_t iter, cit_size_t const cend, boost::any& a)
+  ... ... ... if (iter == cend) return true;
+  ... ... ... auto const seq = boost::any_cast<ps_sequence_t/*vector<boost::any>*/>(a);
+  ... ... ... if (*iter >= seq.size()) return false;
+  ... ... ... a = seq[*iter];
+  ... ... ... return find_an_any(++it, cend, a);
+  ... ... detail::decode(a, value); - THREADING - problem if a is a ParameterSetID and value is a ParameterSet
+  ... ... ... :void detail::decode(any const& a, ParameterSet& result)
+  ... ... ... ParameterSetID id = any_cast<ParameterSetID>(a);
+  ... ... ... result = ParameterSetRegistry::get(id); - THREADING -
+  ... ... ... ... :static ParameterSet const& ParameterSetRegistry::get(ParameterSetID const& id)
+  ... ... ... ... const_iterator iter = instance_().find_(id); - THREADING -
+  ... ... ... ... ... :const_iterator ParameterSetRegistry::find_(ParameterSetID const& id)
+  ... ... ... ... ... const_iterator iter = registry_.find(id); - THREADING -
+  ... ... ... ... ... if (iter != registry_.cend()) return iter; - THREADING -
+  ... ... ... ... ... if (stmt_ == nullptr) - THREADING -
+  ... ... ... ... ... ... sqlite3_prepare_v2(primaryDB_, "SELECT PSetBlob FROM ParameterSets WHERE ID = ?;", -1, &stmt_, nullptr); - THREADING -
+  ... ... ... ... ... ... detail::throwOnSQLiteFailure(primaryDB_); - THREADING -
+  ... ... ... ... ... auto idString = id.to_string();
+  ... ... ... ... ... auto result = sqlite3_bind_text(stmt_, 1, idString.c_str(), idString.size() + 1, SQLITE_STATIC);
+  ... ... ... ... ... detail::throwOnSQLiteFailure(primaryDB_); - THREADING -
+  ... ... ... ... ... result = sqlite3_step(stmt_); - THREADING -
+  ... ... ... ... ... switch (result)
+  ... ... ... ... ... ... case SQLITE_DONE:
+  ... ... ... ... ... ... ... break;
+  ... ... ... ... ... ... case SQLITE_ROW:
+  ... ... ... ... ... ... ... ParameterSet pset;
+  ... ... ... ... ... ... ... make_ParameterSet(reinterpret_cast<char const*>(sqlite3_column_text(stmt_, 0)), pset); - THREADING -
+  ... ... ... ... ... ... ... ... :make_ParameterSet(string, pset);
+  ... ... ... ... ... ... ... ... intermediate_table tbl;
+  ... ... ... ... ... ... ... ... parse_document(string, tbl);
+  ... ... ... ... ... ... ... ... make_ParameterSet(tbl, ps);
+  ... ... ... ... ... ... ... ... ... :make_ParameterSet(tbl, ps); // See above - THREADING - can read & write the registry
+  ... ... ... ... ... ... ... iter = registry_.emplace(id, pset).first; - THREADING -
+  ... ... ... ... ... ... ... break;
+  ... ... ... ... ... ... default:
+  ... ... ... ... ... ... ... detail::throwOnSQLiteFailure(primaryDB_); - THREADING -
+  ... ... ... ... ... sqlite3_reset(stmt_); - THREADING -
+  ... ... ... ... ... return iter;
+  ... ... ... ... if (iter == cend()) throw exception(error::cant_find, "Can't find ParameterSet") << "with ID " << id.to_string() << " in the registry."; - THREADING -
+  ... ... ... ... return iter->second; - THREADING -
+  ... ... return true;
+  ... catch (exception const& e)
+  ... ... ostringstream errmsg;
+  ... ... errmsg << "\nUnsuccessful attempt to convert FHiCL parameter '"
+  ... ...        << key << "' to type '" << cet::demangle_symbol(typeid(value).name()) << "'.\n\n"
+  ... ...        << "[Specific error:]\n" << e.what() << "\n\n";
+  ... ... throw exception(type_mismatch, errmsg.str() );
+
+-----
+
+class ParameterSet
+
+  // Types
+  + ps_atom_t : detail::ps_atom_t;  // string
+  + ps_sequence_t : detail::ps_sequence_t; // vector<boost::any>
+  + annot_t : unordered_map<string, string>;
+
+  // Data Members
+  - mapping_ : map<string, boost::any> /*Note: ParameterSetID is generated by sha1 hashing a string version of the contents*/ - THREADING - all three data members must be interlocked against writers 
+  - srcMapping_ : unordered_map<string, string> - THREADING - all three data members must be interlocked against writers
+  - id_ : mutable ParameterSetID - THREADING - all three data members must be interlocked against writers
+
+  // Member Functions
+
+  + operator==(ParameterSet const& other) const : bool
+  + operator!=(ParameterSet const& other) const : bool
+
+  + is_empty() const : bool
+
+    // Note: This may call ParameterSetRegistry::get(psid), which may construct ParameterSets and register them!
+  + id() const : ParameterSetID
+
+    // Note: These may call ParameterSetRegistry::get(psid), which may construct ParameterSets and register them!
+  + to_string() const : string
+  + to_compact_string() const : string
+
+    // Note: These may call ParameterSetRegistry::get(psid), which may construct ParameterSets and register them!
+  + to_indented_string() const : string
+  + to_indented_string(unsigned initial_indent_level) const : string
+  + to_indented_string(unsigned initial_indent_level, bool annotate) const : string
+  + to_indented_string(unsigned initial_indent_level, detail::print_mode pm) const : string
+
+  + get_names() const : vector<string>
+  + get_pset_names() const : vector<string>
+
+  + get_keys() const : [[deprecated(GET_KEYS_MSG)]] vector<string>
+  + get_pset_keys() const : [[deprecated(GET_PSET_KEYS_MSG)]] vector<string>
+
+  + get_all_keys() const : vector<string>
+
+  + has_key(string const& key) const : bool
+  + is_key_to_table(string const& key) const : bool
+  + is_key_to_sequence(string const& key) const : bool
+  + is_key_to_atom(string const& key) const : bool
+
+  + get_if_present(string const& key, T& value) const : template<class T> bool 
+  + get_if_present(string const& key, T& value, T convert(Via const&)) const : template<class T, class Via> bool 
+
+  + get(string const& key) const : template<class T> T 
+  + get(string const& key, T convert(Via const&)) const : template<class T, class Via> T 
+  + get(string const& key, T const& default_value) const : template<class T> T 
+  + get(string const& key, T const& default_value, T convert(Via const&)) const : template<class T, class Via> T
+
+  + get_src_info(string const& key) const : string
+
+  + put(string const& key) : void
+  + put(string const& key, T const& value) : template<class T> void
+  + put_or_replace(string const& key) : void
+  + put_or_replace(string const& key, T const& value) : template<class T> void
+  + put_or_replace_compatible(string const& key, T const& value) : template<class T> void
+
+  + erase(string const& key) : bool
+
+-----
+
+class ParameterSetID
+
+  - valid_ : bool - THREADING - must be accessed in transaction with id_ 
+  - id_ : cet::sha1::digest_t id_ - THREADING - array accessed by element, must be accessed in transaction with valid_
+
+  + max_str_size() : static size_t
+  + ParameterSetID()
+  + ParameterSetID(ParameterSet const&) explicit - THREADING - uses pset.to_string()
+  + ParameterSetID(string const& id) explicit
+  + operator==(ParameterSetID const&) const : bool  - THREADING
+  + operator!=(ParameterSetID const&) const : bool  - THREADING
+  + operator<(ParameterSetID const&) const : bool  - THREADING
+  + operator>(ParameterSetID const&) const : bool  - THREADING
+  + operator<=(ParameterSetID const&) const : bool  - THREADING
+  + operator>=(ParameterSetID const&) const : bool  - THREADING
+  + is_valid () const : bool - THREADING
+  + to_string() const : string - THREADING
+  + invalidate() : void - THREADING
+  + reset(ParameterSet const&) : void - THREADING
+  + swap(ParameterSetID&) : void - THREADING
+
+
+-----
+
+These are the parameter set subsystems and their code files:
+
+
+Parameter File Parsing
+
+// support for the fhicl parser,
+// handles protect clauses.
+Protection.cc
+Protection.h
+binding_modifier.h
+
+// supports ParameterSet::put()
+coding.cc
+coding.h
+
+// supports ParameterSet::put(extended_value)
+// for conversion of result of fhicl file
+// parsing (intermediate_table).
+encode_extended_value.cc
+encode_extended_value.h
+
+// The value held by an intermediate table,
+// which is the result of a fhicl file parse,
+// and the internal sub-components of the
+// parse.
+extended_value.cc
+extended_value.h
+
+// The result of a fhicl file parse.
+intermediate_table.cc
+intermediate_table.h
+
+// The fhicl file parser, the stream parser,
+// and the string parser.
+parse.cc
+parse.h
+
+// Support snippet mode.  (what is that?)
+parse_shims.cc
+parse_shims.h
+parse_shims_opts.h
+stdmap_shims.h
+
+// The tokens used by the fhicl parser.
+tokens.h
+
+
+Parameter Storage/Retrieval
+
+// Used only by tools/fhicl-write-db.cc
+DatabaseSupport.cc
+DatabaseSupport.h
+
+ParameterSet.cc
+ParameterSet.h
+// Used only by ParameterSet.h
+ParameterSetImplHelpers.h
+// Used only by ParameterSet.h
+try_blocks.h
+// Used only by ParameterSet.cc
+KeyAssembler.cc
+KeyAssembler.h
+
+ParameterSetID.cc
+ParameterSetID.h
+
+ParameterSetRegistry.cc
+ParameterSetRegistry.h
+
+// Almost not used, can probably be eliminated.
+// forward declares: ParameterSet, ParameterSetID,
+// extended_value, intermediate_table
+fwd.h
+
+// Factory functions to create a ParameterSet
+// from a string, file, or intermediate_table.
+make_ParameterSet.cc
+make_ParameterSet.h
+
+
+Parameter Validation
+
+Atom.h
+Atom.icc
+AtomBase.h
+Comment.h
+ConfigPredicate.h
+DelegateBase.h
+DelegatedParameter.cc
+DelegatedParameter.h
+KeysToIgnore.h (testing only)
+MaybeDisplayParent.cc
+MaybeDisplayParent.h
+Name.cc
+Name.h
+NameStackRegistry.cc
+NameStackRegistry.h
+OptionalAtom.h
+OptionalAtom.icc
+OptionalDelegatedParameter.cc
+OptionalDelegatedParameter.h
+OptionalSequence.h
+OptionalSequence.icc
+OptionalTable.h
+OptionalTable.icc
+OptionalTuple.h
+OptionalTupleAs.h
+ParameterArgumentTypes.h
+ParameterBase.h
+ParameterMetadata.h
+ParameterWalker.h
+PrintAllowedConfiguration.cc
+PrintAllowedConfiguration.h
+SeqVectorBase.h
+Sequence.h
+Sequence.icc
+SequenceBase.h
+Table.h
+Table.icc
+TableBase.h
+TableFragment.h
+TableMemberRegistry.h
+Tuple.h
+TupleAs.h
+ValidateThenSet.cc
+ValidateThenSet.h
+optional_parameter_message.h
+ostream_helpers.cc
+ostream_helpers.h
+strip_containing_names.cc
+strip_containing_names.h
+type_traits_error_msgs.h
+validationException.h (unused)
+
+
+Parameter Pretty-Printing
+
+Indentation.h
+
+PrettifierAnnotated.cc
+PrettifierAnnotated.h
+
+Prettifier.cc
+Prettifier.h
+
+PrettifierPrefixAnnotated.cc
+PrettifierPrefixAnnotated.h
+
+printing_helpers.cc
+printing_helpers.h
+
+print_mode.h
+
+
+Parameter Utility Routines
+
+ParameterSetWalker.h
+
+exception.cc
+exception.h
+
+type_traits.h
+
+-----
+
+The sources of ParameterSets.
+
+Note that in the end all of these ways either start
+with a default-constructed ParameterSet object, then
+use ParameterSet::put(key, value) to insert entries and
+finally use ParameterSetRegistry::put(pset) to insert
+the resulting ParameterSet into the registry, or they
+copy from an on-disk db directly in the in-memory db
+which later results in an insertion into the registry
+when a get looks for it and finds it in the in-memory db.
+
+
+o The config file and command line options in combination.
+
+  Uses:
+      // Mix config file and command lines together to
+      // make an intermediate_table which then gets
+      // converted to a parameter set.
+      intermediate_table raw_config;
+      for auto & handler : handlers
+          handler->processOptions(vm, raw_config);
+          ... art::BasicOptionsHandler::doProcessOptions(bpo::variables_map const & vm, intermediate_table & raw_config)
+          ... ... parse_document(vm["config"].as<string>(), maker_, raw_config);
+      detail::handle_deprecated_configs(raw_config);
+      ParameterSet main_pset;
+      make_ParameterSet(/*intermediate_table*/raw_config, main_pset);
+      ... iterate over intermediate table
+      ... use ParameterSet::put(key, value)
+      ParameterSetRegistry::put(main_pset);
+
+
+o root input files, parameter set blobs and the newer per-file db
+
+  Uses: 
+      // ParameterSet map
+      for auto const& psEntry : psetMap
+        ParameterSet pset;
+        make_ParameterSet(/*string*/psEntry.second.pset_, pset);
+        ... intermediate_table tbl;
+        ... parse_document(string, tbl);
+        ... make_ParameterSet(tbl, ps);
+        ... ... iterate over intermediate table
+        ... ... use ParameterSet::put(key, value)
+        // Note ParameterSet::id() has the side effect of
+        // making sure the parameter set *has* an ID.
+        pset.id();
+        ParameterSetRegistry::put(pset);
+  and:
+      // per-file db
+      ParameterSetRegistry::importFrom(sqliteDB_);
+      ... copies from on-disk db into in-memory db, ignores duplicated
+      ... parameter set ids
+
+o fcl files or strings parsed by user modules/tools/services
+
+  Uses:
+      // string-based
+      ParameterSet pset;
+      void make_ParameterSet(string const& str, ParameterSet& pset)
+      ... intermediate_table tbl;
+      ... parse_document(str, tbl);
+      ... make_ParameterSet(tbl, ps);
+      ... ... iterate over intermediate table
+      ... ... use ParameterSet::put(key, value)
+      // Note ParameterSet::id() has the side effect of
+      // making sure the parameter set *has* an ID.
+      pset.id();
+      ParameterSetRegistry::put(pset);
+  Or:
+      // file-based
+      ParameterSet pset;
+      void make_ParameterSet(string const& filename, cet::filepath_maker&, ParameterSet& pset)
+      ... intermediate_table tbl;
+      ... parse_document(filename, maker, tbl);
+      ... make_ParameterSet(tbl, ps);
+      ... ... iterate over intermediate table
+      ... ... use ParameterSet::put(key, value)
+      // Note ParameterSet::id() has the side effect of
+      // making sure the parameter set *has* an ID.
+      pset.id();
+      ParameterSetRegistry::put(pset);
+
+o encode called by ParameterSet::put()
+
+  Uses:
+      // To insert a table from a parameter set
+      // into the registry.
+      ParameterSetID encode(ParameterSet const& value)
+      ... return ParameterSetRegistry::put(value);
+  And:
+      // Used while creating a parameter set from
+      // the results of a parse.
+      boost::any encode(extended_value const& xval)
+      ... switch (xval.tag)
+      ... ... case TABLE:
+      ... ... auto const& tbl = table_t(xval);
+      ... ... ParameterSet pset;
+      ... ... for (auto I = tbl.begin(), E = tbl.end(); I != E; ++I)
+      ... ... ... if (!I->second.in_prolog)
+      ... ... ... ... pset.put(I->first/*string*/, I->second/*extended_value*/);
+      ... ... return ParameterSetRegistry::put(pset);
+
+
+o messagefacility
+
+  Uses:
+        ParameterSet
+        MessageFacilityService::ConfigurationFile(string const& filename, ParameterSet const& default_config)
+            ...
+            ParameterSet pset; 
+            try
+              make_ParameterSet(fname, *policy_ptr, pset);
+              ... intermediate_table tbl;
+              ... parse_document(filename, maker, tbl);
+              ... make_ParameterSet(tbl, ps);
+              ... ... iterate over intermediate table
+              ... ... use ParameterSet::put(key, value)
+              return pset; 
+            catch (cet::exception &e)
+              cerr << "Configuration file \"" << fname << "\" "
+                        << "parsing failed with exception " << e.what()
+                        << ".\n"
+                        << "Default configuration will be used instead.\n";
+            return default_config;
+      And:
+          auto pset_from_oss(ostringstream const& ss)
+            ParameterSet pset;
+            string const pstr(ss.str());
+            make_ParameterSet(pstr, pset);
+            ... intermediate_table tbl;
+            ... parse_document(str, tbl);
+            ... make_ParameterSet(tbl, ps);
+            ... ... iterate over intermediate table
+            ... ... use ParameterSet::put(key, value)
+            return pset;
+        All of these use the above to set a sub-table in the "destinations" table.
+        ParameterSet MessageFacilityService::logConsole()
+        ParameterSet MessageFacilityService::logServer(int const partition)
+        ParameterSet MessageFacilityService::logFile(string const& filename, bool const append)
+        ParameterSet MessageFacilityService::logCS(int const partition)
+        ParameterSet MessageFacilityService::logCF(string const& filename, bool const append)
+        ParameterSet MessageFacilityService::logFS(string const& filename, bool const append, int const partition)
+        ParameterSet MessageFacilityService::logCFS(string const& filename, bool const append, int const partition)
+        ParameterSet MessageFacilityService::logArchive(string const& filename, bool const append)
+      And:
+        auto func(...)
+          string const config("...");
+          fhicl::ParameterSet result;
+          fhicl::make_ParameterSet(config, result);
+          ... intermediate_table tbl;
+          ... parse_document(str, tbl);
+          ... make_ParameterSet(tbl, ps);
+          ... ... iterate over intermediate table
+          ... ... use ParameterSet::put(key, value)
+          return result;
+        The following use a code sequence like above to create a table.
+        auto default_destinations_config()
+        auto default_statistics_config(fhicl::ParameterSet const& ordinaryDests)
+        auto default_fwkJobReport_config()
+
+-----
+
+Callers of ParameterSetRegistry::put
+
+./art/art/Framework/Services/System/TriggerNamesService_service.cc:36:  ParameterSetRegistry::put(trigger_pset_);
+./art/art/Framework/Art/run_art.cc:134:    fhicl::ParameterSetRegistry::put(main_pset);
+./art/art/Framework/Art/run_art.cc:179:    fhicl::ParameterSetRegistry::put(main_pset);
+./art/art/Framework/EventProcessor/ServiceDirector.cc:22:    fhicl::ParameterSetRegistry::put(tmp);
+./art/art/Framework/IO/Root/RootInputFile.cc:224:      fhicl::ParameterSetRegistry::put(pset);
+./art/art/Framework/IO/Root/config_dumper.cc:192:    fhicl::ParameterSetRegistry::put(pset);
+./fhiclcpp/fhiclcpp/DatabaseSupport.cc:56:  fhicl::ParameterSetRegistry::put(top);
+./fhiclcpp/fhiclcpp/coding.cc:126:  return ParameterSetRegistry::put(value);
+./fhiclcpp/fhiclcpp/detail/encode_extended_value.cc:54:    return ParameterSetRegistry::put(pset);
+
+-----
+
+This is the output of a fcl file parse, normally held as
+a data member of an intermediate_table.  The structure
+is recursive and may hold values, sequences, tables,
+and tableids (@id::[0-9A-Fa-f]+)(hex representation of
+a ParameterSetID).
+
+enum value_tag UNKNOWN, NIL, BOOL, NUMBER, COMPLEX, STRING, SEQUENCE, TABLE, TABLEID
+
+enum class Protection : unsigned char
+  NONE,
+  PROTECT_IGNORE,
+  PROTECT_ERROR
+
++ to_string(Protection p) : string
+
+class extended_value
+
+  + atom_t : string
+  + complex_t : pair<string, string>
+  + sequence_t : vector<extended_value>
+  + table_t : shims::map<string, extended_value>
+
+  + in_prolog : bool
+  + tag : value_tag
+  + value : boost::any - THREADING - sequence_t, table_t usage
+  + src_info : string // holds filename:linenum
+  + protection : Protection
+
+  + extended_value() : in_prolog(false) , tag(UNKNOWN) , value() , src_info() , protection(Protection::NONE) {}
+  + extended_value(bool in_prolog, value_tag tag, boost::any value, Protection protection, string const& src = {}) : in_prolog(in_prolog) , tag(tag) , value(value) , src_info(src) , protection(protection) {}
+  + extended_value(bool in_prolog, value_tag tag, boost::any value, string const& src = {}) : in_prolog(in_prolog) , tag(tag) , value(value) , src_info(src) , protection(Protection::NONE) {}
+
+  + is_a(value_tag t) const : bool { return t == tag; }
+  + to_string() const : string
+  + set_prolog(bool new_prolog_state) : void
+  + set_src_info(string const & src) : void { src_info = src; }
+  + pretty_src_info() const : string
+  + atom_t() const : atom_t { return boost::any_cast<atom_t>(value); }
+  + complex_t() const : complex_t { return boost::any_cast<complex_t>(value); }
+  + sequence_t() const : sequence_t { return boost::any_cast<sequence_t>(value); }
+  + table_t() const : table_t { return boost::any_cast<table_t>(value); }
+
+-----
+
+Holder of an extended_value.  This is the result of parsing
+a table in a fhicl file, and also the result of parsing an
+entire fhicl file.
+
+Note: This class is an analogue of ParameterSet, but does not
+Note: have any relationship with ParameterSetRegistry like
+Note: ParameterSet does.  This enforces the separation between
+Note: fhiclcpp and art, but does force art to define a conversion
+Note: from intermediate_table to ParameterSet.  Confusingly the
+Note: worker functions that perform the conversion are here in
+Note: fhicpp!!!
+Note:
+Note: The conversion works as follows:
+Note:
+Note: atom_t(string) --> boost::any(ps_atom_t(string))
+Note: complex_t(pair<string, string>) --> boost::any('(' + pair.first + ',' pair.second + ')')
+Note: sequence_t(vector<extended_value>) --> boost:any(ps_sequence_t(vector<boost::any>))
+Note:   where the boost::any in the vector comes from encode(extended_value)
+Note: TABLEID --> boost::any(ParameterSetID)
+Note:   where the ParamsetSetID is constructed from the TABLEID string value
+Note: table_t(shims::map<string, extended_value>) --> boost::any(ParameterSet)
+Note:   where the ParameterSet is constructed by staring from a default-constructed
+Note:   Parameter set and then calling ParameterSet::put(string, extended_value)
+Note:   for every entry in the map where the extended_value was not in the prolog.
+Note:   The resulting ParameterSet is put into the registry just before the conversion
+Note:   finishes.
+Note:
+
+class intermediate_table
+
+  + atom_t : extended_value::atom_t
+  + complex_t : extended_value::complex_t
+  + sequence_t : extended_value::sequence_t
+  + table_t : extended_value::table_t
+  + iterator : table_t::iterator
+  + const_iterator : table_t::const_iterator
+
+  - ex_val : extended_value - THREADING -  sequence_t, table_t usage of containers
+
+  - pre_insert_(string const& name, extended_value const& value) : extended_value*
+  - locate_(string const& name) : pair<extended_value*, bool>
+  - split(string const& name) const : vector<string>
+
+  + intermediate_table();
+
+  + empty() const : bool
+  + exists(string const& name) const : bool
+  + erase(string const& name, bool in_prolog = false) : void
+  + get(string const& name) : template<typename T> T 
+  + put(string const& name, string const& value, bool in_prolog = false) : bool
+  + put(string const& name, char const* value, bool in_prolog = false) : bool
+  + put(string const& name, bool value, bool in_prolog = false) : bool
+  + put(string const& name, complex<T> const& value, bool in_prolog = false) : template<typename T> bool
+  + put(string const& name, vector<T> const& value, bool in_prolog = false) : template<typename T> bool
+  + put( string const& name, T value, bool in_prolog = false) : template<typename T> typename enable_if<tt::is_numeric<T>::value, bool>::type
+  + putEmptySequence(string const& name, bool in_prolog = false) : bool
+  + putEmptyTable(string const& name, bool in_prolog = false) : bool
+  + putNil(string const& name, bool in_prolog = false) : bool
+
+  + begin() const : const_iterator
+  + end() const : const_iterator
+
+  + insert(string const& name, bool in_prolog, value_tag tag, boost::any const& value) : bool
+  + insert(string const& name, extended_value const& value) : bool
+  + insert(string const& name, extended_value&& value) : bool
+
+  + find(string const& name) const : extended_value const&extended_value const&
+  + locate(string const& name) : extended_value*
+  + update(string const& name) : extended_value&
+
+-----
+
+Parameter Validation
+
+-----
+
++ get_regex_replace_str(string const& istr) : string const { static regex const r("\\[|\\]"); auto ostr = regex_replace(istr, r, "\\$&"); return ostr; }
+
+struct Name
+
+  + value : string
+
+  - index(size_t const i) static : string { return "[" + to_string(i) + "]"; }
+  + sequence_element(size_t const i) static : Name { return Name{index(i)}; }
+  + sequence_element(string const& key_stem, size_t const i) static : Name { return Name{key_stem + index(i)}; }
+  + regex_safe(string const& key) static : string { return fhicl::get_regex_replace_str(key); }
+
+  + Name(string const& name = "") explicit : value(name) {}
+
+-----
+
+class NameStackRegistry
+
+  - names_ : vector<string>{} - THREADING
+
+  + instance() static : NameStackRegistry& { static NameStackRegistry registry; return registry; }
+  + end_of_ctor() static : void { instance().names_.pop_back(); }
+
+  - NameStackRegistry() = default;
+  + empty() const : bool { return names_.empty(); }
+  + current() const : string { return names_.back(); }
+  + clear() : void { names_.clear(); }
+  + full_key(string const& name) : string
+    {
+      if (names_.empty() || regex_match(name, regex{R"(\[\d+\])"})) {
+        names_.emplace_back(name);
+      }
+      else {
+        names_.emplace_back("." + name);
+      }
+      return accumulate(names_.begin(), names_.end(), string{});
+    }
+
+-----
+
+enum class par_type { ATOM, TABLE, SEQ_VECTOR, SEQ_ARRAY, TUPLE, DELEGATE, NTYPES }
+enum class par_style { REQUIRED, REQUIRED_CONDITIONAL, DEFAULT, DEFAULT_CONDITIONAL, OPTIONAL, OPTIONAL_CONDITIONAL, NTYPES }
+
+inline bool is_atom(par_type const pt) { return pt == par_type::ATOM; }
+inline bool is_sequence(par_type const pt) { return pt == par_type::SEQ_VECTOR || pt == par_type::SEQ_ARRAY || pt == par_type::TUPLE; }
+inline bool is_table(par_type const pt) { return pt == par_type::TABLE; }
+
+-----
+
+class ParameterMetadata
+
+  - key_ : string {}
+  - name_ : string {}
+  - comment_ : string {}
+  - parStyle_ : par_style {par_style::NTYPES}
+  - parType_ : par_type {par_type::NTYPES}
+
+  + ParameterMetadata() = default
+
+  + ParameterMetadata(Name const& name = Name(),
+                      Comment const& comment = Comment(""),
+                      par_style const parStyle = par_style::NTYPES,
+                      par_type const parType = par_type::NTYPES)
+      : key_{NameStackRegistry::instance().full_key(name.value)}
+      , name_{name.value}
+      , comment_{comment.value}
+      , parStyle_{parStyle}
+      , parType_{parType}
+    {
+    }
+  
+  + key() const : string { return key_; }
+  + name() const : string { return name_; }
+  + comment() const : string { return comment_; }
+  + has_default() const : bool { return parStyle_ == par_style::DEFAULT || parStyle_ == par_style::DEFAULT_CONDITIONAL; } 
+  + is_optional() const : bool { return parStyle_ == par_style::OPTIONAL || parStyle_ == par_style::OPTIONAL_CONDITIONAL; }
+  + is_conditional() const : bool { return parStyle_ == par_style::REQUIRED_CONDITIONAL || parStyle_ == par_style::OPTIONAL_CONDITIONAL || parStyle_ == par_style::DEFAULT_CONDITIONAL; }
+  + type() const : par_type { return parType_; }
+  + set_key(string const& key) : void { key_ = key; name_ = detail::strip_all_containing_names(key); }
+  + set_par_style(par_style const vt) : void { parStyle_ = vt; }
+
+-----
+
+class ParameterBase
+
+  - mdata_ : ParameterMetadata
+  - maybeUse_ : function<bool()>
+
+  - do_set_value(ParameterSet const&, bool trimParents) virtual = 0 : void
+
+public:
+
+  + ~ParameterBase() virtual = default
+
+  + ParameterBase(Name const& name, Comment const& comment, par_style const vt, par_type const type, function<bool()> maybeUse = AlwaysUse())
+      : mdata_{name, comment, vt, type}
+      , maybeUse_{maybeUse}
+    {
+    }
+
+  + key() const : string { return mdata_.key(); }
+  + name() const : string { return mdata_.name(); }
+  + comment() const : string { return mdata_.comment(); }
+  + has_default() const : bool { return mdata_.has_default(); }
+  + is_optional() const : bool { return mdata_.is_optional(); }
+  + is_conditional() const : bool { return mdata_.is_conditional(); }
+  + parameter_type() const : par_type { return mdata_.type(); }
+  + should_use() const : bool { return maybeUse_(); }
+  + set_value(ParameterSet const& ps, bool trimParents) : void { do_set_value(ps, trimParents); }
+  + set_par_style(par_style const vt) : void { mdata_.set_par_style(vt); }
+  + set_key(string const& key) : void { mdata_.set_key(key); }
+
+-----
+
+class AtomBase : public ParameterBase
+
+  + AtomBase(Name const& name, Comment const& comment, par_style const vt, function<bool()> maybeUse)
+      : ParameterBase{name, comment, vt, par_type::ATOM, maybeUse}
+    {
+    }
+
+  + stringified_value() const : string { return get_stringified_value(); }
+  - get_stringified_value() const virtual = 0 : string
+
+-----
+
+class TableMemberRegistry
+
+  friend class RegisterIfTableMember
+
+  template<typename T, typename KeysToIgnore>
+  friend class fhicl::Table
+
+  template<typename T>
+  friend class fhicl::OptionalTable
+
+  - using base_ptr : cet::exempt_ptr<ParameterBase>;
+  - using table_members_t : vector<base_ptr>;
+
+  - tables_ : stack<table_members_t> - THREADING
+
+  - instance() static : TableMemberRegistry& { static TableMemberRegistry registry; return registry; }
+
+  - TableMemberRegistry() = default
+  + TableMemberRegistry(TableMemberRegistry const&) = delete
+  + TableMemberRegistry(TableMemberRegistry&&) = delete
+  + TableMemberRegistry& operator=(TableMemberRegistry const&) = delete
+  + TableMemberRegistry& operator=(TableMemberRegistry&&) = delete
+  - release_members() : vector<base_ptr> { vector<base_ptr> result; swap(tables_.top(), result); tables_.pop(); return result; }
+  - emplace_table_member(ParameterBase* pb) : void { tables_.top().emplace_back(pb); }
+  - new_table() : void { tables_.emplace(); }
+
+-----
+
+class RegisterIfTableMember
+
+  + RegisterIfTableMember(ParameterBase* pb)
+    {
+      if (is_table_member(pb->key())) {
+        TableMemberRegistry::instance().emplace_table_member(pb);
+      }
+      if (is_table(pb->parameter_type())) {
+        TableMemberRegistry::instance().new_table();
+      }
+    }
+
+-----
+
+template<typename T>
+class Atom final : public  detail::AtomBase, private detail::RegisterIfTableMember
+
+public:
+
+  + using default_type : T;
+  + using rtype : T;
+
+  - value_ : shared_ptr<T> - THREADING -
+
+  + Atom(Name&& name) explicit
+      : Atom{move(name)
+      , Comment("")}
+    {}
+
+  + Atom(Name&& name, Comment&& comment) explicit
+      : AtomBase{move(name), move(comment), par_style::REQUIRED, detail::AlwaysUse()}
+      , RegisterIfTableMember{this}
+      , value_{make_shared<T>()}
+    { 
+      NameStackRegistry::end_of_ctor();
+    }
+
+  + Atom(Name&& name, Comment&& comment, function<bool()> maybeUse) explicit
+      : AtomBase{move(name), move(comment), par_style::REQUIRED_CONDITIONAL, maybeUse}
+      , RegisterIfTableMember{this}
+      , value_{make_shared<T>()}
+    {
+      NameStackRegistry::end_of_ctor();
+    }
+
+  + Atom(Name&& name, T const& dflt_value) explicit
+      : Atom{move(name)
+      , Comment("")
+      , dflt_value}
+    {}
+
+  + Atom(Name&& name, Comment&& comment, T const& dflt_value) explicit
+      : AtomBase{move(name), move(comment), par_style::DEFAULT, detail::AlwaysUse()}
+      , RegisterIfTableMember{this}
+      , value_{make_shared<T>(dflt_value)}
+    {
+      NameStackRegistry::end_of_ctor();
+    }
+
+  + Atom(Name&& name, Comment&& comment, function<bool()> maybeUse, T const& dflt_value) explicit
+      : AtomBase{move(name), move(comment), par_style::DEFAULT_CONDITIONAL, maybeUse}
+      , RegisterIfTableMember{this}
+      , value_{make_shared<T>(dflt_value)}
+    {
+      NameStackRegistry::end_of_ctor();
+    }
+
+  + operator()() const : auto const& { return *value_; }
+
+  - get_stringified_value() const override : string
+    {
+      stringstream oss;
+      if (has_default()) {
+        using namespace detail::yes_defaults;
+        oss << maybe_quotes<T>(*value_);
+      }
+      else {
+        using namespace detail::no_defaults;
+        oss << expected_types<T>();
+      }
+      return oss.str();
+    }
+
+  - do_set_value(ParameterSet const&, bool const trimParent) override : void
+    {
+      string const& rkey = key();
+      string const& key = trimParent ? detail::strip_first_containing_name(rkey) : rkey;
+      if (has_default()) {
+        pset.get_if_present<T>(key, *value_);
+      }
+      else {
+        value_ = make_shared<T>(pset.get<T>(key));
+      }
+    }
+
+-----
+

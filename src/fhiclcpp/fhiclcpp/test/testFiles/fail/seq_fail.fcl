@@ -1,0 +1,6 @@
+#===========================================
+# Testing Incorrect Sequence Syntax
+# What's Wrong: Comment in Sequence
+#===========================================
+
+seq:[ 1, 2, #hello, 3]

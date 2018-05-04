@@ -1,0 +1,11 @@
+### Multi-threading analysis of `cet::detail`{.cpp}
+
+### `cet::detail::metaprogramming`{.cpp}
+
+All compile-time facilities--no threading issues.
+
+### `cet::detail::wrapLibraryManagerException`{.cpp}
+
+Free function receiving all arguments by `const`{.cpp} reference.  
+No local `static`{.cpp} members.  
+No threading issues.

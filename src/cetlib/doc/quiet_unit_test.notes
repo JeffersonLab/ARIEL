@@ -1,0 +1,9 @@
+% Multi-threading report for cetlib/quiet_unit_test.hpp
+% Chris Green.
+% 2016-10-13 (on commit 889f6a2).
+
+* `cetlib/quiet_unit_test.hpp` wraps an include of `boost/test/unit_test.hpp`, silencing some known compiler warnings. operations. No threading issues are introduced over and above those present as a result of including the Boost header.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

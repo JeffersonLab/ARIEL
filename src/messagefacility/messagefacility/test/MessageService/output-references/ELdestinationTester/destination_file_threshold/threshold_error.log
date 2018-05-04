@@ -1,0 +1,50 @@
+%MSG-e err1:  MFTest {Timestamp} pre-event
+This is an ERROR message.
+%MSG
+%MSG-e err2:  MFTest {Timestamp} pre-event
+This is an ERROR message.
+%MSG
+%MSG-e catError:  MFTest {Timestamp} pro-event
+Error information.
+%MSG
+%MSG-e catError:  MFTest {Timestamp} pro-event
+Error information.
+%MSG
+%MSG-e catError:  MFTest {Timestamp} pro-event
+Error information.
+%MSG
+%MSG-e catError:  MFTest {Timestamp} pro-event
+Error information.
+%MSG
+%MSG-e catError:  MFTest {Timestamp} pro-event
+Error information.
+%MSG
+clever way to ensure persistence of temporary object
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+TimeReport> Time report complete in 0.0402123 seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+TimeModule> run: 1   subRun: 2    event: 456 someString module1 0.04404
+%MSG-s system:  module1 {Timestamp} postModule
+This would be a major problem, I guess.
+%MSG
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+TimeReport> Time report complete in 0.0402123 seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+TimeModule> run: 1   subRun: 2    event: 456 someString module5 0.04404
+%MSG-s system:  module5 {Timestamp} postModule
+This would be a major problem, I guess.
+%MSG

@@ -1,0 +1,9 @@
+% Multi-threading report for cetlib/pow.h
+% Chris Green.
+% 2016-10-13 (on commit 889f6a2).
+
+* `cetlib/pow.h` provides a related set of `constexpr`{.cpp} functions all making use of a `template <unsigned N, class T, unsigned = N % 2u> struct cet::detail::pow`{.cpp}. Since all operations are compile-time only, there are identically zero threading implications.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

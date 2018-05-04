@@ -1,0 +1,9 @@
+% Multi-threading report for cetlib/split.h
+% Chris Green.
+% 2016-10-13 (on commit 889f6a2).
+
+* Both functions `cet::split()`{.cpp} and `cet::split_if()`{.cpp} operate on an `std::string const &`{.cpp} and return their answer via an output iterator. The threading semantics are therefore those of the output iterator and its attached object.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

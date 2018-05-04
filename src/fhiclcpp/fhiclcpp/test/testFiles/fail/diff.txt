@@ -1,0 +1,15 @@
+PYTHON:
+python fhiclpy.py < testFiles/pass/leading_zero_pass.fcl
+{'y': '0013.445e23', 'x': '01.23e2', 'z': 5.6, 'u': 123}
+
+CPP:
+29: Test command: /home/putz/fhicl/fhicl/testbuild/bin/test_suite "/home/putz/fhicl/fhicl/fhicl-cpp/test/testFiles/pass/leading_zero_pass.fcl"
+29: Test timeout computed to be: 9.99988e+06
+29: Running 1 test case...
+29: ==========  Parsed parameter set ==========
+29: u: 123
+29: x: 123
+29: y: 1.3445e24
+29: z: 5.6
+29: ==========  End of parameter set ==========
+

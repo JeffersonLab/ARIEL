@@ -1,0 +1,161 @@
+%MSG-w MemoryCheck:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+MemoryCheck: module G4:g4run VSIZE 1030.34 0 RSS 357.043 0.628906
+%MSG
+%MSG-w MemoryCheck:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+MemoryCheck: module G4:g4run VSIZE 1030.34 0 RSS 357.25 0.199219
+%MSG
+%MSG-w MemoryCheck:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+MemoryCheck: module G4:g4run VSIZE 1030.34 5.2 RSS 357.453 0.1875
+%MSG
+%MSG-e err1:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+This is an ERROR message.
+%MSG
+%MSG-e err2:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+This is an ERROR message.
+%MSG
+%MSG-w warning:  <date-time> pre-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Followed by a WARNING message.
+%MSG
+%MSG-e catError:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Error information.
+%MSG
+%MSG-w catWarning:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Warning information.
+%MSG
+%MSG-i catInfo:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Info information.
+%MSG
+%MSG-e catError:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Error information.
+%MSG
+%MSG-w catWarning:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Warning information.
+%MSG
+%MSG-i catInfo:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Info information.
+%MSG
+%MSG-e catError:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Error information.
+%MSG
+%MSG-w catWarning:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Warning information.
+%MSG
+%MSG-i catInfo:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Info information.
+%MSG
+%MSG-e catError:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Error information.
+%MSG
+%MSG-w catWarning:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Warning information.
+%MSG
+%MSG-i catInfo:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Info information.
+%MSG
+%MSG-e catError:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Error information.
+%MSG
+%MSG-w catWarning:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Warning information.
+%MSG
+%MSG-i catInfo:  <date-time> pro-event
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+Info information.
+%MSG
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+clever way to ensure persistence of temporary object
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeReport> Time report complete in <duration> seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeModule> run: 1   subRun: 2    event: 456 someString module1 0.04404
+%MSG-s system:  <date-time> postModule
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+This would be a major problem, I guess.
+%MSG
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeReport> Report activated
+TimeReport> Report columns headings for events: eventnum runnum timetaken
+TimeReport> Report columns headings for modules: eventnum runnum modulelabel modulename timetaken
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeReport> Time report complete in <duration> seconds
+ Time Summary: 
+ Min: 303
+ Max: 5555
+ Avg: 4000
+
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeEvent> run: 1   subRun: 2    event: 456 0.0440404
+
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+TimeModule> run: 1   subRun: 2    event: 456 someString module5 0.04404
+%MSG-s system:  <date-time> postModule
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+This would be a major problem, I guess.
+%MSG
+%MSG-i info:  <date-time> postModule
+Application = OverriddenApplication, hostname = OverriddenName, hostaddr = OverriddenAddr, pid = -1.
+
+ vint contains: 1, 2, 5, 89, 3
+%MSG

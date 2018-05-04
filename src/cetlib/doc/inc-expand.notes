@@ -1,0 +1,5 @@
+## Multi-threading analysis of `cet::inc-expand`{.cpp}
+
+This appears to be a executable for testing `cet::includer`.  Maybe it
+should go in the test directory.  We don't appear to use it in any
+other package.

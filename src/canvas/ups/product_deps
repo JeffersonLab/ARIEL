@@ -1,0 +1,31 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent canvas	v3_03_02
+defaultqual	e15
+#
+fcldir -
+perllib  product_dir
+#
+product		version
+clhep		v2_3_4_6
+cppunit		v1_13_2c
+range		v3_0_3_0
+messagefacility	v2_02_02
+cetbuildtools	v7_03_03	-	only_for_build
+root		v6_12_06a	c2
+end_product_list
+
+qualifier	messagefacility	clhep		root		cppunit		range		notes
+e15:debug	e15:debug	e15:debug	-		e15:debug	-nq-
+e15:prof	e15:prof	e15:prof	-		e15:prof	-nq-
+e17:debug	e17:debug	e17:debug	-		e17:debug	-nq-
+e17:prof	e17:prof	e17:prof	-		e17:prof	-nq-
+c2:debug	c2:debug	c2:debug	c2:debug	c2:debug	-nq-
+c2:prof		c2:prof		c2:prof		c2:prof		c2:prof		-nq-
+end_qualifier_list
+
+# Local Variables:
+# tab-width: 8
+# End:
+
+# vi:set ts=8 noexpandtab:

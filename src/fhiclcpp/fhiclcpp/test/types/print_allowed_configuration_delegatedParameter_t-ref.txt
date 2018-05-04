@@ -1,0 +1,14 @@
+
+   ## Any parameters prefaced with '#' are optional.
+
+   pset: {
+
+      my_delegate: << delegated >>
+
+      s: {
+
+         my_nested_delegate: << delegated >>
+
+       # my_optional_nested_delegate: << delegated >>
+      }
+   }

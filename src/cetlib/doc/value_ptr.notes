@@ -1,0 +1,19 @@
+This might replaceable by std::optional<T> from C++ 17.  clang++ from
+Xcode 7 does not have <optional>, but it has <experimental/optional>,
+which defines std::experimental::optional.
+
+std::experimental::optional<T> has somewhat different semantics;
+notably, it is not polymorphic, and equality testing looks at the
+value stored, rather than the identity (which is what value_ptr uses).
+
+Smart pointers are notoriously hard to make safe for sharing between
+threads. Instances of value_ptr that might be shared across threads
+should be protected externally by a mutex and locking.
+
+If problems are found, it might be feasible to reimplement value_ptr
+by making use internally of std::unique_ptr.
+
+Places where std::value_ptr is used should be checked to see if
+std::experimental::optional would be sutiable instead.
+
+

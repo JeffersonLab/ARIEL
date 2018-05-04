@@ -1,0 +1,20 @@
+# This is just a test of the file-naming functionalities.
+# The 'threshold' parameter has been ratched up to highest severity
+# so that the filesizes are small (if not non-existent)
+
+message: {
+  destinations: {
+
+    log_filenameOption1: {
+      type      : file
+      filename  : "outputFileName1"
+    }
+
+    log_filenameOption2: {
+      type      : file
+      filename  : "filenameOption2.log"
+      threshold : "!!"
+    }
+
+  }
+}

@@ -1,0 +1,32 @@
+message: {
+  destinations: {
+    log_lineLength_40: {
+      type: file
+      filename: "lineLength_40.log"
+      format: {
+        lineLength: 40
+      }
+    }
+    log_lineLength_80: {
+      type: file
+      filename: "lineLength_80.log"
+      format: {
+        lineLength: 80
+      }
+    }
+    log_lineLength_120: {
+      type: file
+      filename: "lineLength_120.log"
+      format: {
+        lineLength: 120
+      }
+    }
+    log_lineLength_160: {
+      type: file
+      filename: "lineLength_160.log"
+      format: {
+        lineLength: 160
+      }
+    }
+  }
+}

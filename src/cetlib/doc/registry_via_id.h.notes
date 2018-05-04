@@ -1,0 +1,163 @@
+Users of registry_via_id
+------------------------
+./art/art/Framework/Core/CMakeFiles/art_Framework_Core.dir/OutputModule.cc.o
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootOutputFile.cc.o
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root_file_info_dumper.dir/detail/InfoDumperInputFile.cc.o
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Event.cc.o
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Principal.cc.o
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Run.cc.o
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/detail/orderedProcessNames.cc.o
+./canvas/canvas/Persistency/Provenance/CMakeFiles/canvas_Persistency_Provenance.dir/ProductProvenance.cc.o
+
+function-local variable defs of registry_via_id
+-----------------------------------------------
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+u guard variable for cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()::the_registry
+
+
+Usage details of registry_via_id
+--------------------------------
+./art/art/Framework/Core/CMakeFiles/art_Framework_Core.dir/OutputModule.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::get(art::Hash<5> const&, art::Parentage&)
+./art/art/Framework/Core/CMakeFiles/art_Framework_Core.dir/OutputModule.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::put(std::map<art::Hash<2> const, art::ProcessHistory, std::less<art::Hash<2> const>, std::allocator<std::pair<art::Hash<2> const, art::ProcessHistory> > > const&)
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::put(art::Parentage const&)
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootInputFile.cc.o: W std::enable_if<std::is_same<std::iterator_traits<std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> > >::value_type, std::pair<art::Hash<2> const, art::ProcessHistory> >::value, void>::type cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::put<std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> > >(std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> >, std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> >)
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootOutputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::get()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootOutputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootOutputFile.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::get()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root.dir/RootOutputFile.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root_file_info_dumper.dir/detail/InfoDumperInputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::put(std::map<art::Hash<2> const, art::ProcessHistory, std::less<art::Hash<2> const>, std::allocator<std::pair<art::Hash<2> const, art::ProcessHistory> > > const&)
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root_file_info_dumper.dir/detail/InfoDumperInputFile.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/IO/Root/CMakeFiles/art_Framework_IO_Root_file_info_dumper.dir/detail/InfoDumperInputFile.cc.o: W std::enable_if<std::is_same<std::iterator_traits<std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> > >::value_type, std::pair<art::Hash<2> const, art::ProcessHistory> >::value, void>::type cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::put<std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> > >(std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> >, std::_Rb_tree_const_iterator<std::pair<art::Hash<2> const, art::ProcessHistory> >)
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Event.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::get(art::Hash<2> const&, art::ProcessHistory&)
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Event.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Principal.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::empty()
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Principal.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::get(art::Hash<2> const&, art::ProcessHistory&)
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Principal.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::put(art::ProcessHistory const&)
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Principal.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Run.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::get(art::Hash<2> const&, art::ProcessHistory&)
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/Run.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/detail/orderedProcessNames.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::get()
+./art/art/Framework/Principal/CMakeFiles/art_Framework_Principal.dir/detail/orderedProcessNames.cc.o: W cet::registry_via_id<art::Hash<2>, art::ProcessHistory>::the_registry_()
+./canvas/canvas/Persistency/Provenance/CMakeFiles/canvas_Persistency_Provenance.dir/ProductProvenance.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::get(art::Hash<5> const&, art::Parentage&)
+./canvas/canvas/Persistency/Provenance/CMakeFiles/canvas_Persistency_Provenance.dir/ProductProvenance.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::put(art::Parentage const&)
+./canvas/canvas/Persistency/Provenance/CMakeFiles/canvas_Persistency_Provenance.dir/ProductProvenance.cc.o: W cet::registry_via_id<art::Hash<5>, art::Parentage>::the_registry_()
+
+
+Compact form of registry_via_id code
+------------------------------------
+
+namespace cet {
+template<class K, class V>
+class registry_via_id;
+
+namespace detail {
+template<class K, class V, K(V::*)() const = &V::id>
+struct must_have_id  {
+  typedef  K  type;
+};
+} // namespace detail
+} // namespace cet
+
+template<class K, class V>
+class cet::registry_via_id {
+
+private:
+
+  registry_via_id() = delete;
+  registry_via_id(registry_via_id const&) = delete;
+  void operator=(registry_via_id const&) = delete;
+
+public:
+
+  typedef  std::map<K const, V>                      collection_type;
+  typedef  typename collection_type::key_type        key_type;
+  typedef  typename collection_type::mapped_type     mapped_type;
+  typedef  typename collection_type::value_type      value_type;
+  typedef  typename collection_type::size_type       size_type;
+  typedef  typename collection_type::const_iterator  const_iterator;
+
+public:
+
+  static  bool empty() { return the_registry_().empty(); }
+  static  size_type size() { return the_registry_().size(); }
+
+  static  const_iterator begin() { return the_registry_().begin(); }
+  static  const_iterator end() { return the_registry_().end(); }
+
+  static  const_iterator cbegin() { return the_registry_().cbegin(); }
+  static  const_iterator cend() { return the_registry_().cend(); }
+
+  static  typename detail::must_have_id<K, V>::type put(V const& value) { K id = value.id(); the_registry_().emplace(id, value); return id; }
+  template<class FwdIt> static std::enable_if_t<std::is_same<typename std::iterator_traits<FwdIt>::value_type, mapped_type>::value, void> put(FwdIt begin, FwdIt end) { for (; b != e; ++b) { (void)put(*b); } }
+  template<class FwdIt> static std::enable_if_t<std::is_same<typename std::iterator_traits<FwdIt>::value_type, value_type>::value, void> put(FwdIt begin, FwdIt end) void> { the_registry_().insert(b, e); }
+  static  void put(collection_type const& c) { put(c.cbegin(), c.cend()); }
+
+  static  collection_type const& get() noexcept { return the_registry_(); }
+  static  V const& get(K const& key) { const_iterator it = the_registry_().find(key); if (it == the_registry_().end()) throw cet::exception("cet::registry_via_id") << "Key \"" << key << "\" not found in registry"; return it->second; }
+  static  bool get(K const& key, V& value) noexcept
+  {
+    bool result;
+    const_iterator it = the_registry_().find(key);
+    if (it == the_registry_().end()) {
+      result = false;
+    }
+    else {
+      value = it->second;
+      result = true;
+    }
+    return result;
+  }
+
+private:
+
+  static  collection_type& the_registry_() { static  collection_type  the_registry; return the_registry; }
+
+};
+
+Discussion
+----------
+
+The registry_via_id class has no data members, and no non-static non-special
+member functions, so it is essentially a namespace.
+
+It implements the Singleton pattern, and the singleton it manages is held as
+a function-local static variable, and the instance() function in the pattern,
+called the_registry_() here, returns the managed instance by reference.
+
+No attempt at thread safety is made by this class, readers are not protected
+against simultaneous writers, and writers and not protected against
+simultaneous writers.
+
+The C++ standard guarantees that function-local static variable initializers
+are thread-safe, so the_registry_() is thread-safe automatically.
+
+The points of use of member functions are detailed above (including the
+function-local static variables).
+
+I found no users of the registry class.  The above comments also apply to the
+registry class.

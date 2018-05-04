@@ -1,0 +1,20 @@
+#!/usr/bin/perl -w
+########################################################################
+# Issue17457-filter.
+#
+# Filter out some items from tests for Issue17457 that complicate a
+# comparison with a reference.
+#
+# 2017/08/28 CHG.
+########################################################################
+use strict;
+
+my ($in_memReport);
+my $n_sep = 0;
+
+while (<>) {
+  m&OverriddenName& or s&(hostname = )[^,]+&${1}<hostname>&;
+  s&(hostaddr = )(?:\d{1,3}\.){3}\d{1,3}&${1}<hostaddr>&;
+  s&(pid = )\d+&${1}<pid>&;
+  print;
+}

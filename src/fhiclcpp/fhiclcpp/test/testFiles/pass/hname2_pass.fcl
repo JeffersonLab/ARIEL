@@ -1,0 +1,3 @@
+tab:{ a:1 }
+a : @local::tab.a
+tab.a : 2

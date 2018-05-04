@@ -1,0 +1,1 @@
+my_configuration:{FluxFile:"new_filename" FluxType:"mono"} my_flux_file_check1:"new_filename" my_flux_file_check2:"new_filename"

@@ -1,0 +1,7 @@
+[submodule "src/range/range"]
+	path = src/range/range
+	url = https://github.com/ericniebler/range-v3.git
+[submodule "src/catch/catch"]
+	path = src/catch/catch
+	url = https://github.com/catchorg/Catch2.git
+	branch = Catch1.x

@@ -1,0 +1,110 @@
+another_number: 4
+any_more_success: {  # ./to_indented_string_annotated_test.fcl:26
+   table4: {  # ./to_indented_string_annotated_test.fcl:26
+      foo: "bar"  # ./to_indented_string_annotated_prolog.fcl:3
+      seq_prolog: [  # ./to_indented_string_annotated_prolog.fcl:7
+         "When",  # ./to_indented_string_annotated_prolog.fcl:7
+         "in",  # ""
+         "the",  # ""
+         "course",  # ""
+         "of",  # ""
+         "human",  # ""
+         "events",  # ""
+         "..."  # ""
+      ]
+      table: {  # ./to_indented_string_annotated_prolog.fcl:4
+         foo: "bar"  # ./to_indented_string_annotated_prolog.fcl:5
+      }
+   }
+}
+double: 2.34599999999999994316e2
+some_number: 8
+success: {  # ./to_indented_string_annotated_test.fcl:24
+   table3: {  # ./to_indented_string_annotated_test.fcl:24
+      foo: "bar"  # ./to_indented_string_annotated_prolog.fcl:3
+      seq_prolog: [  # ./to_indented_string_annotated_prolog.fcl:7
+         "When",  # ./to_indented_string_annotated_prolog.fcl:7
+         "in",  # ""
+         "the",  # ""
+         "course",  # ""
+         "of",  # ""
+         "human",  # ""
+         "events",  # ""
+         "..."  # ""
+      ]
+      table: {  # ./to_indented_string_annotated_prolog.fcl:4
+         foo: "bar"  # ./to_indented_string_annotated_prolog.fcl:5
+      }
+   }
+}
+table1: {  # ./to_indented_string_annotated_test.fcl:5
+   books: [  # ./to_indented_string_annotated_test.fcl:9
+      [  # ./to_indented_string_annotated_test.fcl:10
+         "nested",  # ./to_indented_string_annotated_test.fcl:10
+         "sequence",  # ""
+         "does",  # ""
+         "this",  # ""
+         "work?"  # ""
+      ],
+      {  # ./to_indented_string_annotated_test.fcl:11
+         is: "this"  # ./to_indented_string_annotated_test.fcl:11
+      },
+      [  # ./to_indented_string_annotated_test.fcl:12
+         "okay"  # ./to_indented_string_annotated_test.fcl:12
+      ],
+      {  # ./to_indented_string_annotated_test.fcl:13
+         just: {  # ./to_indented_string_annotated_test.fcl:13
+            suppose: "no"  # ./to_indented_string_annotated_test.fcl:13
+         }
+      },
+      {  # ./to_indented_string_annotated_test.fcl:14
+         nose: {  # ./to_indented_string_annotated_test.fcl:14
+            where: "would"  # ./to_indented_string_annotated_test.fcl:14
+         }
+      },
+      {  # ./to_indented_string_annotated_test.fcl:15
+         all: {  # ./to_indented_string_annotated_test.fcl:15
+            our: [  # ./to_indented_string_annotated_test.fcl:15
+               "glasses",  # ./to_indented_string_annotated_test.fcl:15
+               "sit",  # ""
+               "they\'d",  # ""
+               "all"  # ""
+            ]
+         }
+      },
+      {  # ./to_indented_string_annotated_test.fcl:16
+         fall: [  # ./to_indented_string_annotated_test.fcl:16
+            "off",  # ./to_indented_string_annotated_test.fcl:16
+            "just",  # ""
+            "think",  # ""
+            "of",  # ""
+            "it"  # ""
+         ]
+      }
+   ]
+   foo: "bar6"  # ./to_indented_string_annotated_test.fcl:18
+   seq1: [  # ./to_indented_string_annotated_test.fcl:7
+      "When",  # ./to_indented_string_annotated_test.fcl:7
+      "in",  # ""
+      "the",  # ""
+      "course",  # ""
+      "of",  # ""
+      "human",  # ""
+      "events",  # ""
+      "it"  # ./to_indented_string_annotated_test.fcl:21
+   ]
+   table: {  # ./to_indented_string_annotated_test.fcl:6
+      foo: "bar_none"  # ./to_indented_string_annotated_test.fcl:28
+   }
+   this: {
+      can: {
+         be: {
+            extended: "What to do here?"  # ./to_indented_string_annotated_test.fcl:29
+         }
+      }
+   }
+}
+table2: {  # ./to_indented_string_annotated_test.fcl:22
+   foo: "bar"  # ./to_indented_string_annotated_prolog.fcl:5
+}
+

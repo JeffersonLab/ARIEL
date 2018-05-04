@@ -1,0 +1,7 @@
+message: {
+  destinations: {
+    issueTest: {
+      type: Issue17457TestDestination
+    }
+  }
+}

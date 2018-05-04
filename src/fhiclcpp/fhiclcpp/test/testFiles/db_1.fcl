@@ -1,0 +1,10 @@
+# This file should yield 3 database records.
+a: 10.25
+b: 
+  { 
+    a: "cow"
+    z:
+      {
+        q: "moose"
+      }
+   }

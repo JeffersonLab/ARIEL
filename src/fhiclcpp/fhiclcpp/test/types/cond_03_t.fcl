@@ -1,0 +1,8 @@
+pset: {
+   flag: true
+   parameters: {
+      halfLengths: [4, 9, 2]
+      material: "Wood"
+      boxName: "Stan"
+   }
+}

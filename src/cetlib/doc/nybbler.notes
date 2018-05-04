@@ -1,0 +1,11 @@
+% Multi-threading report for cetlib/nybbler.{h,cc}
+% Chris Green.
+% 2016-10-13 (on commit 110a927).
+
+* The presence of non-`const`{.cpp} `cet::nybbler & cet::nybbler::operator << (std::string const & s)`{.cpp} seems a little unusual -- perhaps a `cet::nybbler::reset(std::string const & s)`{.cpp} function might have been more appropriate?
+
+* `cet::nybbler::operator << ()`{.cpp} is the only non-`const`{.cpp} function. Simultaneous access to it from multiple threads on a given object would be problematic, as would simultaneous `const`{.cpp} and non-`const`{.cpp} access, or mutating access to the strings used as input to the non-default constructor or `operator << ()`{.cpp}.
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->

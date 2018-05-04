@@ -1,0 +1,2 @@
+tab1:{ a:1 b:2 c:3 }
+tab1.a : @local::tab1.b

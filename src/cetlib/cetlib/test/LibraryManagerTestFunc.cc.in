@@ -1,0 +1,12 @@
+#include "cetlib/test/LibraryManagerTestFunc.h"
+
+#include "cetlib/compiler_macros.h"
+
+#include <type_traits>
+
+EXTERN_C_FUNC_DECLARE_START
+  std::string idString() { return "@LIBSPEC@"; }
+EXTERN_C_FUNC_DECLARE_END
+
+static_assert(std::is_same<cettest::idString_t, decltype(&idString)>::value,
+              "Generated function idString has wrong signature!");
