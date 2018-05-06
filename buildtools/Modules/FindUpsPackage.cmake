@@ -13,7 +13,7 @@
 
 include(CheckUpsVersion)
 
-macro( _use_find_package PNAME PNAME_UC )
+macro( _use_find_package PNAME )
 
 cmake_parse_arguments( UFP "" "" "" ${ARGN} )
 #message ( STATUS "_use_find_package debug: unparsed arguments ${UFP_UNPARSED_ARGUMENTS}" )
@@ -22,71 +22,45 @@ if( UFP_UNPARSED_ARGUMENTS )
   list( GET UFP_UNPARSED_ARGUMENTS 0 PVER )
   _get_dotver( ${PVER} )
 endif()
-#message ( STATUS "_use_find_package debug: called with ${PNAME_UC} ${PVER}" )
+#message ( STATUS "_use_find_package debug: called with ${PNAME} ${PVER}" )
 #message(STATUS "_use_find_package: dotver is ${dotver}")
-set( ${PNAME}_SAVE_VERSION ${${PNAME_UC}_VERSION})
+#message(STATUS "_use_find_package: looking for ${PNAME} ${dotver}")
 
-# we use find package to check the version
+# Map product name "sqlite" to "sqlite3"
+string(REGEX REPLACE "sqlite( |$)" "sqlite3" RNAME ${PNAME})
+message( STATUS "Searching for ${RNAME}" )
 
-# define the cmake search path
-set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
-#message(STATUS "_use_find_package: looking for ${PNAME} ${dotver} in ${${PNAME_UC}_SEARCH_PATH}")
+# use find_package to check the version
+# assume the package's ${RNAME}Config.cmake will set up include_diretcories,
+# link libraries and various CMake variables for use with this project's CMakeLists.txt
+find_package( ${RNAME} ${dotver} QUIET )
 
-if( NOT ${PNAME_UC}_SEARCH_PATH )
-  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_DIR} )
-else()
-  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
-endif()
-# make sure we found the product
-if( NOT ${${PNAME}_FOUND} )
-  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
-endif()
-set( ${PNAME}_DOT_VERSION ${${PNAME}_VERSION})
-if(  ${PNAME_UC} STREQUAL ${PNAME} )
-  #message(STATUS "_use_find_package: adjusting ${PNAME}")
-  set( ${PNAME_UC}_VERSION ${${PNAME}_SAVE_VERSION})
-endif()
-# This bit of code presume that the cmake config files were built by cetbuildtools!
-# However, if this is a "third party" product, ${PNAME}_UPS_VERSION will NOT be defined.
-if( ${PNAME}_UPS_VERSION )
-  # make sure the version numbers match
-  if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
-    #message(STATUS "${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
-  else()
-    message(STATUS "ERROR: There is an inconsistency between the ${PNAME} table and config files ")
-    message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+if( NOT ${${RNAME}_FOUND} )
+  # If not found, try pkg-config
+  find_package(PkgConfig)
+  if(PKG_CONFIG_FOUND)
+    if(${dotver})
+      pkg_check_modules(PC_${RNAME} ${RNAME}>=${dotver})
+    else()
+      pkg_check_modules(PC_${RNAME} ${RNAME})
+    endif()
+    if(PC_${RNAME}_FOUND)
+      if(PC_${RNAME}_INCLUDE_DIRS)
+#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDE_DIRS} to include_directories")
+	include_directories(${PC_${RNAME}_INCLUDE_DIRS})
+      endif()
+      if(PC_${RNAME}_INCLUDEDIR)
+#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDEDIR} to include_directories")
+	include_directories(${PC_${RNAME}_INCLUDEDIR})
+      endif()
+    else()
+      message(FATAL_ERROR "${PNAME} was NOT found ")
+    endif()
   endif()
-else()
-   _cet_debug_message("_use_find_package: ${PNAME}_UPS_VERSION is undefined, we presume it matches ${${PNAME_UC}_VERSION}")
 endif()
+set( ${RNAME}_DOT_VERSION ${${RNAME}_VERSION})
 
 endmacro( _use_find_package )
-
-macro( _use_find_package_noversion PNAME PNAME_UC )
-
-# we use find package to check the version
-# however, if we have some special build such as "nightly", we cannot compare version numbers
-
-# define the cmake search path
-set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
-if( NOT ${PNAME_UC}_SEARCH_PATH )
-  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_DIR} )
-else()
-  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
-endif()
-# make sure we found the product
-if( NOT ${${PNAME}_FOUND} )
-  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
-endif()
-# make sure the version numbers match
-if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
-  #message(STATUS "_use_find_package_noversion: ${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
-else()
-  message(STATUS "ERROR: _use_find_package_noversion: There is an inconsistency between the ${PNAME} table and config files ")
-  message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
-endif()
-
-endmacro( _use_find_package_noversion )
 
 # since variables are passed, this is implemented as a macro
 macro( find_ups_product PRODUCTNAME )
@@ -104,33 +78,10 @@ else()
   endif()
   #message ( STATUS "find_ups_product debug: called with ${PRODUCTNAME} ${fup_version}" )
 
-  # get upper and lower case versions of the name
-  string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
-  string(TOLOWER  ${PRODUCTNAME} ${PRODUCTNAME}_LC )
-
-  # require ${${PRODUCTNAME}_UC}_VERSION or ${${PRODUCTNAME}_UC}_UPS_VERSION
-  set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_VERSION} )
-  if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
-    set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_UPS_VERSION} )
-    if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
-       message(FATAL_ERROR "${${PRODUCTNAME}_UC} has not been setup")
-    endif ()
-  endif ()
-
-  # compare for recursion
   #message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${cet_product_list}")
   list(FIND cet_product_list ${PRODUCTNAME} found_product_match)
-  # now check to see if this product is labeled only_for_build
-  set( PRODUCT_ONLY_FOR_BUILD FALSE )
-  cet_get_product_info_item(ONLY_FOR_BUILD only_for_build_products)
-  foreach( pkg ${only_for_build_products} )
-    if ( ${PRODUCTNAME}  MATCHES "${pkg}" )
-       set( PRODUCT_ONLY_FOR_BUILD TRUE )
-    endif()
-  endforeach( pkg )
-  #message(STATUS "find_ups_product debug: is ${PRODUCTNAME} only for the build: ${PRODUCT_ONLY_FOR_BUILD}")
-  #if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
-  if( PRODUCT_ONLY_FOR_BUILD )
+
+  if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
   elseif( ${found_product_match} LESS 0 )
     #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
     # add to product list
@@ -141,33 +92,7 @@ else()
     #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
   endif()
 
-  # MUST use a unique variable name for the config path
-  find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH 
-             NAMES ${${PRODUCTNAME}_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
-             PATHS $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
-  if(${${PRODUCTNAME}_UC}_CONFIG_PATH)
-    #_cet_debug_message("find_ups_product: found a cmake configure file in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
-    # look for the case where there are no underscores
-    string(REGEX MATCHALL "_" nfound ${${${PRODUCTNAME}_UC}_VERSION} )
-    list(LENGTH nfound nfound)
-    if( ${nfound} EQUAL 0 )
-      _use_find_package_noversion( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} )
-    else()
-      _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${fup_version} )
-    endif()
-  else()
-    #_cet_debug_message("find_ups_product: ${PRODUCTNAME} cmake config NOT FOUND")
-    _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${fup_version} )
-  endif()
-
-  # add include directory to include path if it exists
-  set( ${${PRODUCTNAME}_UC}_INC $ENV{${${PRODUCTNAME}_UC}_INC} )
-  if ( NOT ${${PRODUCTNAME}_UC}_INC )
-    #message(STATUS "find_ups_product: ${PRODUCTNAME} ${${PRODUCTNAME}_UC} has no ${${PRODUCTNAME}_UC}_INC")
-  else()
-    include_directories ( ${${${PRODUCTNAME}_UC}_INC} )
-    #message( STATUS "find_ups_product: ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_INC} added to include path" )
-  endif ()
+  _use_find_package( ${PRODUCTNAME} ${fup_version} )
 
 endif()
 
