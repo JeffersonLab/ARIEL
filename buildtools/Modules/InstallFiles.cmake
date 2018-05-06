@@ -34,7 +34,7 @@ function( cet_install_files )
   if ( IFG_FQ_DIR )
     set(this_install_dir "${flavorqual_dir}/${IFG_DIRNAME}" )
   else()
-    set(this_install_dir "${product}/${version}/${IFG_DIRNAME}" )
+    set(this_install_dir "${IFG_DIRNAME}" )
   endif()
   _cet_debug_message( "cet_install_files: files will be installed in ${this_install_dir}" )
 

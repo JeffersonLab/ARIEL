@@ -5,7 +5,7 @@
 #  version - optional minimum version
 #
 # cet_cmake_config() will put ${PRODUCTNAME}Config.cmake in 
-#  $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake or $ENV{${PRODUCTNAME_UC}_DIR}/cmake
+#  ${flavorqual_dir}/lib/cmake/${PRODUCTNAME} or share/${PRODUCTNAME}/cmake
 # check these directories for allowed cmake configure files:
 # either ${PRODUCTNAME_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
 # call find_package() if we find the config file

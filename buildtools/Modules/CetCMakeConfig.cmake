@@ -3,7 +3,7 @@
 # cet_cmake_config( [NO_FLAVOR] )
 #   build and install PackageConfig.cmake and PackageConfigVersion.cmake
 #   these files are installed in ${flavorqual_dir}/lib/PACKAGE/cmake
-#   if NO_FLAVOR is specified, the files are installed under ${product}/${version}/include
+#   if NO_FLAVOR is specified, the files are installed under ${product}/${version}/cmake
 
 # this requires cmake 2.8.8 or later
 include(CMakePackageConfigHelpers)
@@ -13,7 +13,7 @@ include(CetParseArgs)
 function(_config_package_config_file)
   # Set variables (scope within this function only) with simpler names
   # for use inside package config files as e.g. @PACKAGE_bin_dir@
-  foreach(path_type bin lib inc fcl gdml)
+  foreach(path_type bin lib inc fcl gdml data)
     set(${path_type}_dir ${${product}_${path_type}_dir})
   endforeach()
   configure_package_config_file(
@@ -29,6 +29,7 @@ function(_config_package_config_file)
     inc_dir
     fcl_dir
     gdml_dir
+    data_dir
     )
 endfunction()
 
@@ -55,9 +56,11 @@ macro( cet_cmake_config  )
   cet_parse_args( CCC "" "NO_FLAVOR" ${ARGN})
 
   if( CCC_NO_FLAVOR )
-    set( distdir "${product}/${version}/cmake" )
+    set( distdir "${${product}_data_dir}/cmake" )
+  elseif(${flavorqual_dir})
+    set( distdir "${flavorqual_dir}/lib/cmake" )
   else()
-    set( distdir "${flavorqual_dir}/lib/${product}/cmake" )
+    set( distdir "cmake" )
   endif()
 
   #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")

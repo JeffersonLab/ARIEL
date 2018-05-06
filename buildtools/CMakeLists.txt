@@ -1,5 +1,5 @@
 #
-#  cetbuildtools/CMakeLists.txt
+#  buildtools/CMakeLists.txt
 #
 #  CMake build file for cetbuildtools
 #  This simply copies files into an install directory - there is no build

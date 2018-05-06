@@ -6,14 +6,13 @@ INSTALL(FILES
   CetBasicConfigVersion-AnyNewerVersion.cmake.in
   CetBasicConfigVersion-ExactVersion.cmake.in
   CetBasicConfigVersion-SameMajorVersion.cmake.in
-  CetBuildTable.cmake
   CetCMakeConfig.cmake
   CetCMakeEnv.cmake
   CetCMakeUtils.cmake
   CetCopy.cmake
   CetCurrentSubdir.cmake
-  CetGetProductInfo.cmake
   CetExclude.cmake
+  CetGetProductInfo.cmake
   CetHaveQual.cmake
   CetMake.cmake
   CetMakeCompletions.cmake
@@ -42,5 +41,5 @@ INSTALL(FILES
   SetCompilerFlags.cmake
   SetFlavorQual.cmake
   UseCPack.cmake
-  DESTINATION ${product}/${version}/Modules
+  DESTINATION ${${product}_data_dir}/Modules
   )

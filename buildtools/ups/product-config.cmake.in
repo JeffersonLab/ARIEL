@@ -6,7 +6,7 @@ set( @product@_UPS_VERSION @version@ )
 
 set_and_check(@product@_BINDIR "@PACKAGE_bin_dir@")
 
-list(APPEND CMAKE_MODULE_PATH "${PACKAGE_PREFIX_DIR}/@product@/@version@/Modules")
+list(APPEND CMAKE_MODULE_PATH "@PACKAGE_data_dir@/Modules")
 
 @CONFIG_FIND_UPS_COMMANDS@
 
