@@ -40,10 +40,16 @@ macro(cet_find_library)
   STRING( REGEX REPLACE ";" " " find_library_commands "${ARGN}" )
   #message(STATUS "cet_find_library debug: find_library_commands ${find_library_commands}" )
 
+  # Cet projects look for "sqlite3_ups", but the rest of the world installs "sqlite3"
+  STRING(REPLACE "sqlite3_ups" "sqlite3" LIBNAME ${ARGV2})
+  STRING(REPLACE "sqlite3_ups" "sqlite3" find_library_commands ${find_library_commands})
+  #message(STATUS "cet_find_library debug: filtered find_library_commands ${find_library_commands}" )
+
   #message(STATUS "cet_find_library debug: cet_find_library_list ${cet_find_library_list}")
-  list(FIND cet_find_library_list ${ARGV2} found_library_match)
+  list(FIND cet_find_library_list ${LIBNAME} found_library_match)
   if( ${found_library_match} LESS 0 )
-    set(cet_find_library_list ${ARGV2} ${cet_find_library_list} )
+    #TODO: use cmake_parse_arguments to get the parameters of NAMES, don't assume pos #2
+    set(cet_find_library_list ${LIBNAME} ${cet_find_library_list} )
     # add to library list for package configure file
     set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
     if( NOT ${ARGV0} )
@@ -52,5 +58,7 @@ macro(cet_find_library)
   endif()
 
   # call find_library
-  find_library( ${ARGN} )
+  STRING( REGEX REPLACE " " ";" find_library_commands "${find_library_commands}" )
+  find_library( ${find_library_commands} )
+  #message( STATUS "cet_find_library ${ARGV0} = ${${ARGV0}}")
 endmacro(cet_find_library)
