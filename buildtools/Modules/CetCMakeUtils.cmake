@@ -16,11 +16,11 @@ macro(_cet_init_config_var)
   # initialize cmake config file fragments
   set(CONFIG_FIND_UPS_COMMANDS "
 ## find_ups_product directives
-## remember that these are minimum required versions" 
-      CACHE STRING "UPS product directives for config" FORCE)
+## remember that these are minimum required versions" )
+#      CACHE STRING "UPS product directives for config" FORCE)
   set(CONFIG_FIND_LIBRARY_COMMANDS "
-## find_library directives" 
-      CACHE STRING "find_library directives for config" FORCE)
+## find_library directives" )
+#      CACHE STRING "find_library directives for config" FORCE)
   set(CONFIG_LIBRARY_LIST "" CACHE INTERNAL "libraries created by this package" )
   set(CONFIG_PM_LIST "" CACHE INTERNAL "perl libraries created by this package" )
   set(CONFIG_PERL_PLUGIN_LIST "" CACHE INTERNAL "perl plugin libraries created by this package" )
