@@ -57,10 +57,8 @@ macro( cet_cmake_config  )
 
   if( CCC_NO_FLAVOR )
     set( distdir "${${product}_data_dir}/cmake" )
-  elseif(${flavorqual_dir})
-    set( distdir "${flavorqual_dir}/lib/cmake" )
   else()
-    set( distdir "cmake" )
+    set( distdir "${${product}_lib_dir}/cmake/${product}" )
   endif()
 
   #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")
