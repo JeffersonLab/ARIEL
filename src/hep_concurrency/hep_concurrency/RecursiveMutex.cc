@@ -68,10 +68,12 @@ namespace hep {
     RecursiveMutex::lock(string const& opName)
     {
       (void)opName;
+#ifdef HEPC_DEBUG_MUTEX
       unsigned tsc_begin_cpuidx = 0;
       auto tsc_begin = getTSCP(tsc_begin_cpuidx);
       unsigned tsc_end_cpuidx = tsc_begin_cpuidx;
       auto tsc_end = tsc_begin;
+#endif
       auto tid = getThreadID();
       unique_lock<mutex> cvLock{cvMutex_, defer_lock};
       cvLock.lock();
@@ -85,7 +87,9 @@ namespace hep {
       ++lockCount_;
       if (lockCount_ == 1) {
         mutex_.lock();
+#ifdef HEPC_DEBUG_MUTEX
         tsc_end = getTSCP(tsc_end_cpuidx);
+#endif
         owner_ = tid;
       }
       {
@@ -93,6 +97,7 @@ namespace hep {
         if (lockCount_ == 1) {
           (*held_)[tid].push_back(this);
         }
+#ifdef HEPC_DEBUG_MUTEX
         if (getenv("ART_DEBUG_RECURSIVE_MUTEX") != nullptr) {
           ostringstream buf;
           buf << "----->"
@@ -130,6 +135,7 @@ namespace hep {
           }
           cerr << buf.str();
         }
+#endif
       }
       cv_.notify_one();
     }
@@ -137,11 +143,14 @@ namespace hep {
     void
     RecursiveMutex::unlock(string const& opName)
     {
+      (void)opName;
+#ifdef HEPC_DEBUG_MUTEX
       unsigned tsc_begin_cpuidx = 0;
       auto tsc_begin = getTSCP(tsc_begin_cpuidx);
       unique_lock<mutex> cvLock{cvMutex_};
       unsigned tsc_end_cpuidx = tsc_begin_cpuidx;
       auto tsc_end = getTSCP(tsc_end_cpuidx);
+#endif
       auto tid = getThreadID();
       if ((owner_ == default_thread_id) || (owner_ != tid)) {
         // Either the mutex is unowned or is not owned by us, error.
@@ -167,6 +176,7 @@ namespace hep {
             --i;
             if ((*held_)[tid].at(i) == this) {
               if ((i + 1) != (*held_)[tid].size()) {
+#ifdef HEPC_DEBUG_MUTEX
                 {
                   ostringstream buf;
                   buf << "----->"
@@ -205,6 +215,7 @@ namespace hep {
                   }
                   cerr << buf.str();
                 }
+#endif
                 ostringstream buf;
                 buf << "Aborting on attempt to unlock the mutex "
                     << "when it is not the most recently "
@@ -220,6 +231,7 @@ namespace hep {
               break;
             }
           }
+#ifdef HEPC_DEBUG_MUTEX
           if (getenv("ART_DEBUG_RECURSIVE_MUTEX") != nullptr) {
             ostringstream buf;
             buf << "----->"
@@ -257,6 +269,7 @@ namespace hep {
             }
             cerr << buf.str();
           }
+#endif
         }
       }
       catch (...) {
