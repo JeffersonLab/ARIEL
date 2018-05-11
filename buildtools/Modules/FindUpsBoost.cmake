@@ -56,7 +56,7 @@ if( ${found_product_match} LESS 0 )
   #set(Boost_ADDITIONAL_VERSIONS "1.48" "1.48.0" "1.49" "1.49.0")
 
   # Translate vx_y_z to x.y.z - minimum acceptable library version (if any)
-  if( ${minimum} )
+  if( minimum )
     _get_dotver( ${minimum} )
   endif()
 
