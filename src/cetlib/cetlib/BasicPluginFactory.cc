@@ -15,7 +15,7 @@ cet::BasicPluginFactory::BasicPluginFactory(
   std::string const& suffix,
   std::string const& makerName,
   std::string const& pluginTypeFuncName)
-  : PluginFactory{search_path{os_libpath()}, suffix}
+  : PluginFactory{search_path{getenv_os_libpath()}, suffix}
   , makerName_{makerName}
   , pluginTypeFuncName_{pluginTypeFuncName}
 {}

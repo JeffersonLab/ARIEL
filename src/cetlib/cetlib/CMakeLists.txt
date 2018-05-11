@@ -47,6 +47,7 @@ cet_make_library(LIBRARY_NAME ${LIB_NAME}
   include.cc
   includer.cc
   lpad.cc
+  os_libpath.cc
   nybbler.cc
   replace_all.cc
   rpad.cc

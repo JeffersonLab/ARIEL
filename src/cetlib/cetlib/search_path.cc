@@ -13,6 +13,7 @@
 #include <iterator>
 #include <ostream>
 #include <regex>
+#include <algorithm>
 #include <sys/stat.h>
 
 using namespace std;
@@ -24,9 +25,10 @@ namespace {
   string
   get_env_if_present(string const& arg)
   {
-    // If no colon is present, assume the user is specifying an
+    // If no colon and no slash is present, assume the user is specifying an
     // environment variable.
-    return arg.find(':') == string::npos ? arg : string{};
+    return (arg.find(':') == string::npos && arg.find('/') == string::npos )
+      ? arg : string{};
   }
 
   vector<string>
@@ -39,6 +41,18 @@ namespace {
 
     if (dirs.empty()) {
       dirs.emplace_back();
+    } else {
+      // Delete trailing slashes
+      for_each(dirs.begin(), dirs.end(), [](string& s) {
+	  if (s.size()>1 && s.back() == '/')
+	    s.erase(s.size()-1);
+	});
+      // Remove duplicates while preserving order
+      for (auto it = dirs.begin(); it != dirs.end(); ++it ) {
+	for (auto jt = it+1; (jt = find(jt, dirs.end(), *it)) != dirs.end();) {
+	  jt = dirs.erase(jt);
+	}
+      }
     }
     return dirs;
   }

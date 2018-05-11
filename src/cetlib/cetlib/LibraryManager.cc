@@ -74,7 +74,7 @@ cet::LibraryManager::LibraryManager(std::string lib_type)
 {}
 
 cet::LibraryManager::LibraryManager(std::string lib_type, std::string pattern)
-  : LibraryManager{search_path{os_libpath()}, lib_type, pattern}
+  : LibraryManager{search_path{getenv_os_libpath()}, lib_type, pattern}
 {}
 
 size_t

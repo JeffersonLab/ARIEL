@@ -1,11 +1,15 @@
 #ifndef cetlib_os_libpath_h
 #define cetlib_os_libpath_h
 
+#include <string>
+
 namespace cet {
   // Return the name of the environment variable that defines the
   // search path for the dynamic library loader on this operating
   // system.
   constexpr char const* os_libpath();
+
+  std::string getenv_os_libpath();
 }
 
 inline constexpr char const*
