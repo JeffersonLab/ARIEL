@@ -367,7 +367,7 @@ function(_cet_add_test_detail TNAME TEST_WORKDIR)
     COMMAND
     ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
     --required-files "${CET_REQUIRED_FILES}"
-    --datafiles "${CET_DATAFILES}"
+    --datafiles "${DATAFILE_NAMES}"
     --skip-return-code ${skip_return_code}
     ${CET_TEST_EXEC} ${test_args})
 endfunction()
@@ -406,7 +406,7 @@ function(_cet_add_ref_test_detail TNAME TEST_WORKDIR)
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
     COMMAND ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
     --required-files "${CET_REQUIRED_FILES}"
-    --datafiles "${CET_DATAFILES}"
+    --datafiles "${DATAFILE_NAMES}"
     --skip-return-code ${skip_return_code}
     ${CMAKE_COMMAND}
     -DTEST_EXEC=${CET_TEST_EXEC}
@@ -623,11 +623,14 @@ function(cet_test CET_TARGET)
       set(datafiles_tmp)
       foreach (df ${CET_DATAFILES})
         get_filename_component(dfd ${df} DIRECTORY)
+        string(REGEX REPLACE "^[^/].*" "" dfd "${dfd}")
         if (dfd)
           list(APPEND datafiles_tmp ${df})
         else(dfd)
           list(APPEND datafiles_tmp ${CMAKE_CURRENT_SOURCE_DIR}/${df})
         endif(dfd)
+        get_filename_component(dfn ${df} NAME)
+        list(APPEND DATAFILE_NAMES ${dfn})
       endforeach()
       set(CET_DATAFILES ${datafiles_tmp})
     endif(DEFINED CET_DATAFILES)
