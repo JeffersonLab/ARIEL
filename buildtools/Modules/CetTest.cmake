@@ -466,7 +466,7 @@ endmacro()
 function(cet_test CET_TARGET)
   # Parse arguments
   if (${CET_TARGET} MATCHES .*/.*)
-    message(FATAL_ERROR "${CET_TARGET} shuld not be a path. Use a simple "
+    message(FATAL_ERROR "${CET_TARGET} should not be a path. Use a simple "
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   endif()
   cmake_parse_arguments(CET

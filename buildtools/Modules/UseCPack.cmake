@@ -13,6 +13,7 @@ set( CPACK_PACKAGE_NAME ${product} )
 
 find_compiler()
 
+# TODO: provide get-directory-name
 FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
 set( THIS_PLATFORM ${CMAKE_SYSTEM_PROCESSOR} )
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
@@ -27,6 +28,7 @@ if ( ${OSTYPE} MATCHES "noarch" )
 else ()
   set( PACKAGE_BASENAME ${OSTYPE}-${THIS_PLATFORM} )
 endif ()
+# TODO: alternative for full_qualifier
 if ( NOT full_qualifier )
   set( CPACK_SYSTEM_NAME ${PACKAGE_BASENAME} )
 else ()
