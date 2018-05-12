@@ -108,7 +108,7 @@
 #
 # For the following effects:
 #
-# After build, the following files will be placed under ${CETPKG_BUILD}:
+# After build, the following files will be placed under ${PROJECT_BINARY_DIR}:
 #    bin/test.py
 #    bin/test2.py
 #    bin/test3.py

@@ -40,7 +40,7 @@ endmacro( _cet_perl_plugin_version )
 
 macro( _cet_copy_perllib )
   cmake_parse_arguments( CPPRL "" "SUBDIR;WORKING_DIRECTORY" "LIST" ${ARGN})
-  set( perllibbuildpath ${CETPKG_BUILD}/${prlpathname} )
+  set( perllibbuildpath ${PROJECT_BINARY_DIR}/${prlpathname} )
   if( CPPRL_SUBDIR )
     set( perllibbuildpath "${perllibbuildpath}/${CPPRL_SUBDIR}" )
   endif( CPPRL_SUBDIR )

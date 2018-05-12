@@ -17,7 +17,6 @@
 # 
 
 include(CMakeParseArguments)
-include(CetCurrentSubdir)
 include (CetCopy)
 
 function( cet_install_files )
@@ -39,7 +38,7 @@ function( cet_install_files )
   _cet_debug_message( "cet_install_files: files will be installed in ${this_install_dir}" )
 
   # copy to build directory
-  set( this_build_path ${CETPKG_BUILD}/${IFG_DIRNAME} )
+  set( this_build_path ${PROJECT_BINARY_DIR}/${IFG_DIRNAME} )
 
   cet_copy( ${IFG_LIST} DESTINATION "${this_build_path}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
   INSTALL ( FILES  ${IFG_LIST}

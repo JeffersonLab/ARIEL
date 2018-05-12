@@ -42,7 +42,7 @@
 # custom command.
 ########################################################################
 include (CMakeParseArguments)
-get_filename_component(abs_build "$ENV{CETPKG_BUILD}" REALPATH CACHE)
+get_filename_component(abs_build "${PROJECT_BINARY_DIR}" REALPATH CACHE)
 string(LENGTH "${abs_build}" abs_build_len)
 function (cet_copy)
   cmake_parse_arguments(CETC "PROGRAMS;NAME_AS_TARGET"

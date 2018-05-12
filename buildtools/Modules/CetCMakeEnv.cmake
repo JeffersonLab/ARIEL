@@ -127,8 +127,6 @@ macro(cet_cmake_env)
   cet_set_perllib_directory()
   cet_set_test_directory()
 
-  set(CETPKG_BUILD ${PROJECT_BINARY_DIR})
-
   # add to the include path
   include_directories ("${PROJECT_BINARY_DIR}")
   include_directories("${PROJECT_SOURCE_DIR}" )
