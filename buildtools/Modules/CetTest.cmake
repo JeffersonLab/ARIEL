@@ -272,19 +272,6 @@ cmake_policy(VERSION 3.3) # For if (IN_LIST)
 
 find_file(CET_CATCH_MAIN_SOURCE cet_catch_main.cpp PATH_SUFFIXES src)
 
-if (DEFINED ENV{ART_VERSION})
-  check_ups_version(art $ENV{ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
-elseif (DEFINED ENV{CETPKG_SOURCE})
-  if ((EXISTS $ENV{CETPKG_SOURCE}/art/tools/migration AND NOT EXISTS $ENV{CETPKG_SOURCE}/art/tools/filter-timeTracker-output) OR
-      (EXISTS $ENV{CETPKG_SOURCE}/tools/migration AND NOT EXISTS $ENV{CETPKG_SOURCE}/tools/filter-timeTracker-output))
-    set(CT_NEED_ART_COMPAT TRUE)
-  endif()
-endif()
-if (CT_NEED_ART_COMPAT)
-  message(STATUS "Using or building art OLDER than v2_01_00RC1: using -DART_COMPAT=1 for REF tests.")
-  set(DEFINE_ART_COMPAT -DART_COMPAT=1)
-endif()
-
 # If Boost has been specified but the library hasn't, load the library.
 if ((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
   find_ups_boost(${BOOST_VERS} unit_test_framework)
