@@ -9,12 +9,7 @@ message(STATUS "CPACK_PACKAGE_VERSION is ${CPACK_PACKAGE_VERSION}" )
 
 set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0 )
 set( CPACK_GENERATOR TBZ2 )
-set( mrb_project $ENV{MRB_PROJECT} )
-if ( mrb_project )
-  set( CPACK_PACKAGE_NAME ${mrb_project} )
-else()
-  set( CPACK_PACKAGE_NAME ${product} )
-endif()
+set( CPACK_PACKAGE_NAME ${product} )
 
 find_compiler()
 
