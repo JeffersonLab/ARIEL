@@ -156,7 +156,7 @@ cet_test(crc32_test USE_CATCH_MAIN SOURCES crc32_test.cc CRC32Calculator.cc TEST
 
 # Use ParseAndAddCatchTests to generate a test for each test case.
 cet_test(hypot_test USE_CATCH_MAIN NO_AUTO)
-list(APPEND CMAKE_MODULE_PATH $ENV{CATCH_DIR}/share/cmake/catch)
+list(APPEND CMAKE_MODULE_PATH ${CATCH_DIR}/share/cmake/catch)
 include(ParseAndAddCatchTests)
 set(AdditionalCatchParameters -s)
 ParseAndAddCatchTests(hypot_test)
