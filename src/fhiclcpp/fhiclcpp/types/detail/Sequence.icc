@@ -95,7 +95,7 @@ namespace fhicl {
   Sequence<T,-1ull>::Sequence(Name&& name, Comment&& comment)
     : SequenceBase{std::move(name), std::move(comment), par_style::REQUIRED, par_type::SEQ_VECTOR, detail::AlwaysUse()}
     , RegisterIfTableMember{this}
-    , value_{{std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))}}
+    , value_({std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))})
     {
       NameStackRegistry::end_of_ctor();
     }
@@ -104,7 +104,7 @@ namespace fhicl {
   Sequence<T,-1ull>::Sequence(Name&& name, Comment&& comment, std::function<bool()> maybeUse)
     : SequenceBase{std::move(name), std::move(comment), par_style::REQUIRED_CONDITIONAL, par_type::SEQ_VECTOR, maybeUse}
     , RegisterIfTableMember{this}
-    , value_{{std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))}}
+    , value_({std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))})
     {
       NameStackRegistry::end_of_ctor();
     }
