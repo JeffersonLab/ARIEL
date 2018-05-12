@@ -1,4 +1,4 @@
 install (FILES
     LinuxPPC.cmake
-    DESTINATION ${product}/${version}/src/xcompile
+    DESTINATION src/${product}/${version}/xcompile
     )
