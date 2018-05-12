@@ -29,7 +29,7 @@ include(CetCurrentSubdir)
 include (CetExclude)
 
 macro( _cet_perl_plugin_version )
-  configure_file(${CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
+  configure_file(${CETLIB_PERLLIB}/PluginVersionInfo.pm.in
     ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
     @ONLY)
     set(CONFIG_PM_VERSION "PluginVersionInfo.pm"

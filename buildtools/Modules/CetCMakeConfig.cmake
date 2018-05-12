@@ -16,6 +16,7 @@ function(_config_package_config_file)
   foreach(path_type bin lib inc fcl gdml data)
     set(${path_type}_dir ${${product}_${path_type}_dir})
   endforeach()
+  set(perllib ${${product}_perllib})
   configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake
@@ -30,6 +31,7 @@ function(_config_package_config_file)
     fcl_dir
     gdml_dir
     data_dir
+    perllib
     )
 endfunction()
 
