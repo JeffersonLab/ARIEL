@@ -1,0 +1,63 @@
+--- catch-1.11.0/contrib/ParseAndAddCatchTests.cmake	2017-11-04 08:03:56.283287373 -0500
++++ catch-1.11.0/contrib/ParseAndAddCatchTests.cmake	2017-11-04 08:07:19.184708063 -0500
+@@ -24,7 +24,9 @@
+ #        add_executable(${PROJECT_NAME} ${SOURCE_FILES})                                           #
+ #                                                                                                  #
+ #        include(ParseAndAddCatchTests)                                                            #
+-#        ParseAndAddCatchTests(${PROJECT_NAME})                                                    #
++#        ParseAndAddCatchTests(${PROJECT_NAME}                                                     #
++#                              [TargetVar <targetVar>]                                             #
++#                              [ExtraLabels <extraLabels>])                                        #
+ #                                                                                                  #
+ # The following variables affect the behavior of the script:                                       #
+ #                                                                                                  #
+@@ -73,6 +75,7 @@
+ 
+ # Worker function
+ function(ParseFile SourceFile TestTarget)
++    cmake_parse_arguments(PF "" "TargetsVar" "ExtraLabels" ${ARGN})
+     # According to CMake docs EXISTS behavior is well-defined only for full paths.
+     get_filename_component(SourceFile ${SourceFile} ABSOLUTE)
+     if(NOT EXISTS ${SourceFile})
+@@ -145,7 +148,7 @@
+             string(REPLACE "[" "" Tags "${Tags}")
+         endif()
+ 
+-        list(APPEND Labels ${Tags})
++        list(APPEND Labels ${Tags} ${PF_ExtraLabels})
+ 
+         list(FIND Labels "!hide" IndexOfHideLabel)
+         set(HiddenTagFound OFF)
+@@ -166,20 +169,31 @@
+ 
+             # Add the test and set its properties
+             add_test(NAME "\"${CTestName}\"" COMMAND ${TestTarget} ${Name} ${AdditionalCatchParameters})
++            if(PF_TargetsVar)
++              list(APPEND ${PF_TargetsVar} "${CTestName}")
++            endif()
+             set_tests_properties("\"${CTestName}\"" PROPERTIES FAIL_REGULAR_EXPRESSION "No tests ran"
+                                                     LABELS "${Labels}")
+         endif()
+ 
+     endforeach()
++
++    if(PF_TargetsVar)
++      set(${PF_TargetsVar} "${${PF_TargetsVar}}" PARENT_SCOPE)
++    endif()
+ endfunction()
+ 
+ # entry point
+ function(ParseAndAddCatchTests TestTarget)
++    cmake_parse_arguments(PACT "" "TargetsVar" "ExtraLabels" ${ARGN})
+     PrintDebugMessage("Started parsing ${TestTarget}")
+     get_target_property(SourceFiles ${TestTarget} SOURCES)
+     PrintDebugMessage("Found the following sources: ${SourceFiles}")
+     foreach(SourceFile ${SourceFiles})
+-        ParseFile(${SourceFile} ${TestTarget})
++        ParseFile(${SourceFile} ${TestTarget} ${ARGN})
+     endforeach()
+     PrintDebugMessage("Finished parsing ${TestTarget}")
++    if(PACT_TargetsVar)
++      set(${PACT_TargetsVar} "${${PACT_TargetsVar}}" PARENT_SCOPE)
++    endif()
+ endfunction()

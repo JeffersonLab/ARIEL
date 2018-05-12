@@ -1,0 +1,17 @@
+
+set( @product@_VERSION @cet_dot_version@ )
+set( @product@_UPS_VERSION @version@ )
+
+@PACKAGE_INIT@
+
+if (IS_DIRECTORY "@PACKAGE_data_dir@/Modules")
+  list(APPEND CMAKE_MODULE_PATH "@PACKAGE_data_dir@/Modules")
+endif()
+
+@CONFIG_FIND_UPS_COMMANDS@
+
+@CONFIG_FIND_LIBRARY_COMMANDS@
+
+set(CATCH_INC "@PACKAGE_inc_dir@")
+
+check_required_components(@product@)

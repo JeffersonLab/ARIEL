@@ -1,0 +1,19 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent catch v1_12_02
+
+incdir product_dir include
+
+# list all products here
+# the 4th field may contain the keyword optional or only_for_build
+product         version
+cetbuildtools   v7_00_00  -  only_for_build
+end_product_list
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:
