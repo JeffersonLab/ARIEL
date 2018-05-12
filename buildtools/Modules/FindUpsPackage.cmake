@@ -40,6 +40,8 @@ if( NOT ${${RNAME}_FOUND} )
   # If not found, try pkg-config
   find_package(PkgConfig)
   if(PKG_CONFIG_FOUND)
+    # UPS "python" is currently v2.7, which is "python2" in pkg-config land
+    string(REGEX REPLACE "(^| )python( |$)" "python2" RNAME ${RNAME})
     if(${dotver})
       pkg_check_modules(PC_${RNAME} ${RNAME}>=${dotver})
     else()
