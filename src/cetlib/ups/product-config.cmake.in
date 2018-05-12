@@ -12,5 +12,7 @@ endif()
 
 @CONFIG_FIND_LIBRARY_COMMANDS@
 
+set(CETLIB_PERLLIB "@PACKAGE_perllib@")
+
 check_required_components(@product@)
 
