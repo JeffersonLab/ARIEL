@@ -21,10 +21,6 @@ project(art)
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH
-  $ENV{CANVAS_ROOT_IO_DIR}/Modules
-  ${CMAKE_CURRENT_SOURCE_DIR}/Modules)
-
 include(CetCMakeEnv)
 cet_cmake_env()
 
@@ -55,6 +51,8 @@ find_ups_product(sqlite)
 find_ups_product(range)
 find_ups_boost()
 find_ups_root()
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Modules)
 
 # SQLite
 cet_find_library(SQLITE3 NAMES sqlite3_ups PATHS ENV SQLITE_LIB NO_DEFAULT_PATH)

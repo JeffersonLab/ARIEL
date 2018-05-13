@@ -8,4 +8,4 @@ install(FILES
   max-vsize-events.sql
   max-vsize-modules.sql
   peak-summary.sql
-  DESTINATION "${product}/${version}/tools/sqlite/memoryTracker")
+  DESTINATION "${${product}_data_dir}/tools/sqlite/memoryTracker")
