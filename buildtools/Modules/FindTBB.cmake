@@ -73,8 +73,9 @@
 #                           <library>, where <library> may be tbb, tbb_debug,
 #                           tbbmalloc, tbbmalloc_debug, tbb_preview, or 
 #                           tbb_preview_debug.
+# * TBB                   - Path to tbb library for the requested build type
 #
-# The following varibles should be used to build and link with TBB:
+# The following variables should be used to build and link with TBB:
 #
 # * TBB_INCLUDE_DIRS        - The include directory for TBB.
 # * TBB_LIBRARIES           - The libraries to link against to use TBB.
@@ -99,7 +100,8 @@ if(NOT TBB_FOUND)
   ##################################
   
   if(NOT DEFINED TBB_USE_DEBUG_BUILD)
-    if(CMAKE_BUILD_TYPE MATCHES "(Debug|DEBUG|debug|RelWithDebInfo|RELWITHDEBINFO|relwithdebinfo)")
+#    if(CMAKE_BUILD_TYPE MATCHES "(Debug|DEBUG|debug|RelWithDebInfo|RELWITHDEBINFO|relwithdebinfo)")
+    if(CMAKE_BUILD_TYPE MATCHES "(Debug|DEBUG|debug)")
       set(TBB_BUILD_TYPE DEBUG)
     else()
       set(TBB_BUILD_TYPE RELEASE)
@@ -109,6 +111,8 @@ if(NOT TBB_FOUND)
   else()
     set(TBB_BUILD_TYPE RELEASE)
   endif()
+#  message(STATUS "TBB build type = ${TBB_BUILD_TYPE}")
+
   
   ##################################
   # Set the TBB search directories
@@ -294,6 +298,14 @@ if(NOT TBB_FOUND)
   endif()
 
   mark_as_advanced(TBB_INCLUDE_DIRS TBB_LIBRARIES)
+
+  if(TBB_FOUND)
+    set(TBB "${TBB_tbb_LIBRARY}" CACHE STRING "TBB library" FORCE)
+    #message(STATUS "Found TBB ${TBB_VERSION} ${TBB}")
+    if(TBB)
+      message(STATUS "TBB version: ${TBB_VERSION}")
+    endif()
+  endif()
 
   unset(TBB_ARCHITECTURE)
   unset(TBB_BUILD_TYPE)
