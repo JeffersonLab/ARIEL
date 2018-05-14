@@ -145,7 +145,7 @@ macro(cet_check_gcc)
 endmacro(cet_check_gcc)
 
 macro(_expand_std_dirs REPORT_MSG OUT_VAR)
-  if(${flavorqual_dir})
+  if(flavorqual_dir)
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" _dir1 "${REPORT_MSG}" )
   else()
     STRING( REGEX REPLACE "flavorqual_dir/?" "" _dir1 "${REPORT_MSG}" )
