@@ -44,15 +44,15 @@ find_ups_product(sqlite v3_08_05_00 )
 find_ups_product(hep_concurrency)
 find_ups_boost(v1_50_0)
 find_ups_product(tbb)
+find_ups_product(catch v1_11_0)
 
-# SQLite
+# Libraries
 cet_find_library(SQLITE3 NAMES sqlite3_ups PATHS ENV SQLITE_LIB NO_DEFAULT_PATH)
 
 # The environment has been established, now generate the Makefiles.
 
 add_subdirectory(messagefacility)
 add_subdirectory(perllib)
-add_subdirectory(xcompile)
 add_subdirectory(ups)
 
 # This step enables building the package tarball
