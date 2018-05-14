@@ -97,8 +97,11 @@ macro( find_ups_root )
       message( FATAL_ERROR "No ROOT incdir")
     endif()
 
-    # add include directory to include path if it exists
-    include_directories ( ROOT_INC_DIR )
+    include_directories ( ${ROOT_INC_DIR} )
+    set(CMAKE_LIBRARY_PATH "${ROOT_LIB_DIR}" "${CMAKE_LIBRARY_PATH}")
+    # if(APPLE)
+    #   set(CMAKE_BUILD_RPATH "${ROOT_LIB_DIR}" "${CMAKE_BUILD_RPATH}")
+    # endif()
 
     check_ups_version(root ${ROOT_VERSION} v6_00_00
       PRODUCT_OLDER_VAR HAVE_ROOT5
