@@ -52,7 +52,7 @@ macro( find_ups_root )
       OUTPUT_VARIABLE ROOT_CONFIG_VERSION
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
-    message( STATUS "Found ROOT version ${ROOT_CONFIG_VERSION}" )
+    message( STATUS "ROOT version: ${ROOT_CONFIG_VERSION}" )
     string( REGEX REPLACE "^([0-9]+)\\.([0-9]+)/([0-9]+).*" "v\\1_\\2_\\3" ROOT_VERSION "${ROOT_CONFIG_VERSION}" )
 
     cmake_parse_arguments( FUR "" "" "" ${ARGN} )
