@@ -31,4 +31,9 @@ if ! [[ -r "$sqlfile" ]]; then
   exit 1
 fi
 
+# Provide fallback if dynamic linker path is empty on macOS due to SIP
+if [[ "$(uname -s)" = "Darwin" && x"$DYLD_LIBRARY_PATH" = "x" && x"$CET_TEST_LIBPATH" != "x" ]]; then
+  export DYLD_LIBRARY_PATH="$CET_TEST_LIBPATH"
+fi
+
 exec "$exec" "$@" "`cat \"$sqlfile\"`"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. cet_test_functions.sh
+
 # Process 1
 art --rethrow-all -c runSubRunNoPut_t.fcl -o out1.root -n 1
 

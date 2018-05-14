@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. cet_test_functions.sh
+
 function usage() {
     echo "usage: ${0##*/} -c <art-config-file>" 1>&2
 }
