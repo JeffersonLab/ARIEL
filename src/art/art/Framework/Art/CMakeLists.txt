@@ -14,15 +14,15 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/artapp.cc.in
   ${CMAKE_CURRENT_BINARY_DIR}/${ART_MAIN_FUNC}.cc @ONLY
   )
 
-SET(ART_MAIN_FUNC mu2eapp)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/artapp.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${ART_MAIN_FUNC}.h @ONLY
-  )
+# SET(ART_MAIN_FUNC mu2eapp)
+# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/artapp.h.in
+#   ${CMAKE_CURRENT_BINARY_DIR}/${ART_MAIN_FUNC}.h @ONLY
+#   )
 
-SET(ART_RETHROW_DEFAULT TRUE)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/artapp.cc.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${ART_MAIN_FUNC}.cc @ONLY
-  )
+# SET(ART_RETHROW_DEFAULT TRUE)
+# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/artapp.cc.in
+#   ${CMAKE_CURRENT_BINARY_DIR}/${ART_MAIN_FUNC}.cc @ONLY
+#   )
 ####################################
 
 add_subdirectory(detail)
@@ -39,7 +39,7 @@ set(art_Framework_Art_sources
   FileCatalogOptionsHandler.cc
   OptionsHandler.cc
   ${CMAKE_CURRENT_BINARY_DIR}/artapp.cc
-  ${CMAKE_CURRENT_BINARY_DIR}/mu2eapp.cc
+#  ${CMAKE_CURRENT_BINARY_DIR}/mu2eapp.cc
   find_config.cc
   run_art.cc
   detail/MetadataRegexHelpers.cc
@@ -89,23 +89,14 @@ endmacro()
 
 # Standard execs
 art_exec(art art artapp)
-art_exec(gm2 art artapp)
-art_exec(lar art artapp)
-art_exec(mu2e art mu2eapp)
-art_exec(nova art artapp)
+# art_exec(mu2e art mu2eapp)
 
 # Execs with Boost unit testing enabled for modules.
 art_exec(art_ut art_ut artapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-art_exec(gm2_ut art_ut artapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-art_exec(lar_ut art_ut artapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-art_exec(mu2e_ut art_ut mu2eapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-art_exec(nova_ut art_ut artapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+# art_exec(mu2e_ut art_ut mu2eapp LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 cet_make_completions(art ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
-cet_make_completions(gm2 ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
-cet_make_completions(lar ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
-cet_make_completions(mu2e ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
-cet_make_completions(nova ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
+# cet_make_completions(mu2e ${CMAKE_CURRENT_SOURCE_DIR}/art_completion_customizations)
 
 art_make_exec(NAME check_libs
   SOURCE ${CMAKE_CURRENT_BINARY_DIR}/check_libs.cc
