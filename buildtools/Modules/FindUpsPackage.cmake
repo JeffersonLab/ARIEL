@@ -29,7 +29,8 @@ endif()
 # Map product name "sqlite" to "sqlite3"
 string(REGEX REPLACE "sqlite( |$)" "sqlite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
-message( STATUS "Searching for ${RNAME}" )
+string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
+#message( STATUS "Searching for ${RNAME}" )
 
 # use find_package to check the version
 # assume the package's ${RNAME}Config.cmake will set up include_diretcories,

@@ -27,6 +27,7 @@ INSTALL(FILES
   EnsureOutOfSourceBuild.cmake
   FindCompilerVersion.cmake
   FindTBB.cmake
+  FindCLHEP.cmake
   FindUpsBoost.cmake
   FindUpsGeant4.cmake
   FindUpsPackage.cmake
