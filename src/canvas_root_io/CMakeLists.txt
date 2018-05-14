@@ -48,14 +48,11 @@ find_ups_product(messagefacility)
 find_ups_product(tbb)
 find_ups_root()
 find_ups_boost()
-find_ups_product(cetbuildtools)
+find_ups_product(cetbuildtools v7_00_00)
 
 
 # define CLHEP
 cet_find_library( CLHEP  NAMES CLHEP   PATHS ENV CLHEP_LIB_DIR NO_DEFAULT_PATH )
-
-# define cppunit
-cet_find_library( CPPUNIT NAMES cppunit   PATHS ENV CPPUNIT_LIB   NO_DEFAULT_PATH )
 
 # art_dictionary
 include(ArtDictionary)

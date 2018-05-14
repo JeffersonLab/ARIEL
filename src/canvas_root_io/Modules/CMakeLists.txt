@@ -1,4 +1,4 @@
 INSTALL(FILES
   ArtDictionary.cmake
-  DESTINATION ${product}/${version}/Modules
+  DESTINATION "${${product}_data_dir}/Modules"
   )
