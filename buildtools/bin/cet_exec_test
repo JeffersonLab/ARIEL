@@ -115,6 +115,10 @@ if (( ${#missingfiles[@]} )); then
   echo "Required files missing from ${wd} for test: ${missingfiles[@]}" 1>&2
   exit ${skip_code:-247}
 else
+  # Provide fallback if dynamic linker path is empty on macOS due to SIP
+  if [[ "$(uname -s)" = "Darwin" && x"$DYLD_LIBRARY_PATH" = "x" && x"$CET_TEST_LIBPATH" != "x" ]]; then
+    export DYLD_LIBRARY_PATH="$CET_TEST_LIBPATH"
+  fi
   # Execute command in now-clean environment.
   exec "$@"
 fi

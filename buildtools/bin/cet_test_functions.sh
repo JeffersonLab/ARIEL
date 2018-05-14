@@ -47,6 +47,11 @@
 # 2011/03/16 CG.
 ########################################################################
 
+# Provide fallback if dynamic linker path is empty on macOS due to SIP
+if [[ "$(uname -s)" = "Darwin" && x"$DYLD_LIBRARY_PATH" = "x" && x"$CET_TEST_LIBPATH" != "x" ]]; then
+  export DYLD_LIBRARY_PATH="$CET_TEST_LIBPATH"
+fi
+
 if [[ -n "${CET_TF_LEAVE}" ]]; then
   CET_TF_LEAVE=$(echo "${CET_TF_LEAVE}" | tr '[A-Z]' '[a-z]')
   CET_TF_LEAVE=${CET_TF_LEAVE%.}
