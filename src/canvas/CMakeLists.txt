@@ -46,7 +46,7 @@ find_ups_product(messagefacility)
 find_ups_product(range)
 find_ups_product(tbb)
 find_ups_boost()
-find_ups_product(cetbuildtools)
+find_ups_product(cetbuildtools v7_00_00)
 
 
 # define CLHEP

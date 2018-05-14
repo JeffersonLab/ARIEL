@@ -6,10 +6,10 @@ macro( _canvas_install_tools )
   cmake_parse_arguments( CT "" "DIRNAME" "SCRIPT_LIST" ${ARGN})
   if( CT_DIRNAME )
     install( PROGRAMS ${CT_SCRIPT_LIST}
-             DESTINATION "${product}/${version}/tools/${CT_DIRNAME}" )
+             DESTINATION "${${product}_data_dir}/tools/${CT_DIRNAME}" )
   else()
     install( PROGRAMS ${CT_SCRIPT_LIST}
-             DESTINATION "${product}/${version}/tools" )
+             DESTINATION "${${product}_data_dir}/tools" )
   endif()
 endmacro( _canvas_install_tools )
 
