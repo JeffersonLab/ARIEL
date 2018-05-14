@@ -23,6 +23,7 @@ if (CET_TEST_GROUPS)
 endif()
 
 include(CetGetProductInfo)
+include(CetHaveQual)  # Needed by product CMakeLists.txt
 
 macro(_get_cetpkg_info)
   cet_get_product_info_item(product rproduct ec_product)
