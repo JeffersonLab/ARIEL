@@ -11,7 +11,7 @@ install_scripts( LIST buildtool
   migrate-package
   )
 
-cet_script(filter-output filter-output-art-compat cet_exec_test)
+cet_script(filter-output filter-output-art-compat filter-program-options cet_exec_test)
 cet_script(checkClassVersion)
 
 INSTALL ( PROGRAMS make_bash_completions DESTINATION ${product}/${version}/bin )

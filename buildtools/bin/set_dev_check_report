@@ -41,8 +41,8 @@ test $have_noarch = "false" && echo Please use \"buildtool\" for preference \(se
 test -n "${CETPKG_INSTALL}" && set_ iprefix="\${CETPKG_INSTALL}" || set_ iprefix=/install/path
 test $have_noarch = "false" && echo env CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC} cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" -DCMAKE_BUILD_TYPE=\${CETPKG_TYPE} \"\${CETPKG_SOURCE}\"
 test $have_noarch = "true" && echo Use the following cmake command:
-test $have_noarch = "true" && echo cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" \"\${CETPKG_SOURCE}\"
-# note that the buildtool command works for both cases
-echo OR:
-echo buildtool -I \"${iprefix}\" -bti [-jN]
+test $have_noarch = "true" && echo "  cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" \"\${CETPKG_SOURCE}\""
+# note that the buildtool command works for both cases, but not (in general) for cetbuildtools!
+test $CETPKG_NAME = "cetbuildtools" || echo OR:
+test $CETPKG_NAME = "cetbuildtools" || echo "buildtool -I \"${iprefix}\" -bti [-jN]"
 unset iprefix
