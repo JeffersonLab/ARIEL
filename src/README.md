@@ -1,9 +1,10 @@
 Base package sources from
 
+* [cetbuildtools 7.03.02](https://cdcvs.fnal.gov/redmine/projects/cetbuildtools/wiki)
 * [art suite 2.11.02](https://cdcvs.fnal.gov/redmine/projects/art/wiki/Release_Notes_21102)
 * [gallery 1.08.02](https://cdcvs.fnal.gov/redmine/projects/gallery/wiki/Release_Notes_10802)
 
-Individual package versions:
+Individual package versions in the art suite:
 
 - art               v2\_11\_02
 - canvas            v3\_03\_02
@@ -11,7 +12,6 @@ Individual package versions:
 - cetlib            v3\_03\_01
 - cetlib\_except     v1\_02\_01
 - fhiclcpp          v4\_06\_08
-- gallery           v1\_08\_02
 - hep\_concurrency   v1\_00\_02
 - messagefacility   v2\_02\_02
 

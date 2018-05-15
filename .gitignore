@@ -1,0 +1,11 @@
+# Backups, saves
+*.orig
+*.bak
+
+# Editor lint
+.#*
+*~
+
+# macOS caches
+*._*
+*.DS_Store
