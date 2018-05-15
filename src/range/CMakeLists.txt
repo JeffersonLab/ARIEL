@@ -48,6 +48,15 @@ option(RANGE_V3_NO_PERF "" TRUE)
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
+# ----------------------------------------------------------------------
+# Replace top-level CMakeLists.txt of range submodule with our patched
+# version. (Don't build tests. Don't install configuration scripts, we
+# have our own)
+
+file(COPY patches/range_CMakeLists.txt
+     DESTINATION ${PROJECT_SOURCE_DIR}/range)
+file(RENAME ${PROJECT_SOURCE_DIR}/range/range_CMakeLists.txt
+            ${PROJECT_SOURCE_DIR}/range/CMakeLists.txt)
 
 # ----------------------------------------------------------------------
 # Describe source tree layout:
