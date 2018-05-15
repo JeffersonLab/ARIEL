@@ -6,7 +6,7 @@ install_scripts( LIST
   report_setfw
   )
 
-cet_script(filter-output filter-output-art-compat cet_exec_test)
+cet_script(filter-output filter-output-art-compat filter-program-options cet_exec_test)
 cet_script(checkClassVersion)
 
 INSTALL ( PROGRAMS make_bash_completions DESTINATION bin )
