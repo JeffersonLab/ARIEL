@@ -245,13 +245,12 @@ EOF
 }
 
 sub table_ld_library {
-
   print TBL "    if ( test \`uname\` = \"Darwin\" )\n";
   print TBL "      pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "    else()\n";
   print TBL "      pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "    endif ( test \`uname\` = \"Darwin\" )\n";
-
+  print TBL "    pathPrepend(CET_PLUGIN_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
 }
 
 sub create_table_bottom {
