@@ -2,16 +2,13 @@
 
 prog=${0##*/}
 
-if [[ -z "${CETPKG_SOURCE}" ]]; then
+pkgsrc="@PKG_SOURCE@"
+if [[ -z "$pkgsrc" ]]; then
   echo "cannot find package source!" 1>&2
   exit 1
 fi
 
-if [[ -z "${MRB_SOURCE}" ]]; then
-link_src=${CETPKG_SOURCE}/toyExperiment/inputFiles
-else
-link_src=${MRB_SOURCE}/toyExperiment/toyExperiment/inputFiles
-fi
+link_src="${pkgsrc}"/toyExperiment/inputFiles
 
 if [[ ! -d "${link_src}" ]]; then
   cat 1>&2 <<EOF

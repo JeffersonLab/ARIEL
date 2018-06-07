@@ -4,7 +4,7 @@ art_make_library(SOURCE EnsureTApplication.cc PlotOrientation.cc
    ${ROOT_CORE}
   )
 
-if(DEFINED ENV{CETLIB_EXCEPT_DIR})
+if(DEFINED cetlib_except_DIR)
 set(COMMON_LIBRARIES
   art_Framework_Core
   art_Framework_Principal
@@ -31,7 +31,7 @@ set(COMMON_LIBRARIES
 )
 endif()
 
-if(DEFINED ENV{CETLIB_EXCEPT_DIR})
+if(DEFINED cetlib_except_DIR)
 simple_plugin( HelloWorld "module"
   art_Framework_Core
   art_Framework_Principal

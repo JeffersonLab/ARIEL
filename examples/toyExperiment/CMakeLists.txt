@@ -11,16 +11,7 @@ cmake_minimum_required (VERSION 2.8)
 
 project(toyexperiment)
 
-# cetbuildtools contains our cmake modules
-SET(CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION})
-IF (NOT CETBUILDTOOLS_VERSION)
-    MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
-ENDIF()
-
-set(CMAKE_MODULE_PATH $ENV{ART_DIR}/Modules
-                      $ENV{CANVAS_IO_DIR}/Modules
-                      $ENV{CETBUILDTOOLS_DIR}/Modules
-                      ${CMAKE_MODULE_PATH})
+find_package(cetbuildtools REQUIRED)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -37,7 +28,10 @@ find_ups_product(cetbuildtools)
 find_ups_root()
 find_ups_boost()
 
-check_ups_version(art "$ENV{ART_VERSION}" v2_08_00 PRODUCT_OLDER_VAR GET_PRODUCT_ID_WITH_EVENT)
+# define CLHEP
+cet_find_library(CLHEP  NAMES CLHEP   PATHS ENV CLHEP_LIB_DIR NO_DEFAULT_PATH)
+
+check_ups_version(art "${art_UPS_VERSION}" v2_08_00 PRODUCT_OLDER_VAR GET_PRODUCT_ID_WITH_EVENT)
 if (GET_PRODUCT_ID_WITH_EVENT)
   add_definitions(-DGET_PRODUCT_ID_WITH_EVENT)
 endif()

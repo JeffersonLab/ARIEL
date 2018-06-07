@@ -1,5 +1,5 @@
 
-if(DEFINED ENV{CETLIB_EXCEPT_DIR})
+if(DEFINED cetlib_except_DIR)
 simple_plugin( EventGenerator "module"
                toyExperiment_Conditions_Conditions_service
                toyExperiment_PDT_PDT_service

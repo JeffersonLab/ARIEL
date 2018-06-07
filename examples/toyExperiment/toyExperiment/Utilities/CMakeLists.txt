@@ -1,5 +1,5 @@
 
-if(DEFINED ENV{CETLIB_EXCEPT_DIR})
+if(DEFINED cetlib_except_DIR)
 art_make(
   LIB_LIBRARIES
   toyExperiment_RecoDataProducts

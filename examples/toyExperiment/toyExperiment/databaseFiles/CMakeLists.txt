@@ -1,2 +1,2 @@
 install( FILES       conditions01.fcl  geom01.fcl pdt.fcl
-         DESTINATION ${product}/${version}/databaseFiles )
+         DESTINATION ${${product}_data_dir}/databaseFiles )
