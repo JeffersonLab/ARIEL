@@ -1,5 +1,9 @@
 file(GLOB examples vex*.cc)
-set(vex12_opts "-Wno-array-bounds -Wno-aggressive-loop-optimizations")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  set(vex12_opts "-Wno-array-bounds -Wno-aggressive-loop-optimizations")
+else()
+  set(vex12_opts "-Wno-array-bounds")
+endif()
 set(vex17_opts "-Wno-uninitialized")
 
 foreach(ex_cc ${examples})

@@ -2,12 +2,13 @@
 
 prog=${0##*/}
 
-if [[ -z "${TOYEXPERIMENT_DIR}" ]]; then
+toyexp="@TOYEXPERIMENT_DATA_DIR@"
+if [[ -z "$toyexp" ]]; then
   echo "toy experiment is not set up!" 1>&2
   exit 1
 fi
 
-link_src=${TOYEXPERIMENT_DIR}/inputFiles
+link_src="${toyexp}"/inputFiles
 
 if [[ ! -d "${link_src}" ]]; then
   cat 1>&2 <<EOF

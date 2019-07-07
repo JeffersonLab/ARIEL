@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Ensure the existence of an output directory outside of cwd
-# and ensure an link to it in cwd.
+# and ensure a link to it in cwd.
 #
 #  1) If ART_WORKBOOK_OUTPUT is defined, it is the output directory and the cwd
 #     will contain a link to it, named output.

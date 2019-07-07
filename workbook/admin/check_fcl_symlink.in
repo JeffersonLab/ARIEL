@@ -1,15 +1,14 @@
 #!/bin/bash
 
-echo "Doing check fcl .... "
-
 prog=${0##*/}
 
-if [[ -z "${CETPKG_SOURCE}" ]]; then
-  echo "In check_fcl_symlink cannot $CETPKG_SOURCE is not defined!" 1>&2
+pkgsrc="@PKG_SOURCE@"
+if [[ -z "$pkgsrc" ]]; then
+  echo "check_fcl_symlink: package source is not defined" 1>&2
   exit 1
 fi
 
-link_src=${CETPKG_SOURCE}/art-workbook
+link_src="${pkgsrc}"/art-workbook
 
 if [[ ! -d "${link_src}" ]]; then
   cat 1>&2 <<EOF
