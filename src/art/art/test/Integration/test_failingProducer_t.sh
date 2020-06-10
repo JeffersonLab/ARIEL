@@ -3,9 +3,6 @@
 # Import test functions.
 . cet_test_functions.sh
 
-# Use nova instead of art.
-export ART_EXEC=nova
-
 rm -f out.root cerr.log warnings.log
 
 run_art test_failingProducer_w.fcl --rethrow-all
