@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 
 namespace {
 
@@ -36,13 +37,25 @@ namespace {
     return result;
   }
 
-  void
-  traceit(void* string_ptr, const char* zSQL)
+  int
+  traceit(unsigned, void* string_ptr, void* prep, void* msg )
   {
-    assert(string_ptr);
+    if (!string_ptr || !prep || !msg)
+      return 0;
+    char *cmsg = reinterpret_cast<char*>(msg), *zSQL;
+    bool do_free{false};
+    if (strncmp(cmsg,"--",2) == 0)
+      zSQL = cmsg+2;
+    else {
+      zSQL = sqlite3_expanded_sql(reinterpret_cast<sqlite3_stmt*>(prep));
+      do_free = true;
+    }
     mf::LogAbsolute("SQLTrace")
-      << "+ SQLTrace (" << *reinterpret_cast<std::string*>(string_ptr)
-      << "): " << zSQL;
+     << "+ SQLTrace (" << *reinterpret_cast<std::string*>(string_ptr)
+     << "): " << zSQL;
+    if (do_free)
+      sqlite3_free(zSQL);
+    return 0;
   }
 }
 
@@ -144,6 +157,6 @@ art::SQLite3Wrapper::maybeTrace() const
 {
   if (wantTracing()) {
     // Cast away constness for C interface.
-    sqlite3_trace(db_, traceit, const_cast<std::string*>(&key_));
+    sqlite3_trace_v2(db_, SQLITE_TRACE_STMT, traceit, const_cast<std::string*>(&key_));
   }
 }
