@@ -26,6 +26,7 @@
 #include "tbb/concurrent_unordered_map.h"
 
 #include <type_traits>
+#include <functional>
 
 namespace art {
 
@@ -46,7 +47,7 @@ namespace art {
       {
         std::ostringstream os;
         id.print(os);
-        return tbb::tbb_hasher(os.str());
+        return std::hash<std::string>{}(os.str());
       }
     };
   }
