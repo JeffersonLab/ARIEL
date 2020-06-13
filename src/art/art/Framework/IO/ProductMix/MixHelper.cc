@@ -22,6 +22,7 @@
 #include <numeric>
 #include <regex>
 #include <unordered_set>
+#include <type_traits>
 
 #include "Rtypes.h"
 
@@ -113,6 +114,28 @@ namespace {
       }
     }
     return result;
+  }
+
+  // std::random_shuffle is deprecated/removed in C++14/17.
+  // Using CLHEP::RandFlat with the remaining shuffle algorithm,
+  // std::shuffle, runs into difficulties because it expects a
+  // random /bit/ generator whose range needs to be known at compile time.
+  // The simplest solution is simply to provide random_shuffle ourselves.
+  template <class RandomAccessIterator, class RandomNumberGenerator>
+  void local_random_shuffle(RandomAccessIterator first,
+                            RandomAccessIterator last,
+                            RandomNumberGenerator&& rng)
+  {
+    typedef typename
+      std::iterator_traits<RandomAccessIterator>::difference_type Diff_t;
+    Diff_t d = last - first;
+    if (d > 1) {
+      for (--last; first < last; ++first, (void) --d) {
+        Diff_t i = rng(d);
+        if (i != 0)
+          std::swap(*first, *(first+i));
+      }
+    }
   }
 }
 
@@ -410,11 +433,11 @@ art::MixHelper::openAndReadMetaData_(std::string filename)
     // Prepare shuffled event sequence.
     shuffledSequence_.resize(static_cast<size_t>(nEventsInFile_));
     std::iota(shuffledSequence_.begin(), shuffledSequence_.end(), 0);
-    std::random_shuffle(shuffledSequence_.begin(),
-                        shuffledSequence_.end(),
-                        [this](EntryNumberSequence::difference_type const& n) {
-                          return dist_.get()->fireInt(n);
-                        });
+    local_random_shuffle(shuffledSequence_.begin(),
+                         shuffledSequence_.end(),
+                         [this](EntryNumberSequence::difference_type const& n) {
+                           return dist_.get()->fireInt(n);
+                         });
   }
 }
 
