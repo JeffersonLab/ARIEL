@@ -30,12 +30,18 @@ endif()
 string(REGEX REPLACE "sqlite( |$)" "SQLite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
+# find_package(Python2...) requires CMake 3.12
+string(REGEX REPLACE "(^| )python( |$)" "Python2" RNAME ${RNAME})
 #message( STATUS "Searching for ${RNAME}" )
+if( ${RNAME} STREQUAL "Python2" )
+  set(comp "COMPONENTS;Interpreter;Development")
+endif()
 
 # use find_package to check the version
 # assume the package's ${RNAME}Config.cmake will set up include_diretcories,
 # link libraries and various CMake variables for use with this project's CMakeLists.txt
-find_package( ${RNAME} ${dotver} QUIET )
+find_package(${RNAME} ${dotver} ${comp} QUIET)
+unset(comp)
 
 if( NOT ${${RNAME}_FOUND} )
   # If not found, try pkg-config
