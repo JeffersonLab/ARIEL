@@ -27,7 +27,7 @@ endif()
 #message(STATUS "_use_find_package: looking for ${PNAME} ${dotver}")
 
 # Map product name "sqlite" to "sqlite3"
-string(REGEX REPLACE "sqlite( |$)" "sqlite3" RNAME ${PNAME})
+string(REGEX REPLACE "sqlite( |$)" "SQLite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
 #message( STATUS "Searching for ${RNAME}" )
