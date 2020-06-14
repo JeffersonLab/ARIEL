@@ -27,7 +27,6 @@ set(boost_liblist chrono
 		  random
 		  regex 
 		  serialization
-		  signals
 		  system 
 		  thread 
 		  timer
