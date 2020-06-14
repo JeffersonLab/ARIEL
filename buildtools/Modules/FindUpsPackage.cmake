@@ -4,7 +4,7 @@
 #  PRODUCTNAME - product name
 #  version - optional minimum version
 #
-# cet_cmake_config() will put ${PRODUCTNAME}Config.cmake in 
+# cet_cmake_config() will put ${PRODUCTNAME}Config.cmake in
 #  ${flavorqual_dir}/lib/cmake/${PRODUCTNAME} or share/${PRODUCTNAME}/cmake
 # check these directories for allowed cmake configure files:
 # either ${PRODUCTNAME_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
@@ -56,21 +56,21 @@ if( NOT ${${RNAME}_FOUND} )
     endif()
     if(PC_${RNAME}_FOUND)
       if(PC_${RNAME}_INCLUDE_DIRS)
-#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDE_DIRS} to include_directories")
-	include_directories(BEFORE ${PC_${RNAME}_INCLUDE_DIRS})
+#      message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDE_DIRS} to include_directories")
+        include_directories(BEFORE ${PC_${RNAME}_INCLUDE_DIRS})
       endif()
       if(PC_${RNAME}_INCLUDEDIR)
-#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDEDIR} to include_directories")
-	include_directories(BEFORE ${PC_${RNAME}_INCLUDEDIR})
+#        message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDEDIR} to include_directories")
+        include_directories(BEFORE ${PC_${RNAME}_INCLUDEDIR})
       endif()
       if(PC_${RNAME}_LIBRARY_DIRS)
-#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_LIBRARY_DIRS} to link_directories")
-#	link_directories(${PC_${RNAME}_LIBRARY_DIRS})
+#        message(STATUS "_use_find_package: adding ${PC_${RNAME}_LIBRARY_DIRS} to link_directories")
+#        link_directories(${PC_${RNAME}_LIBRARY_DIRS})
         set(CMAKE_LIBRARY_PATH "${PC_${RNAME}_LIBRARY_DIRS}" "${CMAKE_LIBRARY_PATH}")
-endif()
+      endif()
       if(PC_${RNAME}_LIBDIR)
-#	message(STATUS "_use_find_package: adding ${PC_${RNAME}_LIBDIR} to link_directories")
-#	link_directories(${PC_${RNAME}_LIBDIR})
+#        message(STATUS "_use_find_package: adding ${PC_${RNAME}_LIBDIR} to link_directories")
+#        link_directories(${PC_${RNAME}_LIBDIR})
         set(CMAKE_LIBRARY_PATH "${PC_${RNAME}_LIBDIR}" "${CMAKE_LIBRARY_PATH}")
       endif()
     else()
@@ -88,7 +88,7 @@ macro( find_ups_product PRODUCTNAME )
 # if ${PRODUCTNAME}_UPS_VERSION is already defined, there is nothing to do
 if( ${PRODUCTNAME}_UPS_VERSION )
   ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is defined" )
-else()
+   else()
   ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is NOT defined" )
   cmake_parse_arguments( FUP "" "" "" ${ARGN} )
   #message ( STATUS "find_ups_product debug: unparsed arguments ${FUP_UNPARSED_ARGUMENTS}" )
