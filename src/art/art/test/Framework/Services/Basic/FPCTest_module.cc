@@ -5,7 +5,6 @@
 
 #include "fpc_utils.h"
 
-#include <cmath>
 #include <csignal>
 #include <cstdlib>
 #include <float.h>
@@ -64,7 +63,7 @@ namespace arttest {
         // Invalid
         mf::LogVerbatim("FPExceptions")
           << "\t\tForce Invalid: b = std::log(-1.0)";
-        double const b{std::log(-1.0)};
+        double const b{logit(-1.0)};
         mf::LogVerbatim("FPExceptions") << "\t\tb = " << b;
 
         // Overflow (actually precision)

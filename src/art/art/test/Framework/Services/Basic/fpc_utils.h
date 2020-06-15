@@ -5,5 +5,6 @@
 namespace arttest {
   double divit(double x, double y);
   double multit(double x, double y);
+  double logit(double x);
 }
 #endif
