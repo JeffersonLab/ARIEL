@@ -91,7 +91,10 @@ BOOST_AUTO_TEST_CASE(TestImport)
 {
   std::atomic<std::size_t> expected_size{ParameterSetRegistry::size()};
   sqlite3* db = nullptr;
-  BOOST_REQUIRE(!sqlite3_open(":memory:", &db));
+  BOOST_REQUIRE_EQUAL(sqlite3_open_v2(":memory:", &db,
+                       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_MEMORY |
+                       SQLITE_OPEN_FULLMUTEX, nullptr),
+                      SQLITE_OK );
   throwOnSQLiteFailure(db);
   char* errMsg = nullptr;
   sqlite3_exec(db,
@@ -213,7 +216,10 @@ BOOST_AUTO_TEST_CASE(TestImport)
 BOOST_AUTO_TEST_CASE(TestExport)
 {
   sqlite3* db = nullptr;
-  BOOST_REQUIRE(!sqlite3_open(":memory:", &db));
+  BOOST_REQUIRE_EQUAL(sqlite3_open_v2(":memory:", &db,
+                       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_MEMORY |
+                       SQLITE_OPEN_FULLMUTEX, nullptr),
+                      SQLITE_OK );
   // Check empty!
   sqlite3_stmt* stmt = nullptr;
   // Make sure we get our own fresh and empty DB.
