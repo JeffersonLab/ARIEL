@@ -1,6 +1,7 @@
-# Backups, saves
+# Backups, saves, patches
 *.orig
 *.bak
+*.patch
 
 # Editor lint
 .#*
