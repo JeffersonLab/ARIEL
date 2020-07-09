@@ -52,22 +52,16 @@ namespace art {
   }
 
   void
-  ProductProvenance::setPresent() const
+  ProductProvenance::setPresent() const noexcept
   {
-    if (productstatus::present(productStatus()))
-      return;
-    assert(productstatus::unknown(productStatus()));
     setStatus(productstatus::present());
   }
 
   void
-  ProductProvenance::setNotPresent() const
+  ProductProvenance::setNotPresent() const noexcept
   {
-    if (productstatus::neverCreated(productStatus()))
-      return;
     if (productstatus::dropped(productStatus()))
       return;
-    assert(productstatus::unknown(productStatus()));
     setStatus(productstatus::neverCreated());
   }
 
@@ -83,7 +77,7 @@ namespace art {
 
   // Only the 'salient attributes' are tested in equality comparison.
   bool
-  operator==(ProductProvenance const& a, ProductProvenance const& b)
+  operator==(ProductProvenance const& a, ProductProvenance const& b) noexcept
   {
     if (a.noParentage() != b.noParentage())
       return false;

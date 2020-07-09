@@ -36,7 +36,7 @@ sub baseClasses {
 sub constructors {
   return [ {
             explicit => 1,
-            args => [ "fhicl::ParameterSet const & p" ],
+            args => [ "fhicl::ParameterSet const& p" ],
             initializers => [ "ELdestination(p)" ]
            } ];
 }
@@ -44,18 +44,29 @@ sub constructors {
 sub defineMacro {
   my ($self, $qual_name) = @_;
   return <<EOF;
-extern "C" {
-  auto makePlugin(std::string const & psetName,
-                  fhicl::ParameterSet const & pset)
-  {
-    return std::make_unique<${qual_name}>( /* args as necessary. */ );
-  }
+MAKE_PLUGIN_START(auto,
+                  std::string const& psetName,
+                  fhicl::ParameterSet const& pset)
+{
+  return std::make_unique<${qual_name}>( /* args as necessary. */ );
 }
+MAKE_PLUGIN_END
+
+CET_PROVIDE_FILE_PATH()
 DEFINE_BASIC_PLUGINTYPE_FUNC(mf::service::ELdestination)
+FHICL_PROVIDE_ALLOWED_CONFIGURATION(${qual_name})
 EOF
 }
 
 # No sub implHeaders necessary.
+
+sub implHeaders {
+  return [ '"cetlib/PluginTypeDeducer.h"',
+           '"cetlib/ProvideFilePathMacro.h"',
+           '"cetlib/ProvideMakePluginMacros.h"',
+           '"fhiclcpp/ParameterSet.h"',
+           '"fhiclcpp/types/AllowedConfigurationMacro.h"' ]
+}
 
 # No sub macrosInclude necessary.
 
@@ -63,8 +74,8 @@ sub optionalEntries {
   return
     {
      finish => 'void finish() override',
-     log => 'void log(mf::ErrorObj & msg) override',
-     summarization => 'void summarization(mf::ELstring const & title, mf::ELstring const & sumLines) override',
+     log => 'void log(mf::ErrorObj& msg) override',
+     summarization => 'void summarization(mf::ELstring const& title, mf::ELstring const& sumLines) override',
      summary => 'void summary() override',
      wipe => 'void wipe() override',
     };

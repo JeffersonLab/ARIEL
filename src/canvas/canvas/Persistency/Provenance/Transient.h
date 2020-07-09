@@ -26,12 +26,12 @@ namespace art {
       return *this;
     }
     T const&
-    get() const
+    get() const noexcept
     {
       return value_;
     }
     T&
-    get()
+    get() noexcept
     {
       return value_;
     }

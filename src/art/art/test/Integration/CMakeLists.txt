@@ -114,6 +114,7 @@ simple_plugin(ToyRawProductAnalyzer       "module"  NO_INSTALL)
 simple_plugin(U_S                         "module"  NO_INSTALL ALLOW_UNDERSCORES)
 simple_plugin(ValidHandleTester           "module"  NO_INSTALL)
 simple_plugin(Wanted                      "service" NO_INSTALL)
+simple_plugin(XRootDRetry                 "module"  NO_INSTALL ${ROOT_RIO})
 simple_plugin(addInts                     "tool"    NO_INSTALL)
 
 art_dictionary(DICTIONARY_LIBRARIES cetlib NO_INSTALL)
@@ -661,6 +662,20 @@ cet_test(ProductMix_r1c3 HANDBUILT
   fcl/ProductMix_r1c.fcl
   fcl/ProductMix_r1c3.fcl
   TEST_PROPERTIES DEPENDS ProductMix_w
+)
+
+# Mix the events from ProductMix_w, testing that things behave
+# properly with secondary input file wrapping where the number of
+# secondaries exceeds the number in the mixing file.
+cet_test(ProductMix_r1c4 HANDBUILT
+  TEST_EXEC art_ut
+  TEST_ARGS -- --rethrow-all -c "ProductMix_r1c4.fcl"
+  DATAFILES
+  fcl/ProductMix_r1.fcl
+  fcl/ProductMix_r1c.fcl
+  fcl/ProductMix_r1c4.fcl
+  TEST_PROPERTIES DEPENDS ProductMix_w
+  PASS_REGULAR_EXPRESSION "The number of requested secondaries.*exceeds the number of events"
 )
 
 # Mix the events from ProductMix_w, testing that things behave properly
@@ -1683,3 +1698,8 @@ cet_test(NonPersistableProducts_t HANDBUILT
   TEST_ARGS -c non_persistable_products_t.fcl -n 1
   DATAFILES
   fcl/non_persistable_products_t.fcl)
+
+cet_test(XRootDRetry_t HANDBUILT
+  TEST_EXEC art
+  TEST_ARGS -c xrootd_retry_t.fcl -n 1
+  DATAFILES fcl/xrootd_retry_t.fcl)

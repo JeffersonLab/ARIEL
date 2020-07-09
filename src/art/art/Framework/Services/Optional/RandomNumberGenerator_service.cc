@@ -35,7 +35,6 @@
 #include "CLHEP/Random/MTwistEngine.h"
 #include "CLHEP/Random/NonRandomEngine.h"
 #include "CLHEP/Random/Random.h"
-#include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RanecuEngine.h"
 #include "CLHEP/Random/Ranlux64Engine.h"
 #include "CLHEP/Random/RanluxEngine.h"
@@ -60,8 +59,8 @@
 #include <string>
 #include <vector>
 
-using art::RNGsnapshot;
 using art::RandomNumberGenerator;
+using art::RNGsnapshot;
 using art::ScheduleID;
 using fhicl::ParameterSet;
 using std::ifstream;
@@ -83,8 +82,7 @@ namespace {
   seed_t constexpr USE_DEFAULT_SEED{-1};
   RNGsnapshot const EMPTY_SNAPSHOT;
 
-  struct G4Engine {
-  };
+  struct G4Engine {};
 
   void
   throw_if_invalid_seed(seed_t const seed)

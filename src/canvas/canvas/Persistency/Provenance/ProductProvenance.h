@@ -20,12 +20,12 @@ and how it came into existence, plus the status.
 
 namespace art {
   class ProductProvenance;
-  typedef std::vector<ProductProvenance> ProductProvenances;
+  using ProductProvenances = std::vector<ProductProvenance>;
 
-  bool operator<(ProductProvenance const& a, ProductProvenance const& b);
+  bool operator<(ProductProvenance const& a, ProductProvenance const& b) noexcept;
   std::ostream& operator<<(std::ostream& os, ProductProvenance const& p);
-  bool operator==(ProductProvenance const& a, ProductProvenance const& b);
-  bool operator!=(ProductProvenance const& a, ProductProvenance const& b);
+  bool operator==(ProductProvenance const& a, ProductProvenance const& b) noexcept;
+  bool operator!=(ProductProvenance const& a, ProductProvenance const& b) noexcept;
 }
 
 class art::ProductProvenance {
@@ -50,31 +50,31 @@ public:
   void write(std::ostream& os) const;
 
   ProductID
-  productID() const
+  productID() const noexcept
   {
     return productID_;
   }
-  ProductStatus const&
-  productStatus() const
+  ProductStatus
+  productStatus() const noexcept
   {
     return productStatus_;
   }
   ParentageID const&
-  parentageID() const
+  parentageID() const noexcept
   {
     return parentageID_;
   }
   Parentage const& parentage() const;
   void
-  setStatus(ProductStatus status) const
+  setStatus(ProductStatus const status) const noexcept
   {
     productStatus_ = status;
   }
-  void setPresent() const;
-  void setNotPresent() const;
+  void setPresent() const noexcept;
+  void setNotPresent() const noexcept;
 
   bool
-  noParentage() const
+  noParentage() const noexcept
   {
     return transients_.get().noParentage_;
   }
@@ -87,7 +87,7 @@ public:
 
 private:
   std::shared_ptr<Parentage>&
-  parentagePtr() const
+  parentagePtr() const noexcept
   {
     return transients_.get().parentagePtr_;
   }
@@ -99,7 +99,7 @@ private:
 };
 
 inline bool
-art::operator<(ProductProvenance const& a, ProductProvenance const& b)
+art::operator<(ProductProvenance const& a, ProductProvenance const& b) noexcept
 {
   return a.productID() < b.productID();
 }
@@ -112,7 +112,7 @@ art::operator<<(std::ostream& os, ProductProvenance const& p)
 }
 
 inline bool
-art::operator!=(ProductProvenance const& a, ProductProvenance const& b)
+art::operator!=(ProductProvenance const& a, ProductProvenance const& b) noexcept
 {
   return !(a == b);
 }

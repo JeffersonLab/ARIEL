@@ -16,26 +16,11 @@
 namespace hep {
   namespace concurrency {
 
+    struct RecursiveMutexCleaner;
+
     class RecursiveMutex {
-
-      // Static Member Data
-    private:
-      static std::mutex* heldMutex_;
-      using held_map_t = std::map<std::thread::id, std::vector<RecursiveMutex*>>;
-      static held_map_t* held_;
-
-      // Static Member Functions
     public:
-      static void startup();
-      static void shutdown();
-
-      // Static Member Functions
-    private:
-      static bool threadHoldsMutex(long const tid, unsigned long addr);
-
       // Special Member Functions
-    public:
-      ~RecursiveMutex();
       RecursiveMutex(std::string const& name = "");
       RecursiveMutex(RecursiveMutex const&) = delete;
       RecursiveMutex(RecursiveMutex&&) = delete;
@@ -43,14 +28,23 @@ namespace hep {
       RecursiveMutex& operator=(RecursiveMutex&&) = delete;
 
       // Member Functions -- API
-    public:
       void lock(std::string const& opName = "");
       void unlock(std::string const& opName = "");
 
-      // Data Members -- Implementation details
     private:
-      // Used to make sure we only try to lock when mutex_ is
-      // unowned or we are the owner.
+      friend struct RecursiveMutexCleaner;
+      static std::mutex* heldMutex_;
+      using held_map_t =
+        std::map<std::thread::id, std::vector<RecursiveMutex*>>;
+      static held_map_t* held_;
+
+      // Static Member Functions
+      static void startup();
+      static void shutdown();
+      static bool threadHoldsMutex(long const tid, unsigned long addr);
+
+      // Used to make sure we only try to lock when mutex_ is unowned
+      // or we are the owner.
       std::condition_variable cv_;
 
       // The mutex for cv_.
@@ -62,8 +56,8 @@ namespace hep {
       // The tid of the thread that locked mutex_.
       std::thread::id owner_;
 
-      // Used to allow recursive locking of mutex_, but we only lock/unlock it
-      // once.
+      // Used to allow recursive locking of mutex_, but we only
+      // lock/unlock it once.
       unsigned lockCount_;
 
       // For tracing.

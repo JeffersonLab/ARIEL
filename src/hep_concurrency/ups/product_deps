@@ -1,4 +1,4 @@
-parent hep_concurrency v1_00_02
+parent hep_concurrency v1_00_03
 defaultqual e15
 #
 incdir fq_dir include
@@ -12,7 +12,7 @@ gcc		v6_4_0		e15
 gcc		v7_3_0		e17
 clang           v5_0_1          c2
 tbb             v2018_2a
-cetbuildtools	v7_03_03	-	only_for_build
+cetbuildtools	v7_04_00	-	only_for_build
 end_product_list
 
 

@@ -54,19 +54,10 @@ namespace art {
       for (auto const& pr : p) {
         Group const& g = *pr.second;
         if (resolveProducts_) {
-          try {
-            if (!g.resolveProduct(g.producedWrapperType())) {
-              throw Exception(errors::DataCorruption, "data corruption");
-            }
-          }
-          catch (art::Exception const& e) {
-            if (e.category() != "ProductNotFound") {
-              throw;
-            }
-            if (g.anyProduct())
-              throw art::Exception(errors::LogicError, "ProvenanceDumper", e)
-                << "Product reported as not present, but is pointed to "
-                   "nonetheless!";
+          bool const resolved_product =
+            g.resolveProductIfAvailable(g.producedWrapperType());
+          if (!resolved_product) {
+            continue;
           }
         }
         bool wantCallFunc = true;
@@ -111,8 +102,7 @@ namespace art {
 
     // void DETAIL::beginJob();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_beginJob : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_beginJob : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_beginJob<
@@ -127,8 +117,7 @@ namespace art {
 
     // void DETAIL::preProcessEvent();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_preProcessEvent : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_preProcessEvent : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_preProcessEvent<
@@ -144,8 +133,7 @@ namespace art {
 
     // void DETAIL::postProcessEvent();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_postProcessEvent : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_postProcessEvent : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_postProcessEvent<
@@ -161,8 +149,7 @@ namespace art {
 
     // void DETAIL::preProcessSubRun();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_preProcessSubRun : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_preProcessSubRun : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_preProcessSubRun<
@@ -178,8 +165,7 @@ namespace art {
 
     // void DETAIL::postProcessSubRun();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_postProcessSubRun : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_postProcessSubRun : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_postProcessSubRun<
@@ -195,8 +181,7 @@ namespace art {
 
     // void DETAIL::preProcessRun();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_preProcessRun : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_preProcessRun : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_preProcessRun<
@@ -211,8 +196,7 @@ namespace art {
 
     // void DETAIL::postProcessRun();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_postProcessRun : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_postProcessRun : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_postProcessRun<
@@ -228,8 +212,7 @@ namespace art {
 
     // void DETAIL::endJob();
     template <typename DETAIL, typename Enable = void>
-    struct maybe_endJob : default_invocation<void(DETAIL&)> {
-    };
+    struct maybe_endJob : default_invocation<void(DETAIL&)> {};
 
     template <typename DETAIL>
     struct maybe_endJob<
@@ -250,8 +233,7 @@ namespace art {
     template <typename DETAIL, typename Enable = void>
     struct maybe_processEventPrincipal
       : default_invocation<void(PrincipalProcessor<DETAIL> const&,
-                                EventPrincipal const&)> {
-    };
+                                EventPrincipal const&)> {};
 
     template <typename DETAIL>
     struct maybe_processEventPrincipal<
@@ -269,8 +251,7 @@ namespace art {
     template <typename DETAIL, typename Enable = void>
     struct maybe_processSubRunPrincipal
       : default_invocation<void(PrincipalProcessor<DETAIL> const&,
-                                SubRunPrincipal const&)> {
-    };
+                                SubRunPrincipal const&)> {};
 
     template <typename DETAIL>
     struct maybe_processSubRunPrincipal<
@@ -288,8 +269,7 @@ namespace art {
     template <typename DETAIL, typename Enable = void>
     struct maybe_processRunPrincipal
       : default_invocation<void(PrincipalProcessor<DETAIL> const&,
-                                RunPrincipal const&)> {
-    };
+                                RunPrincipal const&)> {};
 
     template <typename DETAIL>
     struct maybe_processRunPrincipal<
