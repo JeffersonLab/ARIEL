@@ -10,7 +10,7 @@ All packages in this repository can be build from source without the use of Ferm
 
 This repository contains the source code of the [*art*](https://cdcvs.fnal.gov/redmine/projects/art/wiki/Series_211/) and [*gallery*](https://cdcvs.fnal.gov/redmine/projects/gallery/wiki/Series_108/) suites with small patches, mainly to accommodate the modified build system and additional platforms and compilers. At present, the build system uses a heavily modified version of Fermilab's [cetbuildtools](https://cdcvs.fnal.gov/redmine/projects/cetbuildtools/wiki/).
 
-This release is based on *art* 2.11.2.
+This release is based on *art* 2.11.5.
 
 ### System Requirements
 
