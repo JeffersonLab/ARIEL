@@ -33,7 +33,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic
-  EXTRA_CXX_FLAGS -Wnon-virtual-dtor -Wdelete-non-virtual-dtor
+  EXTRA_CXX_FLAGS -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-error=deprecated-declarations
   )
 cet_report_compiler_flags()
 
@@ -45,7 +45,6 @@ find_ups_product (cetbuildtools v4_14_01)
 find_ups_boost(v1_50_0)
 find_ups_product(sqlite)
 find_ups_product(cetlib_except v1_01_00)
-find_ups_product(hep_concurrency)
 find_ups_product(catch v1_11_0)
 
 # SQLite

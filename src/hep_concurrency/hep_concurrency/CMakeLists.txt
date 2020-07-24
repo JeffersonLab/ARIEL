@@ -16,6 +16,7 @@ cet_make_library(
   LIBRARIES
     ${TBB}
 )
+target_include_directories(${LIB_NAME} PRIVATE ${TBB_INCLUDE_DIRS})
 
 install_headers()
 install_source()
