@@ -10,14 +10,14 @@
 #
 # =========================================================================
 
-# CETBUILDTOOLS_DIR must be set up for this to work
-[[ -z $CETBUILDTOOLS_DIR ]] && exit 1
+thisdir="$( dirname "${BASH_SOURCE[0]}" )"
+[[ -z "$thisdir" ]] && exit 1
 
 output=$1
 exec=$2
 user=${3:-""}
 
-options=$($exec -h 2>&1 | perl $CETBUILDTOOLS_DIR/bin/filter-program-options)
+options=$($exec -h 2>&1 | perl "$thisdir"/filter-program-options)
 
 # Sometimes it's necessary to rename the bash function since the exec
 # my have a hyphen in it.
