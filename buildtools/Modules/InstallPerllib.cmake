@@ -14,8 +14,6 @@
 # we do not search for other files to install. Note that the LIST and
 # SUBDIRS options are mutually exclusive.
 #
-# The AS_TEST option for install_scripts will install scripts in a test subdirectory.
-#
 ####################################
 # Recommended use:
 #

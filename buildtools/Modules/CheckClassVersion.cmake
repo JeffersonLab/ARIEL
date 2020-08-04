@@ -6,9 +6,9 @@ set(CCV_DEFAULT_RECURSIVE FALSE
   CACHE BOOL "Default setting for recursive checks by checkClassVersion (may be time-consuming)."
   )
 
-EXECUTE_PROCESS(COMMAND root-config --has-python
+EXECUTE_PROCESS(COMMAND root-config --features
   RESULT_VARIABLE CCV_ROOT_CONFIG_OK
-  OUTPUT_VARIABLE CCV_ENABLED
+  OUTPUT_VARIABLE CCV_ROOT_CONFIG_OUT
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
@@ -16,7 +16,11 @@ IF(NOT CCV_ROOT_CONFIG_OK EQUAL 0)
   MESSAGE(FATAL_ERROR "Could not execute root-config successfully to interrogate configuration: exit code ${CCV_ROOT_CONFIG_OK}")
 ENDIF()
 
-IF(NOT CCV_ENABLED)
+string(REPLACE " " ";" CCV_ROOT_FEATURES "${CCV_ROOT_CONFIG_OUT}")
+
+IF("pyroot" IN_LIST CCV_ROOT_FEATURES OR "python" IN_LIST CCV_ROOT_FEATURES)
+  SET(CCV_ENABLED 1)
+ELSE()
   MESSAGE("WARNING: The version of root against which we are building currently has not been built "
     "with python support: ClassVersion checking is disabled."
     )
@@ -25,8 +29,8 @@ ENDIF()
 function(check_class_version)
   cmake_parse_arguments(CCV
     "UPDATE_IN_PLACE;RECURSIVE;NO_RECURSIVE"
-    ""
-    "LIBRARIES;REQUIRED_DICTIONARIES"
+    "CLASSES_DEF_XML"
+    "ENVIRONMENT;LIBRARIES;REQUIRED_DICTIONARIES"
     ${ARGN}
     )
   IF(CCV_LIBRARIES)
@@ -51,6 +55,9 @@ function(check_class_version)
   IF(NOT dictname)
     MESSAGE(FATAL_ERROR "CHECK_CLASS_VERSION must be called after BUILD_DICTIONARY.")
   ENDIF()
+  if (NOT CCV_CLASSES_DEF_XML)
+    set(CCV_CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml)
+  endif()
   IF(CCV_ENABLED)
     set(ASAN_OPTIONS "detect_leaks=0:new_delete_type_mismatch=0")
     if ("$ENV{ASAN_OPTIONS}")
@@ -67,10 +74,10 @@ function(check_class_version)
     endforeach()
     # Add the check to the end of the dictionary building step.
     add_custom_command(OUTPUT ${dictname}_dict_checked
-      COMMAND ${CMAKE_COMMAND} -E env ${CMD_ENV}
+      COMMAND ${CMAKE_COMMAND} -E env ${CMD_ENV} ${CCV_ENVIRONMENT}
       checkClassVersion ${CCV_EXTRA_ARGS}
       -l $<TARGET_PROPERTY:${dictname}_dict,LIBRARY_OUTPUT_DIRECTORY>/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict
-      -x ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
+      -x ${CCV_CLASSES_DEF_XML}
       -t ${dictname}_dict_checked
       COMMENT "Checking class versions for ROOT dictionary ${dictname}"
       DEPENDS $<TARGET_PROPERTY:${dictname}_dict,LIBRARY_OUTPUT_DIRECTORY>/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}

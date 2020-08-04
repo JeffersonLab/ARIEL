@@ -36,6 +36,11 @@
 #
 #     catch		<version>		-nq-	only_for_build
 #
+#   If your product table has '<format=#>' in the header line, where # >
+#   1, then the expected line is:
+#
+#     catch		<version>		-     only_for_build
+#
 #   in product_deps.
 #
 ####################################
@@ -58,6 +63,11 @@
 #   List of top-level dependencies to consider for a PREBUILT
 #   target. Top-level implies a target (not file) created with
 #   ADD_EXECUTABLE, ADD_LIBRARY or ADD_CUSTOM_TARGET.
+#
+# DIRTY_WORKDIR
+#
+#   If set, the working directory will not be cleared prior to execution
+#   of the test.
 #
 # INSTALL_BIN
 #
@@ -140,6 +150,11 @@
 #     OUTPUT_FILTERS "filterA -x -y \"arg with spaces\"" filterB
 #
 #     OUTPUT_FILTERS filterA DEFAULT filterB
+#
+# REMOVE_ON_FAILURE <file>+
+#
+#   Upon TEST_EXEC failure, these files and/or directories shall be
+#   removed if they exist.
 #
 # REQUIRED_FILES <file>+
 #
@@ -270,7 +285,27 @@ include(CheckUpsVersion)
 cmake_policy(PUSH)
 cmake_policy(VERSION 3.3) # For if (IN_LIST)
 
-find_file(CET_CATCH_MAIN_SOURCE cet_catch_main.cpp PATH_SUFFIXES src)
+if (DEFINED ENV{CATCH_VERSION})
+  if (NOT DEFINED Catch2_VERSION)
+    # Deal with naming discrepancy quietly.
+    find_package(Catch2 REQUIRED QUIET)
+  endif()
+  check_ups_version(catch $ENV{CATCH_VERSION} v2_4_0
+    PRODUCT_MATCHES_VAR CATCH_INCLUDE_SUBDIR_IS_CATCH2
+    )
+  if (CATCH_INCLUDE_SUBDIR_IS_CATCH2)
+    set(CATCH_INCLUDE_SUBDIR catch2)
+  else()
+    set(CATCH_INCLUDE_SUBDIR catch)
+  endif()
+  find_file(CET_CATCH_MAIN_SOURCE
+    cet_${CATCH_INCLUDE_SUBDIR}_main.cpp
+    PATH_SUFFIXES src
+    QUIET
+    )
+else()
+  unset(CET_CATCH_MAIN_SOURCE)
+endif()
 
 if (DEFINED ENV{ART_VERSION})
   check_ups_version(art $ENV{ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
@@ -284,16 +319,6 @@ if (CT_NEED_ART_COMPAT)
   message(STATUS "Using or building art OLDER than v2_01_00RC1: using -DART_COMPAT=1 for REF tests.")
   set(DEFINE_ART_COMPAT -DART_COMPAT=1)
 endif()
-
-# If Boost has been specified but the library hasn't, load the library.
-if ((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
-  find_ups_boost(${BOOST_VERS} unit_test_framework)
-endif()
-
-set(CET_TEST_ENV ""
-  CACHE INTERNAL "Environment to add to every test"
-  FORCE
-  )
 
 # - Programs and Modules
 # Default comparator
@@ -379,8 +404,9 @@ function(_cet_add_test_detail TNAME TEST_WORKDIR)
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
     COMMAND
     ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
+    --remove-on-failure "${CET_REMOVE_ON_FAILURE}"
     --required-files "${CET_REQUIRED_FILES}"
-    --datafiles "${CET_DATAFILES}"
+    --datafiles "${CET_DATAFILES}" ${CET_DIRTY_WORKDIR_ARG}
     --skip-return-code ${skip_return_code}
     ${CET_TEST_EXEC} ${test_args})
 endfunction()
@@ -418,8 +444,9 @@ function(_cet_add_ref_test_detail TNAME TEST_WORKDIR)
   add_test(NAME "${TNAME}"
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
     COMMAND ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
+    --remove-on-failure "${CET_REMOVE_ON_FAILURE}"
     --required-files "${CET_REQUIRED_FILES}"
-    --datafiles "${CET_DATAFILES}"
+    --datafiles "${CET_DATAFILES}" ${CET_DIRTY_WORKDIR_ARG}
     --skip-return-code ${skip_return_code}
     ${CMAKE_COMMAND}
     -DTEST_EXEC=${CET_TEST_EXEC}
@@ -483,9 +510,9 @@ function(cet_test CET_TARGET)
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   endif()
   cmake_parse_arguments(CET
-    "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;NO_OPTIONAL_GROUPS;SCOPED"
+    "DIRTY_WORKDIR;HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;NO_OPTIONAL_GROUPS;SCOPED"
     "OUTPUT_FILTER;TEST_EXEC;TEST_WORKDIR"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCE;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REMOVE_ON_FAILURE;REQUIRED_FILES;SOURCE;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
   if (CET_OUTPUT_FILTERS AND CET_OUTPUT_FILTER_ARGS)
@@ -557,18 +584,22 @@ function(cet_test CET_TARGET)
       set(CET_SOURCE ${CET_TARGET}.cc)
     endif()
     if (CET_USE_CATCH_MAIN)
-      if (NOT TARGET cet_catch_main) # Make sure we only build one!
+      if (NOT CATCH_INCLUDE_SUBDIR)
+        message(FATAL_ERROR
+          "cet_test(): Unable to identify Catch2 details -- unavailable?.")
+      endif()
+      if (NOT TARGET cet_${CATCH_INCLUDE_SUBDIR}_main) # Make sure we only build one!
         if (NOT CET_CATCH_MAIN_SOURCE)
-          message(FATAL_ERROR "cet_test() INTERNAL ERROR: unable to find cet_catch_main.cpp required by USE_CATCH_MAIN")
+          message(FATAL_ERROR "cet_test() INTERNAL ERROR: unable to find cet_${CATCH_INCLUDE_SUBDIR}_main.cpp required by USE_CATCH_MAIN")
         endif()
-        add_library(cet_catch_main STATIC EXCLUDE_FROM_ALL ${CET_CATCH_MAIN_SOURCE})
-        set_property(TARGET cet_catch_main PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        add_library(cet_${CATCH_INCLUDE_SUBDIR}_main STATIC EXCLUDE_FROM_ALL ${CET_CATCH_MAIN_SOURCE})
+        set_property(TARGET cet_${CATCH_INCLUDE_SUBDIR}_main PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
         if (DEFINED ENV{CATCH_INC})
-          target_include_directories(cet_catch_main PUBLIC $ENV{CATCH_INC})
+          target_include_directories(cet_${CATCH_INCLUDE_SUBDIR}_main PUBLIC $ENV{CATCH_INC})
         endif()
         # Strip (x10 shrinkage on Linux with GCC 6.3.0)!
-        add_custom_command(TARGET cet_catch_main POST_BUILD
-          COMMAND strip -S $<TARGET_FILE:cet_catch_main>
+        add_custom_command(TARGET cet_${CATCH_INCLUDE_SUBDIR}_main POST_BUILD
+          COMMAND strip -S $<TARGET_FILE:cet_${CATCH_INCLUDE_SUBDIR}_main>
           COMMENT "Stripping Catch main library"
           )
       endif()
@@ -583,11 +614,22 @@ function(cet_test CET_TARGET)
       ${cme_args} ${CETP_UNPARSED_ARGUMENTS})
     if (CET_USE_CATCH_MAIN AND DEFINED ENV{CATCH_INC})
       target_include_directories(${CET_TARGET} PUBLIC $ENV{CATCH_INC})
-      target_link_libraries(${CET_TARGET} cet_catch_main)
+      target_link_libraries(${CET_TARGET} cet_${CATCH_INCLUDE_SUBDIR}_main)
     endif()
     if (CET_USE_BOOST_UNIT)
+      # If Boost has been specified but the library hasn't, load the library.
+      if ((NOT TARGET Boost::unit_test_framework) AND
+          (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND
+          BOOST_VERS)
+        find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+      endif()
+
       # Make sure we have the correct library available.
-      if (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
+      if (Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
+        set(Boost_UTL ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+      elseif (TARGET Boost::unit_test_framework)
+        set(Boost_UTL Boost::unit_test_framework)
+      else()
         message(FATAL_ERROR "cet_test: target ${CET_TARGET} has USE_BOOST_UNIT "
           "option set but Boost Unit Test Framework Library cannot be found: is "
           "boost set up?")
@@ -596,7 +638,7 @@ function(cet_test CET_TARGET)
       set_target_properties(${CET_TARGET} PROPERTIES
         COMPILE_DEFINITIONS "BOOST_TEST_MAIN;BOOST_TEST_DYN_LINK"
         )
-      target_link_libraries(${CET_TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+      target_link_libraries(${CET_TARGET} ${Boost_UTL})
     endif()
     if (COMMAND find_tbb_offloads)
       find_tbb_offloads(FOUND_VAR have_tbb_offload ${CET_SOURCE})
@@ -647,6 +689,9 @@ function(cet_test CET_TARGET)
 
     if (CET_CONFIGURATIONS)
       set(CONFIGURATIONS_CMD CONFIGURATIONS)
+    endif()
+    if (CET_DIRTY_WORKDIR)
+      set(CET_DIRTY_WORKDIR_ARG --dirty-workdir)
     endif()
 
     list(FIND CET_TEST_PROPERTIES SKIP_RETURN_CODE skip_return_code)
@@ -737,13 +782,13 @@ function(cet_test CET_TARGET)
       endif()
     endforeach()
   else(NOT CET_NO_AUTO)
-    if (CET_CONFIGURATIONS OR CET_DATAFILES OR CET_NO_OPTIONAL_GROUPS OR
+    if (CET_CONFIGURATIONS OR CET_DATAFILES OR CET_DIRTY_WORKDIR OR CET_NO_OPTIONAL_GROUPS OR
         CET_OPTIONAL_GROUPS OR CET_OUTPUT_FILTER OR CET_OUTPUT_FILTERS OR
         CET_OUTPUT_FILTER_ARGS OR CET_REF OR CET_REQUIRED_FILES OR
         CET_SCOPED OR CET_TEST_ARGS OR CET_TEST_PROPERTIES OR
         CET_TEST_WORKDIR OR NPARG_LABELS)
       message(FATAL_ERROR "The following arguments are not meaningful in the presence of NO_AUTO:
-CONFIGURATIONS DATAFILES NO_OPTIONAL_GROUPS_OPTIONAL_GROUPS OUTPUT_FILTER OUTPUT_FILTERS OUTPUT_FILTER_ARGS PARG_<label> REF REQUIRED_FILES SCOPED TEST_ARGS TEST_PROPERTIES TEST_WORKDIR")
+CONFIGURATIONS DATAFILES DIRTY_WORKDIR NO_OPTIONAL_GROUPS_OPTIONAL_GROUPS OUTPUT_FILTER OUTPUT_FILTERS OUTPUT_FILTER_ARGS PARG_<label> REF REQUIRED_FILES SCOPED TEST_ARGS TEST_PROPERTIES TEST_WORKDIR")
     endif()
   endif(NOT CET_NO_AUTO)
   if (CET_INSTALL_BIN AND CET_HANDBUILT)

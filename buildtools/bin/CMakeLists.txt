@@ -14,7 +14,7 @@ install_scripts( LIST buildtool
 cet_script(filter-output filter-output-art-compat filter-program-options cet_exec_test)
 cet_script(checkClassVersion)
 
-INSTALL ( PROGRAMS make_bash_completions DESTINATION ${product}/${version}/bin )
+INSTALL ( PROGRAMS format-code make_bash_completions DESTINATION ${product}/${version}/bin )
 INSTALL ( FILES cet_test_functions.sh
   cmake_parse_deps.pm
   parse_deps.pm

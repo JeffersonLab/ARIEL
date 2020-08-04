@@ -32,14 +32,20 @@ bindir fq_dir      bin
 # if define_pythonpath is enabled, the PYTHONPATH variable will be set
 #define_pythonpath
 
-# list all products here
-# the 4th field may contain the keyword optional or only_for_build
-product         version
+# List all products here.
+# The 4th field may contain the keywords 'optional' or 'only_for_build'
+# With the <format=2> notation present in the header line, products to
+# be setup regardless of selected qualifier should use - as a
+# placeholder rather than -nq-, use of which will now specifically require an
+# absence of qualifier in order for the product to be set up.
+# Also permissible as a qualifier: the keyword '-default-': this product and
+# version will be selected if no other version of this product is selected.
+product         version		qual	<format=2>
 art             v2_08_02
 someprod        vx_yy_zz
 anotherprod     va_bb_cc
 noqualprod	vh_ii_jj
-cetbuildtools   @version@  -  only_for_build
+cetbuildtools   @version@ 	-	only_for_build
 end_product_list
  
 # e14  - with gcc 6.3.0 and -std=c++14 

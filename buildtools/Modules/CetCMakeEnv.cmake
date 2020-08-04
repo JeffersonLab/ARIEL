@@ -182,11 +182,16 @@ macro(cet_cmake_env)
       "\nIt must be invoked at the top level, not in an included .cmake file.")
   endif()
 
+  option(BUILD_SHARED_LIBS "Build shared libraries for this project." ON)
+
   _get_cetpkg_info()
   
   # temporarily set this policy
   # silently ignore non-existent dependencies
-  cmake_policy(SET CMP0046 OLD)
+  # deprecated with predudice as of cmake 3.11.xx
+  # new behavior is to report an error if non-existent dependencies are 
+  # listed in the ``add_dependencies()`` command.
+  cmake_policy(SET CMP0046 NEW)
 
   # Acknowledge new RPATH behavior on OS X.
   cmake_policy(SET CMP0042 NEW)
@@ -233,10 +238,16 @@ macro(cet_cmake_env)
   include(ParseUpsVersion)
   include(SetCompilerFlags)
   include(SetFlavorQual)
-  include(InstallSource)
-  include(InstallLicense)
+  include(InstallFhicl)
   include(InstallFiles)
+  include(InstallFW)
+  include(InstallGdml)
+  include(InstallHeaders)
+  include(InstallLicense)
   include(InstallPerllib)
+  include(InstallScripts)
+  include(InstallSource)
+  include(InstallWP)
   include(CetCMakeUtils)
   include(CetMake)
   include(CetCMakeConfig)
@@ -278,6 +289,7 @@ macro(cet_cmake_env)
   cet_set_fw_directory()
   cet_set_gdml_directory()
   cet_set_perllib_directory()
+  cet_set_wp_directory()
   cet_set_test_directory()
 
   if (ENV{CETPKB_BUILD})
@@ -428,6 +440,26 @@ macro( cet_set_perllib_directory )
   #message( STATUS "cet_set_perllib_directory: ${product}_perllib is ${${product}_perllib}")
   #message( STATUS "cet_set_perllib_directory: ${product}_perllib_subdir is ${${product}_perllib_subdir}")
 endmacro( cet_set_perllib_directory )
+
+macro( cet_set_wp_directory )
+  execute_process(COMMAND ${CET_REPORT} wpdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_WP_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
+  #message( STATUS "${CET_REPORT} wpdir returned ${REPORT_WP_DIR_MSG}")
+  if( ${REPORT_WP_DIR_MSG} MATCHES "DEFAULT" )
+     set( ${product}_wp_dir "NONE" CACHE STRING "Package wp directory" FORCE )
+  elseif( ${REPORT_WP_DIR_MSG} MATCHES "NONE" )
+     set( ${product}_wp_dir ${REPORT_WP_DIR_MSG} CACHE STRING "Package wp directory" FORCE )
+  elseif( ${REPORT_WP_DIR_MSG} MATCHES "ERROR" )
+     set( ${product}_wp_dir ${REPORT_WP_DIR_MSG} CACHE STRING "Package wp directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_WP_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" fdir2 "${fdir1}" )
+    set( ${product}_wp_dir ${fdir2}  CACHE STRING "Package wp directory" FORCE )
+  endif()
+  #message( STATUS "cet_set_wp_directory: ${product}_wp_dir is ${${product}_wp_dir}")
+endmacro( cet_set_wp_directory )
 
 macro( cet_set_inc_directory )
   execute_process(COMMAND ${CET_REPORT} incdir ${cet_ups_dir}

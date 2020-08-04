@@ -43,6 +43,8 @@ Mode options: [-C|--cmake-only|-A|--all|--info] ||
 Combo options: [-R|--release] || [-T|--test-all]
 
 Misc options: [-D<CMake-definition>]+
+              [-E|--export-compile-commands]
+              [-G<CMake-generator-string>]
               [-I|--install-prefix <install-location>]
               [--L <label-regex>]
               [--LE <label-regex>]
@@ -53,7 +55,7 @@ Misc options: [-D<CMake-definition>]+
               [--deleted-header[s] <header>[,<header>]+]
               [-f|--force-top]
               [-g|--graphviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]]
-              [[--generator <generator>]]
+              [[--generator <make|ninja>[:<secondary-generator>]]
               [-j #]
               [-l|--log[=<log-file>]|--log-file[=<log-file>]]
               [-q|--quiet]
@@ -64,6 +66,8 @@ Misc options: [-D<CMake-definition>]+
 
 Options suffixed with '+' are repeatable and cumulative. If a
 non-repeatable option is specified multiple times, last invocation wins.
+
+The -G and --generator options are mutually-exclusive, and may be specified at most once.
 
 Required environment: CETPKG_BUILD
 Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
@@ -179,6 +183,19 @@ MISC. OPTIONS.
   be issued if this option is specified but the CMake stage is not to be
   executed.
 
+-E
+--export-compile-commands
+
+  Equivalent to -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON. Useful for
+  (e.g.) clang-tidy.
+
+-G<CMake-generator-string>
+
+  Pass the specified CMake generator string through to CMake. Note that,
+  at this time, only the "Unix Makefiles" and Ninja generators are
+  supported by buildtool. Any secondary generator specification is
+  passed through unexamined.
+
 -I <ups-install-dir>
 --install-prefix <ups-install-dir>
 
@@ -270,10 +287,11 @@ MISC. OPTIONS.
   options may be specified in ~/.cgfrc for the same effect (command-line
   overrides).
 
---generator <generator>
+--generator <generator>[:<secondary-generator>]
 
   Use the specified generator. Currently supported values are "make" and
-  "ninja" (default make).
+  "ninja" (default make). If an optional secondary generator (e.g.
+  CodeBlocks) is specified it will be passed through unchanged.
 
 -h|--help
 
@@ -327,7 +345,7 @@ MISC. OPTIONS.
   as previously. If this option is activated but tests are not to be
   run, a warning shall be issued. If no labels are selected, then
   DEFAULT is selected. A value of ALL is substituted with all known test
-  labels. A leading `-' for a label will lead to its explicit
+  labels. A leading \`-' for a label will lead to its explicit
   exclusion. See also -T, -R options. Mutually-exclusive with --L and
   --LE options.
 
@@ -662,15 +680,19 @@ function do_work() {
       error "WARNING: CMake definitions ignored since CMake not invoked: ${cmake_defs}"
     fi
     if [[ -n "${cmake_debug}" ]] || \
-         [[ -n "${cmake_trace}" ]] || \
-       [[ -n "${generator_arg}" ]]; then
+      [[ -n "${cmake_trace}" ]] || \
+      [[ -n "${cmake_defs}" ]] || \
+      [[ -n "${generator_arg}" ]]; then
       error "WARNING: CMake options ignored since CMake not invoked:" \
+            ${cmake_defs+${cmake_defs} } \
             ${cmake_debug+${cmake_debug} } \
             ${cmake_trace+${cmake_trace} } \
             ${generator_arg+${generator_arg}}
     fi
   else
     announce_stage
+    # Where definitions include comma-delimted lists, turn them into
+    # CMake's list delimiter instead.
     cmake_defs=${cmake_defs//,/;}
     [[ -n "${CETPKG_CC}" ]] && \
         local ccenv="CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC}"
@@ -793,6 +815,15 @@ function do_work() {
   fi
 }
 
+function ensure_unique_gen() {
+  if (( ${#seen_gen_arg[@]} > 0 )); then
+    error "Only one generator specifcation argument is permitted: user specified:\n" \
+          "${seen_gen_arg[@]} and\n" \
+          "${@}"
+  fi
+  seen_gen_arg=("${@}")
+}
+
 # Defaults.
 log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( tred = 1 ))
@@ -811,7 +842,7 @@ if (( $? != 4 )); then
   exit 1
 fi
 
-TEMP=`getopt -n "$prog" --long L:,LE:,all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,deleted-header:,deleted-headers:,force-top,generator:,graphviz:,gfilt::,groups:,help,info,install,labels:,log::,log-file::,package,quiet,sc,short-circuit,subdir:,tee,test,test-all,test-labels:,test-groups:,release,usage,verbose -o +ACD:I:RTbcfg:hij:lpqs:tv -- "${@}"`
+TEMP=`getopt -n "$prog" --long L:,LE:,all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,deleted-header:,deleted-headers:,export-compile-commands,force-top,generator:,graphviz:,gfilt::,groups:,help,info,install,labels:,log::,log-file::,package,quiet,sc,short-circuit,subdir:,tee,test,test-all,test-labels:,test-groups:,release,usage,verbose -o +ACD:EG:I:RTbcfg:hij:lpqs:tv -- "${@}"`
 
 if (( $? )); then
   usage 1
@@ -835,6 +866,27 @@ while true; do
     -D)
       cmake_defs="${cmake_defs}${1}${2} "
       shift
+      shift
+      ;;
+    -E)
+      cmake_defs="${cmake_defs}-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON "
+      shift
+      ;;
+    -G)
+      ensure_unique_gen "${@}"
+      shift
+      case ${1##*- } in
+        "Unix Makefiles")
+          generator=make
+          ;;
+        Ninja)
+          generator=ninja
+          ;;
+        *)
+          error "ERROR: Unrecognized primary generator ${1##*- }."
+          exit 1
+      esac
+      generator_arg="-G\"${1}\""
       shift
       ;;
     -I|--install-prefix)
@@ -908,20 +960,22 @@ while true; do
       shift
       ;;
      --generator)
+      ensure_unique_gen "${@}"
       shift
-      case $1 in
+      generator=${1%%:*}
+      [[ "${generator}" != "${1}" ]] && secondary_generator=${1#*:}
+      case $generator in
         make)
-            generator_arg="-G\"Unix Makefiles\""
-            generator=make
+            generator_arg="Unix Makefiles"
             ;;
         ninja)
-            generator_arg=-GNinja
-            generator=ninja
+            generator_arg=Ninja
             ;;
         *)
-          error "ERROR: Unrecognized generator ${1}."
+          error "ERROR: Unrecognized primary generator ${1}."
           exit 1
       esac
+      generator_arg="-G\"${secondary_generator:+${secondary_generator} - }${generator_arg}\""
       shift
       ;;
     -h|--help)
@@ -1191,7 +1245,7 @@ if [[ -z "$generator" ]]; then
   if [[ -n "$check_system_generator" ]]; then
     generator_arg=-G\"${check_system_generator}\"
   fi
-  case ${check_system_generator} in
+  case ${check_system_generator##*- } in
       Ninja)
         generator=ninja
         ;;
@@ -1200,7 +1254,7 @@ if [[ -z "$generator" ]]; then
         ;;
       *)
         cat 1>&2 <<EOF
-WARNING: CMake's configured generator "${check_system_generator}" is not
+WARNING: CMake's configured primary generator "${check_system_generator##*- }" is not
          recognized and is therefore not supported: buildtool cannot continue.
 EOF
         exit 1

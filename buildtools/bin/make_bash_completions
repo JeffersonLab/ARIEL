@@ -29,8 +29,6 @@ test \$?shell = 1 && exit
 
 _$fcn()
 {
-    # Disable path completion
-    type compopt &>/dev/null && compopt +o default
     local cur prev opts
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
@@ -46,10 +44,8 @@ _$fcn()
         return 0
     fi
 
-    # Re-enable path completion
-    type compopt &>/dev/null && compopt -o default
     COMPREPLY=()
     return 0
 }
-complete -F _$fcn $exec
+complete -F _$fcn -o filenames -A file $exec
 EOF

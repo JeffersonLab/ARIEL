@@ -16,6 +16,9 @@ function(_config_package_config_file)
   foreach(path_type bin lib inc fcl gdml)
     set(${path_type}_dir ${${product}_${path_type}_dir})
   endforeach()
+  string(REPLACE ";" "\n"
+    CONFIG_FIND_LIBRARY_COMMANDS
+    "${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
   configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake
@@ -61,8 +64,8 @@ macro( cet_cmake_config  )
   endif()
 
   #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")
-  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
-  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMAND_LIST}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_LIBRARY_LIST}")
 
   string(TOUPPER  ${product} ${product}_UC )
@@ -76,19 +79,25 @@ macro( cet_cmake_config  )
     else()
       set(lib_basename ${CMAKE_SHARED_LIBRARY_PREFIX}${my_library}${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      set( ${${my_library}_UC} \$ENV{${${product}_UC}_LIB}/${lib_basename} )" )
+    ##set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    ##  set( ${${my_library}_UC} \$ENV{${${product}_UC}_LIB}/${lib_basename} )" )
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
+      "set(${${my_library}_UC} \"\$ENV{${${product}_UC}_LIB}/${lib_basename}\")"
+      )
     #cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
     ##message(STATUS "cet_cmake_config: cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
     ##message(STATUS "cet_cmake_config: set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}${CMAKE_SHARED_LIBRARY_SUFFIX} )" )
   endforeach(my_library)
-  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
 
   # add include path to CONFIG_FIND_LIBRARY_COMMANDS
   ##message(STATUS "cet_cmake_config: ${product}_inc_dir is ${${product}_inc_dir}")
   if( NOT ${${product}_inc_dir} MATCHES "NONE" )
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      include_directories ( \$ENV{${${product}_UC}_INC} )" )
+    ##set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    ##  include_directories ( \$ENV{${${product}_UC}_INC} )" )
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
+      "  include_directories ( \"\$ENV{${${product}_UC}_INC}\" )"
+      )
   endif()
   ##message(STATUS "cet_cmake_config: CONFIG_INCLUDE_DIRECTORY is ${CONFIG_INCLUDE_DIRECTORY}")
 
@@ -102,12 +111,14 @@ macro( cet_cmake_config  )
   #message( STATUS "config_pm: mypmdir ${mypmdir}")
   # PluginVersionInfo is a special case
   if( CONFIG_PM_VERSION )
-    message(STATUS "CONFIG_PM_VERSION is ${CONFIG_PM_VERSION}" )
+    #message(STATUS "CONFIG_PM_VERSION is ${CONFIG_PM_VERSION}" )
     string(REGEX REPLACE "\\." "_" my_pm_ver "${CONFIG_PM_VERSION}" )
     string(TOUPPER  ${my_pm_ver} PluginVersionInfo_UC )
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      set( ${${product}_UC}_${PluginVersionInfo_UC} ${mypmdir}/CetSkelPlugins/${product}/${CONFIG_PM_VERSION} )" )
-    message(STATUS "${${product}_UC}_${PluginVersionInfo_UC} ${mypmdir}/CetSkelPlugins/${product}/${CONFIG_PM_VERSION} " )
+    ##set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    ##  set( ${${product}_UC}_${PluginVersionInfo_UC} ${mypmdir}/CetSkelPlugins/${product}/${CONFIG_PM_VERSION} )" )
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
+      "  set( ${${product}_UC}_${PluginVersionInfo_UC} ${mypmdir}/CetSkelPlugins/${product}/${CONFIG_PM_VERSION} )" )
+    #message(STATUS "${${product}_UC}_${PluginVersionInfo_UC} ${mypmdir}/CetSkelPlugins/${product}/${CONFIG_PM_VERSION} " )
   endif()
   # add to pm list for package configure file
   foreach( my_pm ${CONFIG_PERL_PLUGIN_LIST} )
@@ -116,8 +127,10 @@ macro( cet_cmake_config  )
     string(REGEX REPLACE "\\." "_" my_pm_dash "${my_pm_name}" )
     #message( STATUS "config_pm: my_pm_dash ${my_pm_dash}")
     string(TOUPPER  ${my_pm_dash} ${my_pm_name}_UC )
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      set( ${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
+    ##set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    ##  set( ${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
+      "  set( ${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
     message(STATUS "${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
   endforeach(my_pm)
   foreach( my_pm ${CONFIG_PM_LIST} )
@@ -128,8 +141,10 @@ macro( cet_cmake_config  )
     string(REGEX REPLACE "/" "_" my_pm_slash "${my_pm_dash}" )
     #message( STATUS "config_pm: my_pm_slash ${my_pm_slash}")
     string(TOUPPER  ${my_pm_slash} ${my_pm_name}_UC )
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      set( ${${product}_UC}${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
+    ##set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    ##  set( ${${product}_UC}${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
+      "  set( ${${product}_UC}${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
     message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
   endforeach(my_pm)
 

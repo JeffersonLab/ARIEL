@@ -136,12 +136,29 @@ function(basic_plugin name type)
     endif( has_path ) 
   endforeach()
   if(BP_USE_BOOST_UNIT)
+    # If Boost has been specified but the library hasn't, load the library.
+    if ((NOT TARGET Boost::unit_test_framework) AND
+        (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND
+        BOOST_VERS)
+      find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+    endif()
+
+    # Make sure we have the correct library available.
+    if (Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
+      set(Boost_UTL ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    elseif (TARGET Boost::unit_test_framework)
+      set(Boost_UTL Boost::unit_test_framework)
+    else()
+      message(FATAL_ERROR "basic_plugin: target ${plugin_name} has USE_BOOST_UNIT "
+        "option set but Boost Unit Test Framework Library cannot be found: is "
+        "boost set up?")
+    endif()
     set_target_properties(${plugin_name}
       PROPERTIES
       COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
       COMPILE_FLAGS -Wno-overloaded-virtual
       )
-    list(INSERT basic_plugin_liblist 0 ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    list(INSERT basic_plugin_liblist 0 ${Boost_UTL})
   endif()
   if(COMMAND find_tbb_offloads)
     find_tbb_offloads(FOUND_VAR have_tbb_offload ${BP_SOURCE})

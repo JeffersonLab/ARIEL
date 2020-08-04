@@ -34,8 +34,6 @@ if( $#ARGV >= 0 ) {
 $build_table::debug = "false";
 
 my $pfile=$inputdir."/product_deps";
-my $flagfile=$outputdir."/cet_base_flags";
-my $have_flagfile = -e $flagfile;
 
 my $tmpfl = $outputdir."/table_diagnostics";
 open(TERR, "> $tmpfl") or die "Couldn't open $tmpfl";
@@ -45,9 +43,7 @@ my $j;
 
 my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
 my ($have_fragment, @flist) = check_for_fragment( $pfile );
-my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
-my @plist=@$plist_ref;
-my @dqlist=@$dqlist_ref;
+my $phash = get_product_list($pfile);
 my ($ndeps, @qlist) = get_qualifier_list( $pfile, $build_table::TERR );
 
 print "creating table file for $product $version\n";
@@ -55,15 +51,10 @@ print "   default qualifier: $default_qual\n";
 print "   default version: $default_ver\n";
 if ( $build_table::debug eq "true" ) {
   print "   number of dependencies: $ndeps\n";
-  for $i ( 0 .. $dqlen ) {
-    print "  distinguishing qualifier: $dqlist[$i]\n";
-  }
-  for $i ( 0 .. $plen ) {
-      if ( $plist[$i][2] ) {
-      print " $plist[$i][0] $plist[$i][1] $plist[$i][2] \n";
-      } else {
-      print " $plist[$i][0] $plist[$i][1] \n";
-      }
+  foreach my $dep (keys %{$phash}) {
+    foreach my $qual (keys %{$phash->{$dep}}) {
+      print " $dep $phash->{$dep}->{$qual}->{version} $qual\n";
+    }
   }
   foreach $i ( 0 .. $#qlist ) {
     print "qualifiers  $i:";
@@ -74,19 +65,14 @@ if ( $build_table::debug eq "true" ) {
   }
 }
 
-my $table = $outputdir."/".$product.".table";
+my $table = "$outputdir/$product.table";
 open(TBL, "> $table") or die "Couldn't open $table";
 create_table_top();
-if ( $ndeps ) {
-  if ( $qlist[1][0] eq "-nq-"  ) {
-    no_quals();
-  } else {
-    create_quals();
-  }
+if ($ndeps and  $qlist[1][0] ne "-nq-") {
+  create_quals();
 } else {
   no_quals();
 }
-
 create_table_bottom();
 close(TBL);
 close(TERR);
@@ -103,73 +89,30 @@ sub create_table_top {
   print TBL "# Starting Group definition\n";
   print TBL "Group:\n";
   print TBL "\n";
-
 }
 
-sub print_no_qual_setup {
-  my @params = @_;
-  my $qiter=$params[0];
-  my $piter=$params[1];
-  foreach $print_no_qual_setup::k ( 0 .. $#plist ) {
-    if( $plist[$print_no_qual_setup::k][0] eq $qlist[0][$piter] ) {
-      my $thisver = $plist[$print_no_qual_setup::k][1];
-      if ( $plist[$print_no_qual_setup::k][1] eq "-" ) { $thisver = ""; }
-      if ( $plist[$print_no_qual_setup::k][2] ) {
-	my @kwords = split(/:/,$qlist[$qiter][0]);
-	foreach $print_qual_setup::j ( 0 .. $#kwords ) {
-	  if ( $plist[$print_no_qual_setup::k][2] eq $kwords[$print_qual_setup::j] ) {
-	    if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
-	    } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	      print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
-	    } else {
-	      print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
-	    }
-	  }
-	}
-      } else {
-	  if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
-	  } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	    print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
-	  } else {
-	    print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
-	  }
-       }
+sub print_dep_setup_table {
+  my ($dep, $dep_info, $dep_quals) = @_;
+  my $thisver = ($dep_info->{version} eq "-") ? "" : $dep_info->{version};
+  my $setup = ($dep_info->{optional}) ? "Optional" : "Required";
+  my $qualstring = ($dep_quals) ?
+    sprintf(" -q +\%s", join(":+", split(':', $dep_quals))) : "";
+  print TBL "    setup$setup( $dep $thisver$qualstring )\n";
+}
+
+sub print_setup {
+  my ($prod_quals, $qiter) = @_;
+  my $deps = prods_for_quals($phash, $prod_quals);
+  foreach my $j ( 1 .. $#{$qlist[$qiter]} ) {
+    my $dep = $qlist[0][$j];
+    next if $dep eq "compiler";
+    my $dep_quals = $qlist[$qiter][$j];
+    unless ($dep_quals eq "-" or $dep_quals eq "-b-") {
+      my $dep_info = $deps->{$dep} or
+        die "Unable to find version info for dependency $dep where dependent's qualifiers are $prod_quals";
+      print_dep_setup_table($dep, $dep_info, ($dep_quals eq "-nq-") ? undef : $dep_quals)
+        unless $dep_info->{only_for_build};
     }
-  }
-}
-
-sub print_qual_setup {
-  my @params = @_;
-  my $qiter=$params[0];
-  my $piter=$params[1];
-  my @qwords = split(/:/,$qlist[$qiter][$piter]);
-  my $ql="+".$qwords[0];
-  foreach $print_qual_setup::j ( 1 .. $#qwords ) {
-    $ql = $ql.":+".$qwords[$print_qual_setup::j];
-  }
-  foreach $print_no_qual_setup::k ( 0 .. $#plist ) {
-     if( $plist[$print_no_qual_setup::k][0] eq $qlist[0][$piter] ) {
-       if ( $plist[$print_no_qual_setup::k][2] ) {
-         my @kwords = split(/:/,$qlist[$qiter][0]);
-	 foreach $print_qual_setup::j ( 0 .. $#kwords ) {
-	   if ( $plist[$print_no_qual_setup::k][2] eq $kwords[$print_qual_setup::j] ) {
-	     if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
-	     } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	       print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
-	     } else {
-	       print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
-	     }
-	   }
-	 }
-       } else {
-	 if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
-	 } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	   print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
-	 } else {
-	   print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] -q $ql )\n";
-	 }
-       }
-     }
   }
 }
 
@@ -178,45 +121,20 @@ sub no_quals {
   print TBL "Qualifiers = \"\"\n";
   print TBL "\n";
   print TBL "  Action = GetProducts\n";
-  foreach $no_quals::i ( 1 .. $#qlist ) {
-    foreach $no_quals::j ( 1 .. $ndeps ) {
-      if ( $qlist[$no_quals::i][$no_quals::j] eq "-" ) {
-      } elsif ( $qlist[$no_quals::i][$no_quals::j] eq "-nq-" ) {
-	print_no_qual_setup( $no_quals::i, $no_quals::j );
-      } elsif ( $qlist[$no_quals::i][$no_quals::j] eq "-b-" ) {
-      } else {
-	print_qual_setup( $no_quals::i, $no_quals::j );
-      }
-    }
-  }
+  print_setup($qlist[1][0], 1);
   print TBL "\n";
 }
 
 sub create_quals {
-  foreach $create_quals::i ( 1 .. $#qlist ) {
-    my @words = split(/:/,$qlist[$create_quals::i][0]);
-    my $qdot = $qlist[$create_quals::i][0];
+  foreach my $i ( 1 .. $#qlist ) {
+    my $prod_quals = $qlist[$i][0];
+    my @words = split(/:/,$prod_quals);
+    my $qdot = $prod_quals;
     $qdot =~ s/:/\./g;
-    # skip this bit if $flagfile does not exist
-    if ( $have_flagfile ) {
-      $create_quals::cxxflag = "";
-      $create_quals::cflag = "";
-      foreach $create_quals::j ( 0 .. $#words ) {
-	if( $words[$create_quals::j] eq "debug" ) {
-           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
-	} elsif( $words[$create_quals::j] eq "opt" ) {
-           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
-	} elsif( $words[$create_quals::j] eq "prof" ) {
-           ($create_quals::cxxflag,$create_quals::cflag) = check_flags( $flagfile, $words[$create_quals::j] );
-	}
-      }
-      $create_quals::cxxflag =~ s/;/ /g;
-      $create_quals::cflag =~ s/;/ /g;
-    }
     print TBL "Flavor     = ANY\n";
-    print TBL "Qualifiers = \"$qlist[$create_quals::i][0]\"\n";
+    print TBL "Qualifiers = \"$prod_quals\"\n";
     print TBL "\n";
-    if( $have_fq ) {
+    if ( $have_fq ) {
       print TBL <<EOF;
 
   Action = GetFQDir
@@ -230,16 +148,7 @@ sub create_quals {
 EOF
     }
     print TBL "  Action = GetProducts\n";
-    foreach $create_quals::j ( 1 .. $ndeps ) {
-      next if $qlist[0][$create_quals::j] eq "compiler";
-      if ( $qlist[$create_quals::i][$create_quals::j] eq "-" ) {
-      } elsif ( $qlist[$create_quals::i][$create_quals::j] eq "-nq-" ) {
-	print_no_qual_setup( $create_quals::i, $create_quals::j );
-      } elsif ( $qlist[$create_quals::i][$create_quals::j] eq "-b-" ) {
-      } else {
-	print_qual_setup( $create_quals::i, $create_quals::j );
-      }
-    }
+    print_setup($prod_quals, $i);
     print TBL "\n";
   }
 }
@@ -261,6 +170,7 @@ sub create_table_bottom {
   my $bin_directory = get_bin_directory( $pfile );
   my $def_python_path = get_python_path( $pfile );
   my $fw_directory = get_fw_directory( $pfile );
+  my $wp_directory = get_wp_directory( $pfile );
   my $gdml_directory = get_gdml_directory( $pfile );
   my $prl_directory = get_perllib( $pfile );
   my ($fwlen, $fwlist_ref, $fwdir_ref) = get_setfw_list( $pfile );
@@ -336,6 +246,11 @@ sub create_table_bottom {
   } else {
   print TBL "    # add $fw_directory to FW_SEARCH_PATH\n";
   print TBL "    pathPrepend(FW_SEARCH_PATH, $fw_directory )\n";
+  }
+  if ( $wp_directory eq "none" )   {
+  } else {
+  print TBL "    # add $wp_directory to WIRECELL_PATH\n";
+  print TBL "    pathPrepend(WIRECELL_PATH, $wp_directory )\n";
   }
   if( $gdml_directory eq "default" ) {
   print TBL "    # add the gdml directory to FW_SEARCH_PATH\n";

@@ -1,11 +1,43 @@
 # Boost is a very special case
 #
-# find_ups_boost(  [minimum] )
-#  minimum - optional minimum version
-#  we look for nearly all of the boost libraries
-#      except math, prg_exec_monitor, test_exec_monitor
+# find_ups_boost([BOOST_TARGETS] [<min-ver>])
+#
+# BOOST_TARGETS
+#   If this option is specified, the modern idiom of specifying Boost
+#   libraries by target e.g. Boost::unit_test_framework should be
+#   followed. Note that this idiom will work regardless for
+#   now. Otherwise, a backward compatibilty option will be activated to
+#   create Boost_XXXX_LIBRARY variables for use when linking.
+#
+#  <min-ver> - optional minimum version
+#
+# We look for nearly all of the boost libraries except math,
+# prg_exec_monitor, test_exec_monitor
+#
+# If you need any that aren't specified in boost_liblist below, you
+# should issue a separate CMake find_package(COMPONENTS ... REQUIRED)
+# command subsequent to this one.
 
 include(CheckUpsVersion)
+
+set(boost_liblist
+  chrono
+  date_time
+	filesystem
+	graph
+	iostreams
+	locale
+	prg_exec_monitor
+	program_options
+	random
+	regex
+	serialization
+	system
+	thread
+	timer
+	unit_test_framework
+	wave
+	wserialization )
 
 # since variables are passed, this is implemented as a macro
 macro( find_ups_boost )
@@ -17,37 +49,24 @@ IF (NOT BOOST_VERS)
     MESSAGE (FATAL_ERROR "Boost library has not been setup")
 ENDIF()
 
-cmake_parse_arguments( FUB "" "" "" ${ARGN} )
+cmake_parse_arguments( FUB "BOOST_TARGETS" "" "" ${ARGN} )
+
+if (NOT FUB_BOOST_TARGETS)
+  set(Boost_NO_BOOST_CMAKE ON)
+endif()
+
 set( minimum )
 if( FUB_UNPARSED_ARGUMENTS )
   list( GET FUB_UNPARSED_ARGUMENTS 0 minimum )
 endif()
 
-set(boost_liblist chrono 
-                  date_time  
-		  filesystem 
-		  graph
-		  iostreams
-		  locale
-		  prg_exec_monitor
-		  program_options 
-		  random
-		  regex 
-		  serialization
-		  signals
-		  system 
-		  thread 
-		  timer
-		  unit_test_framework 
-		  wave
-		  wserialization )
-
 # compare for recursion
 list(FIND cet_product_list boost found_product_match)
 if( ${found_product_match} LESS 0 )
   # add to product list
-  set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-    find_ups_boost( ${minimum} )")
+  ##set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
+  ##  find_ups_boost( ${minimum} )")
+  list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST "find_ups_boost( ${minimum} )")
   set(cet_product_list boost ${cet_product_list} )
 
   # convert vx_y_z to x.y.z
@@ -98,7 +117,9 @@ if( ${found_product_match} LESS 0 )
   #set(Boost_ADDITIONAL_VERSIONS "1.48" "1.48.0" "1.49" "1.49.0")
   set(Boost_NO_SYSTEM_PATHS ON)
   # search for Boost ${MATCHVER} or better libraries
-  find_package( Boost ${MATCHVER} COMPONENTS ${boost_liblist} )
+  message(STATUS "Looking for Boost ${MATCHVER} COMPONENTS ${boost_liblist}")
+  find_package( Boost ${MATCHVER} COMPONENTS ${boost_liblist} REQUIRED)
+  message(STATUS "find_package(Boost ...) complete")
 
   #message(STATUS "find_ups_boost debug: Boost include directory is ${Boost_INCLUDE_DIR}" )
   #message(STATUS "find_ups_boost debug: Boost library directory is ${BOOST_LIBRARYDIR}" )

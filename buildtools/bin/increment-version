@@ -39,6 +39,9 @@ $options->{help} and pod2usage(-exitval => 1, -verbose => 3);
 
 $options->{"dry-run"} and report("Dry run: no actual changes made!");
 
+$options->{"client-dir"} =
+  map { split /,/, $_ } @{$options->{"client-dir"}}
+  if scalar @{$options->{"client-dir"}};
 if (scalar keys %bumped_versions) { # update-only.
   $options->{"client-dir"} = ( "." )
     unless exists $options->{"client-dir"};
@@ -281,8 +284,8 @@ I<mode>: [ B<-M> | B<--major>] | [ B<-m> | B<--minor> ] |
       [ B<--update-only> I<package>,I<version> |
         B<-U> I<package>,I<version> ]
 
-I<options>: [ B<--client-dir> I<package-client-search-path> |
-           B<-c> I<package-client-search-path> ]+ |
+I<options>: [ B<--client-dir> I<package-client-top-dir>[,<package-client-top-dir>]+ |
+           B<-c> I<package-client-top-dir>[,<package-client-top-dir>]+ ]+ |
          [ B<--dry-run> | B<-n> ] |
          [ B<--tag> ] |
          [ B<--verbose> | B<-v> ]
