@@ -24,7 +24,7 @@ open(PIN, "< $report") or die "Couldn't open $report";
 my $info = {};
 my $line;
 while ( $line=<PIN> ) {
-  chop $line;
+  chomp $line;
   if ( index($line,"#") == 0 ) {
   } elsif ( $line !~ /\w+/ ) {
   } else {

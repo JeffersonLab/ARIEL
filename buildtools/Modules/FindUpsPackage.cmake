@@ -105,8 +105,9 @@ if( ${PRODUCTNAME}_UPS_VERSION )
   elseif( ${found_product_match} LESS 0 )
     #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
     # add to product list
-    set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-    find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+    ##set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
+    ##find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+    list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST "find_ups_product( ${PRODUCTNAME} ${fup_version} )")
     set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
     #message(STATUS "find_ups_product debug: adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
     #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")

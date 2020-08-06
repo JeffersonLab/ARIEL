@@ -69,8 +69,7 @@ macro( find_ups_root )
     list(FIND cet_product_list root found_product_match)
     if( ${found_product_match} LESS 0 )
       # add to product list
-      set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-    find_ups_root( ${minimum} )")
+      list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST "find_ups_root( ${minimum} )")
       set(cet_product_list root ${cet_product_list} )
     endif()
 
@@ -112,6 +111,10 @@ macro( find_ups_root )
       PRODUCT_MATCHES_VAR ROOT6_HAS_NOINCLUDEPATHS
       )
 
+    check_ups_version(root ${ROOT_VERSION} v6_10_04
+      PRODUCT_MATCHES_VAR HAVE_ROOT_NAMESPACE_TARGETS
+      )
+
     # Set library variables
     _set_root_lib_vars()
 
@@ -127,6 +130,11 @@ macro( find_ups_root )
       _set_and_check_prog(ROOTCLING ${ROOT_BIN_DIR}/rootcling)
     else() # ROOT5
       _set_and_check_prog(ROOTCINT ${ROOT_BIN_DIR}/rootcint)
+    endif()
+
+    if (HAVE_ROOT_NAMESPACE_TARGETS)
+      # This command exposes all allowed targets to downstream users
+      find_package(ROOT REQUIRED)
     endif()
 
     # define some useful library lists

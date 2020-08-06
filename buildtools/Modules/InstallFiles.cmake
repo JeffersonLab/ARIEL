@@ -7,20 +7,21 @@
 ####################################
 # Recommended use:
 #
-# cet_install_files( LIST file_list 
-#                DIRNAME directory name
-#                [FQ_DIR]
-#               )
+# cet_install_files(LIST file_list
+#                   DIRNAME directory name
+#                   [INSTALL_ONLY]
+#                   [FQ_DIR]
+#                  )
 #
 #  If FQ_DIR is not specified, files will be installed in PRODUCT_DIR/<directory name>
 #  If FQ_DIR is specified, files will be installed in PRODUCT_FQ_DIR/<directory name>
-# 
+#  If INSTALL_ONLY is specified, files will *not* be copied to the build tree.
 
 include(CMakeParseArguments)
 include (CetCopy)
 
 function( cet_install_files )
-  cmake_parse_arguments( IFG "FQ_DIR" "DIRNAME" "LIST" ${ARGN})
+  cmake_parse_arguments( IFG "FQ_DIR;INSTALL_ONLY" "DIRNAME" "LIST" ${ARGN})
   set( cet_install_files_usage "USAGE: cet_install_files( DIRNAME <directory name> LIST <file list> [FQ_DIR] )")
 
   if ( NOT IFG_DIRNAME )
@@ -40,7 +41,9 @@ function( cet_install_files )
   # copy to build directory
   set( this_build_path ${PROJECT_BINARY_DIR}/${IFG_DIRNAME} )
 
-  cet_copy( ${IFG_LIST} DESTINATION "${this_build_path}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
+  if (NOT IFG_INSTALL_ONLY)
+    cet_copy( ${IFG_LIST} DESTINATION "${this_build_path}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
+  endif()
   INSTALL ( FILES  ${IFG_LIST}
             DESTINATION "${this_install_dir}" )
 

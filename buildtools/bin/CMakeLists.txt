@@ -9,7 +9,7 @@ install_scripts( LIST
 cet_script(filter-output filter-output-art-compat filter-program-options cet_exec_test)
 cet_script(checkClassVersion)
 
-INSTALL ( PROGRAMS make_bash_completions DESTINATION bin )
+INSTALL ( PROGRAMS format-code make_bash_completions DESTINATION bin )
 INSTALL ( FILES cet_test_functions.sh
   cmake_parse_deps.pm
   parse_deps.pm

@@ -33,6 +33,7 @@ my %subcommands = (
   fwdir_base  => sub {return basename(get_cmake_fw_directory($_[0]));},
   gdmldir => \&get_cmake_gdml_directory,
   gdmldir_base => sub {return basename(get_cmake_gdml_directory($_[0]));},
+  wpdir => \&get_cmake_wp_directory,
   incdir => \&get_cmake_inc_directory,
   libdir => \&get_cmake_lib_directory,
   perllib => \&get_cmake_perllib,
