@@ -137,6 +137,14 @@ macro( find_ups_root )
       find_package(ROOT REQUIRED)
     endif()
 
+    if(NOT ROOT_PYTHON_VERSION)
+      execute_process(
+        COMMAND ${ROOT_CONFIG_EXEC} --python-version
+        OUTPUT_VARIABLE ROOT_PYTHON_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    endif()
+
     # define some useful library lists
     set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
       ${ROOT_CINT}
