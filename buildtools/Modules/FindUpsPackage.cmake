@@ -13,10 +13,14 @@
 
 include(CheckUpsVersion)
 
+set(_ufp_depth 0)
+set(_ufp_python "Python2")
+
 macro( _use_find_package PNAME )
 
 cmake_parse_arguments( UFP "" "" "" ${ARGN} )
 #message ( STATUS "_use_find_package debug: unparsed arguments ${UFP_UNPARSED_ARGUMENTS}" )
+
 set( dotver "" )
 if( UFP_UNPARSED_ARGUMENTS )
   list( GET UFP_UNPARSED_ARGUMENTS 0 PVER )
@@ -30,21 +34,34 @@ endif()
 string(REGEX REPLACE "sqlite( |$)" "SQLite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
-# find_package(Python2...) requires CMake 3.12
-string(REGEX REPLACE "(^| )python( |$)" "Python2" RNAME ${RNAME})
-#message( STATUS "Searching for ${RNAME}" )
-if( ${RNAME} STREQUAL "Python2" )
-  set(comp "COMPONENTS;Interpreter;Development")
-endif()
+string(REGEX REPLACE "(^| )python( |$)" "${_ufp_python}" RNAME ${RNAME})
 
 # use find_package to check the version
 # assume the package's ${RNAME}Config.cmake will set up include_diretcories,
 # link libraries and various CMake variables for use with this project's CMakeLists.txt
-find_package(${RNAME} ${dotver} ${comp} QUIET)
-unset(comp)
+if( NOT ${RNAME}_FOUND )
+  # Need to save RNAME and dotver because this macro may be called recursively
+  set(RNAME${_ufp_depth} ${RNAME})
+  set(dotver${_ufp_depth} ${dotver})
+  math(EXPR _ufp_depth "${_ufp_depth} + 1")
+  # Must specify Python package compnents for find_package(Python2...)
+  # NB: find_package(Python2...) requires CMake 3.12
+  if( ${PNAME} STREQUAL python )
+#    set(comp "COMPONENTS;Interpreter;Development")
+    set(comp "COMPONENTS;Development")
+  endif()
+  find_package(${RNAME} ${dotver} ${comp} QUIET)
+  unset(comp)
+  # Restore RNAME and dotver
+  math(EXPR _ufp_depth "${_ufp_depth} - 1")
+  set(RNAME ${RNAME${_ufp_depth}})
+  set(dotver ${dotver${_ufp_depth}})
+  unset(RNAME${_ufp_depth})
+  unset(dotver${_ufp_depth})
+endif()
 
-if( NOT ${${RNAME}_FOUND} )
-  # If not found, try pkg-config
+# If not found by find_package, try pkg-config
+if( NOT ${RNAME}_FOUND )
   find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
     # UPS "python" is currently v2.7, which is "python2" in pkg-config land
@@ -55,6 +72,8 @@ if( NOT ${${RNAME}_FOUND} )
       pkg_check_modules(PC_${RNAME} ${RNAME})
     endif()
     if(PC_${RNAME}_FOUND)
+      set(${RNAME}_FOUND TRUE)
+      set(${RNAME}_VERSION ${PC_${RNAME}_VERSION})
       if(PC_${RNAME}_INCLUDE_DIRS)
 #      message(STATUS "_use_find_package: adding ${PC_${RNAME}_INCLUDE_DIRS} to include_directories")
         include_directories(BEFORE ${PC_${RNAME}_INCLUDE_DIRS})
@@ -78,7 +97,20 @@ if( NOT ${${RNAME}_FOUND} )
     endif()
   endif()
 endif()
+
 set( ${RNAME}_DOT_VERSION ${${RNAME}_VERSION})
+if( NOT ${PNAME}_VERSION )
+  set( ${PNAME}_VERSION ${${RNAME}_VERSION} )
+endif()
+if( NOT ${PNAME}_UPS_VERSION )
+  _parse_ups_version( ${${RNAME}_VERSION} )
+  set(${PNAME}_UPS_VERSION ${upsver})
+endif()
+if( ${PNAME} STREQUAL python )
+  set(PYTHON_INCLUDE_DIRS "${${_ufp_python}_INCLUDE_DIRS}")
+  set(PYTHON_VERSION "${${_ufp_python}_VERSION_MAJOR}.${${_ufp_python}_VERSION_MINOR}")
+endif()
+message(STATUS "FindUpsPackage: Found ${RNAME} ${${RNAME}_VERSION}")
 
 endmacro( _use_find_package )
 

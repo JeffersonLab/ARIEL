@@ -76,6 +76,31 @@ macro(_get_dotver myversion )
    STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
 endmacro(_get_dotver myversion )
 
+#internal function
+#pad variable str with leading zeros to length len
+function(_zero_pad str len)
+  string(LENGTH "${${str}}" _len)
+  while(_len LESS len)
+    string(CONCAT ${str} "0" "${${str}}")
+    string(LENGTH "${${str}}" _len)
+  endwhile()
+  set(${str} ${${str}} PARENT_SCOPE)
+endfunction()
+
+#internal function
+function(_parse_ups_version dotver )
+  string(REGEX MATCH "^([0-9]*)(\.([0-9]*)(\.([0-9]*))?)?" smatch ${dotver})
+  _zero_pad(CMAKE_MATCH_3 2)
+  _zero_pad(CMAKE_MATCH_5 2)
+  if(CMAKE_MATCH_COUNT GREATER 0)
+    set(_upsver ${CMAKE_MATCH_1} ${CMAKE_MATCH_3} ${CMAKE_MATCH_5})
+  else()
+    set(_upsver 0 00 00)
+  endif()
+  string(REPLACE ";" "_"  _upsver "v" "${_upsver}")
+  set(upsver ${_upsver} PARENT_SCOPE)
+endfunction()
+
 #internal macro
 function(_parse_version version )
    # standard case
