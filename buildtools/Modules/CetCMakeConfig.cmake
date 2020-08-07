@@ -17,13 +17,11 @@ function(_config_package_config_file)
     set(${path_type}_dir ${${product}_${path_type}_dir})
   endforeach()
   set(perllib ${${product}_perllib})
-  string(REPLACE ";" "\n"
-    CONFIG_FIND_LIBRARY_COMMANDS
-    "${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
+  string(REPLACE ";" "\n" CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMAND_LIST}")
+  string(REPLACE ";" "\n" CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
   configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake
-	  INSTALL_DESTINATION ${distdir}
+    ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake INSTALL_DESTINATION ${distdir}
     # Use known list of path vars for installation locations so these
     # can be found relative to the location of the productConfig.cmake
     # file
@@ -94,7 +92,7 @@ macro( cet_cmake_config  )
   ##message(STATUS "cet_cmake_config: ${product}_inc_dir is ${${product}_inc_dir}")
   if( NOT ${${product}_inc_dir} MATCHES "NONE" )
     list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
-      "  include_directories ( \"\${PACKAGE_PREFIX_DIR}/${${product}_inc_dir}\" )" )
+      "include_directories ( \"\${PACKAGE_PREFIX_DIR}/${${product}_inc_dir}\" )" )
   endif()
   ##message(STATUS "cet_cmake_config: CONFIG_INCLUDE_DIRECTORY is ${CONFIG_INCLUDE_DIRECTORY}")
 
@@ -133,7 +131,7 @@ macro( cet_cmake_config  )
     #message( STATUS "config_pm: my_pm_slash ${my_pm_slash}")
     string(TOUPPER  ${my_pm_slash} ${my_pm_name}_UC )
     list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
-      "  set( ${${product}_UC}${${my_pm_name}_UC} \"${mypmdir}${my_pm}\" )" )
+      "set( ${${product}_UC}${${my_pm_name}_UC} \"${mypmdir}${my_pm}\" )" )
     message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
   endforeach(my_pm)
 

@@ -57,7 +57,7 @@ endif()
 list(FIND cet_product_list boost found_product_match)
 if( ${found_product_match} LESS 0 )
   # add to product list
-  list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST "find_ups_boost( ${minimum} )")
+  list(APPEND CONFIG_FIND_UPS_COMMAND_LIST "find_ups_boost( ${minimum} )")
   set(cet_product_list boost ${cet_product_list} )
 
   # Hint at library location - if Boost is available in our software environment,

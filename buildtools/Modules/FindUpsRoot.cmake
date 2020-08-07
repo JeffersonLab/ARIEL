@@ -69,7 +69,7 @@ macro( find_ups_root )
     list(FIND cet_product_list root found_product_match)
     if( ${found_product_match} LESS 0 )
       # add to product list
-      list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST "find_ups_root( ${minimum} )")
+      list(APPEND CONFIG_FIND_UPS_COMMAND_LIST "find_ups_root( ${minimum} )")
       set(cet_product_list root ${cet_product_list} )
     endif()
 
