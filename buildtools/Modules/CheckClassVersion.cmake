@@ -18,12 +18,23 @@ ENDIF()
 
 string(REPLACE " " ";" CCV_ROOT_FEATURES "${CCV_ROOT_CONFIG_OUT}")
 
-IF("pyroot" IN_LIST CCV_ROOT_FEATURES OR "python" IN_LIST CCV_ROOT_FEATURES)
-  SET(CCV_ENABLED 1)
-ELSE()
-  MESSAGE("WARNING: The version of root against which we are building currently has not been built "
-    "with python support: ClassVersion checking is disabled."
-    )
+cmake_policy(SET CMP0057 NEW)
+IF(NOT DEFINED CCV_ENABLED)
+  SET(CCV_ENABLED 0)
+  IF("pyroot" IN_LIST CCV_ROOT_FEATURES OR "python" IN_LIST CCV_ROOT_FEATURES)
+    STRING(REGEX MATCH "^[0-9]+\\.[0-9]+" _pyroot_version ${ROOT_PYTHON_VERSION})
+    IF(PYTHON_VERSION AND _pyroot_version AND PYTHON_VERSION EQUAL _pyroot_version)
+      SET(CCV_ENABLED 1)
+    ENDIF()
+    IF(NOT CCV_ENABLED)
+      MESSAGE(STATUS "WARNING: ROOT built with incompatible Python version. "
+        "ROOT = ${_pyroot_version} vs. Python = ${PYTHON_VERSION}. ClassVersion checking is disabled.")
+    ENDIF()
+  ELSE()
+    MESSAGE("WARNING: The version of root against which we are building currently has not been built "
+      "with python support: ClassVersion checking is disabled."
+      )
+  ENDIF()
 ENDIF()
 
 function(check_class_version)
