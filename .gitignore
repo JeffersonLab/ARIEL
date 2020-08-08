@@ -10,3 +10,7 @@
 # macOS caches
 *._*
 *.DS_Store
+
+# Build artifacts
+/tmp-build*
+.buildinfo
