@@ -1,0 +1,43 @@
+#
+# Run the second producer module
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : producer2
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  producers : {
+    concatenateIntersections : {
+      module_type : ConcatenateIntersections2
+      innerTag    : "detsim:inner"
+      outerTag    : "detsim:outer"
+    }
+  }
+
+  t1            : [ concatenateIntersections ]
+  trigger_paths : [ t1 ]
+
+  e1            : [ out1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  out1 : {
+    module_type : RootOutput
+    fileName    : "output/concatenateIntersections2.art"
+  }
+
+}

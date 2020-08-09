@@ -1,0 +1,4 @@
+Correct output:
+
+Counted 7 expensive (>$20/mo) pastimes among the survey population.
+Found 2 people with more than 3 pastimes.

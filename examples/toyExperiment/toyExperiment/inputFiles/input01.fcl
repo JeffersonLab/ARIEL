@@ -1,0 +1,60 @@
+#
+# Make a the first input file to be used by the workbook.
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name : exampleInput
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 10
+  firstRun    :  1
+}
+
+services : {
+
+  message               : @local::default_message
+  RandomNumberGenerator : {}
+  TFileService          : { fileName : "output/input01.root" }
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+
+}
+
+physics :{
+  producers : {
+    evtgen      : @local::evtgen_default
+    detsim      : @local::detsim_default
+    makeHits    : @local::makeHits_default
+    fitter      : @local::fitter_default
+    randomsaver : @local::randomsaver_default
+  }
+
+  analyzers: {
+    inspectGens          : @local::inspectGens_default
+    inspectIntersections : @local::inspectIntersections_default
+    inspectHits          : @local::inspectHits_default
+    inspectFits          : @local::inspectFits_default
+    massPlot             : @local::massPlot_default
+  }
+
+  p1            : [ evtgen, detsim, makeHits, fitter, randomsaver ]
+  e1            : [ inspectGens, inspectIntersections, inspectHits, inspectFits, massPlot, outfile ]
+  trigger_paths : [ p1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "output/input01.art"
+  }
+
+}

@@ -1,0 +1,33 @@
+#
+# Dump the data products found in the input file.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : dump
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : 1
+}
+
+services : {
+  message       : @local::default_message
+}
+
+physics :{
+
+  e1        : [ dumper ]
+  end_paths : [ e1 ]
+
+}
+
+outputs : {
+
+  dumper : {
+      module_type              : FileDumperOutput
+      wantProductFullClassName : true
+  }
+
+}

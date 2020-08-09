@@ -1,0 +1,25 @@
+#
+# This is a mock-up of information that will some day live in a conditions database.
+# For illustrative purposes we are using this file.
+#
+
+tracker : {
+
+  # Per shell information: hit efficiency, z resolution in mm, phi resolution in radians
+  shell00 : { eff : 0.95 sigZ : 0.002 sigPhi : 0.001 }
+  shell01 : { eff : 0.95 sigZ : 0.002 sigPhi : 0.001 }
+  shell02 : { eff : 0.95 sigZ : 0.002 sigPhi : 0.001 }
+  shell03 : { eff : 0.95 sigZ : 0.002 sigPhi : 0.001 }
+  shell04 : { eff : 0.95 sigZ : 0.002 sigPhi : 0.001 }
+
+  shell05 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell06 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell07 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell08 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell09 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell10 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell11 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell12 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell13 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+  shell14 : { eff : 0.95 sigZ : 1.00  sigPhi : 0.005 }
+}

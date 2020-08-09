@@ -1,0 +1,44 @@
+#! /bin/bash
+#
+# Start root, launch a TBrowser and point it at the root file
+# specified as the command line argument.
+#
+
+basename $0 2>/dev/null
+
+# Need to exit/return depending if this is source or executed.
+wasSourced=1
+if [ "`basename $0 2>/dev/null`" = "browse" ];then
+    wasSourced=0
+fi
+
+# We expect exactly one argument.
+if [ ! $# == 1 ]; then
+  echo "browse: must supply at least one argument"
+  echo $*
+  if [ $wasSourced == 1 ]; then
+     return -1
+  fi
+  exit
+fi
+
+# This needs to work in both the cetbuildtools development environment and as
+# an installed product.
+scriptDir=""
+if [ -n "${TOYEXPERIMENT_DIR}" ]; then
+  scriptDir=${TOYEXPERIMENT_DIR}/scripts
+else
+ if [ -n "${CETPKG_SOURCE}" ]; then
+   scriptDir=${CETPKG_SOURCE}/scripts
+ fi
+fi
+
+if [ -z "${scriptDir}" ]; then
+   echo "browse: could not find the script browse.cint"
+   if [ $wasSourced == 1 ]; then
+      return -1
+   fi
+   exit
+fi
+
+root -l ${scriptDir}/browse.cint\(\"$1\"\)

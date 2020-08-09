@@ -1,0 +1,37 @@
+#  ex10 - Introduce art::Ptr.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : ex10
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : -1
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/ex10.root" }
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+
+}
+
+physics :{
+
+  analyzers: {
+    inspectGenParts : {
+      module_type       : Ex10
+      genParticlesInputTag : "evtgen"
+      maxPrint          : 5
+    }
+  }
+
+  e1        : [ inspectGenParts ]
+  end_paths : [ e1 ]
+
+}

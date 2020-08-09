@@ -1,0 +1,23 @@
+
+<!--  -->
+<!--  $Id: classes_def.xml,v 1.19 2012/11/01 23:38:49 gandr Exp $     -->
+<!--  -->
+
+<lcgdict>
+ <class name="tex::DetectorStatusRecord"/>
+ <class name="tex::TrkHit"/>
+ <class name="tex::TrkHitCollection"/>
+ <class name="std::vector<tex::DetectorStatusRecord>"/>
+ <class name="tex::DetectorStatus"/>
+ <class name="tex::RecoTrk"/>
+ <class name="tex::RecoTrkCollection"/>
+ <class name="art::Ptr<tex::TrkHit>"/>
+ <class name="std::vector<art::Ptr<tex::TrkHit> >"/>
+ <class name="tex::Helix"/>
+ <class name="tex::FittedHelixData"/>
+ <class name="tex::FittedHelixDataCollection"/>
+ <class name="art::Wrapper<tex::DetectorStatus>"/>
+ <class name="art::Wrapper<tex::TrkHitCollection>"/>
+ <class name="art::Wrapper<tex::RecoTrkCollection>"/>
+ <class name="art::Wrapper<tex::FittedHelixDataCollection>"/>
+</lcgdict>

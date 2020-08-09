@@ -1,0 +1,54 @@
+#
+# Exercise the OddEventNumber filter.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : split2
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  producers : {
+    a : { module_type : PseudoProducer }
+    b : { module_type : PseudoProducer }
+    c : { module_type : PseudoProducer }
+  }
+
+  filters:{
+    odd : {
+      module_type : OddEventNumber
+    }
+  }
+
+  oddPath   : [ a,   odd,  b ]
+  evenPath  : [ a, "!odd", c ]
+  e1        : [  oddOutput, evenOutput ]
+
+  trigger_paths : [ evenPath, oddPath ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  oddOutput : {
+    module_type  : RootOutput
+    fileName     : "output/oddEvents2.art"
+    SelectEvents : { SelectEvents: [ oddPath ] }
+  }
+
+  evenOutput : {
+    module_type  : RootOutput
+    fileName     : "output/evenEvents2.art"
+    SelectEvents : { SelectEvents: [ evenPath ] }
+  }
+}

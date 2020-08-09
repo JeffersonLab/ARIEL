@@ -1,0 +1,28 @@
+#
+#  Exercise 6:
+#    List all of the data products in a file.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : fileDumper
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  e1        : [ dumper ]
+  end_paths : [ e1 ]
+}
+
+outputs : {
+  dumper : {
+     module_type : FileDumperOutput
+  }
+}

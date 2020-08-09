@@ -1,0 +1,35 @@
+#  iterV1.fcl
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : iter
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : -1
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/iterV1.root" }
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile : "databaseFiles/pdt.fcl" }
+}
+
+physics : {
+
+  producers: {
+    makeCombos : {
+      module_type       : MakeCombinationsV1
+      fitterInputTag    : "fitter"
+      maxPrint          : 5
+    }
+  }
+
+  t1 : [ makeCombos ]
+
+}
+

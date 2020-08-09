@@ -1,0 +1,38 @@
+BEGIN_PROLOG
+dataLabels :
+{
+  peopleLabel : pastimeData
+  pastimeLabel : pastimeData
+  dataLabel : pastimeData
+}
+END_PROLOG
+
+process_name : CREATINGASSNS
+
+physics :
+{
+  producers :
+  {
+    pastimeData : { module_type : PastimeDataProducer }
+
+    pap :
+    {
+      module_type : "art-workbook/CreatingAssns/PastimeAssnsProducer"
+      @table::dataLabels
+    }
+  }
+
+  analyzers :
+  {
+    paa :
+    {
+      module_type : "art-workbook/CreatingAssns/PastimeAssnsAnalyzer"
+      peopleLabel : @local::dataLabels.peopleLabel
+      surveyLabel : pap
+    }
+  }
+
+  pt : [ pastimeData, pap ]
+  pe : [ paa ]
+
+}

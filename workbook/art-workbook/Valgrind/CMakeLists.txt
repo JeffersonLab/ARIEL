@@ -1,0 +1,11 @@
+file(GLOB examples vex*.cc)
+set(vex12_opts "-Wno-array-bounds -Wno-aggressive-loop-optimizations")
+set(vex17_opts "-Wno-uninitialized")
+
+foreach(ex_cc ${examples})
+  get_filename_component(ex ${ex_cc} NAME_WE)
+  if (${ex}_opts)
+    set_source_files_properties(${ex_cc} PROPERTIES COMPILE_FLAGS "${${ex}_opts}")
+  endif()
+  cet_make_exec(${ex})
+endforeach()

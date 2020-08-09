@@ -1,0 +1,32 @@
+#
+#  Exercise ?:
+#  Illustrate TFileDirectory and how to write out a TGraph.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : rootPart2
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/rootPart2.root" }
+}
+
+physics :{
+  analyzers: {
+    part2 : {
+      module_type          : RootPart2
+      intersectionTags     : [ "detsim:outer", "detsim:inner" ]
+      maxEntries           : 10000
+    }
+  }
+
+  e1        : [ part2 ]
+  end_paths : [ e1 ]
+
+}

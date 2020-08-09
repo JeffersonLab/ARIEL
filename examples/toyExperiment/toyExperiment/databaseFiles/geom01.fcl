@@ -1,0 +1,39 @@
+#
+# This is a mock-up of information that will some day live in a geometry database.
+# For illustrative purposes we are using this file.
+#
+
+world : {
+  halfLengths : [ 1200, 1200, 600 ]   // Include a 20% margin around the tracker; in mm.
+}
+
+tracker : {
+
+  inner : {
+    nShells       :   5      // Number of shells
+    r0            :  20      // Radius at radial center of the innermost layer, mm
+    dr            :  10      // Radial step from layer to layer, mm
+    halfLength    : 100      // Half length in z, mm
+    halfThickness :   0.150  // Half thickness radially, mm
+    sigma         :   0.005  // Resolution in tangent plane, mm
+  }
+
+  outer : {
+    nShells       :  10
+    r0            : 100     // Radius at radial center of the innermost layer, mm
+    dr            : 100     // Radial step from layer to layer, mm
+    halfLength    : 500     // Half length in z, mm
+    halfThickness :   0.300 // Half thickness radially, mm
+    sigma         :   0.200 // Resolution in tangent plane, mm
+  }
+
+}
+
+bfield : {
+  bz : 1.5  // z component of uniform field, in Tesla.
+}
+
+luminousRegion : {
+   center : [ 0., 0., 0.]
+   sigma  : [ 1.0, 0.1, 5.0 ]
+}

@@ -1,0 +1,45 @@
+#
+# Run the event display on the information.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : eventDisplay01
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : -1
+}
+
+services : {
+  message       : @local::default_message
+  TFileService  : { fileName : "eventDisplay01.root" }
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+
+}
+
+physics :{
+  analyzers: {
+    eventDisplay : {
+      module_type     : EventDisplay
+      genParticleTag  : "evtgen"
+      drawGenTracks   : true
+      drawHits        : true
+      prompt          : true
+      waitFor         : mouse
+      multipage       : true
+      plotFileName    : "plots.jpg"
+      orientation     : "landscape"
+      maxDisplay      : 999
+    }
+  }
+
+  e1        : [ eventDisplay ]
+  end_paths : [ e1 ]
+
+}

@@ -1,0 +1,25 @@
+<lcgdict>
+  <class name="awb::Pastime" ClassVersion="3" >
+   <version ClassVersion="3" checksum="1185682351"/>
+  </class>
+  <class name="awb::Pastimes" />
+  <class name="art::Wrapper<awb::Pastimes>" />
+  <class name="awb::Person" ClassVersion="4" >
+   <version ClassVersion="4" checksum="25881057"/>
+   <version ClassVersion="3" checksum="2195816263"/>
+  </class>
+  <class name="awb::People" />
+  <class name="art::Wrapper<awb::People>" />
+  <class name="awb::PersonalPastimeData" ClassVersion="4" >
+   <version ClassVersion="4" checksum="3631410699"/>
+   <version ClassVersion="3" checksum="743895369"/>
+  </class>
+  <class name="awb::PastimeSurveyData" />
+  <class name="awb::PastimeSurvey" />
+  <class name="art::Wrapper<awb::PastimeSurveyData>" />
+  <class name="awb::RPastimeSurveyData" />
+  <class name="awb::RPastimeSurvey" />
+  <class name="art::Wrapper<awb::RPastimeSurveyData>" />
+  <class name="awb::PersonalPastimeDataSet" />
+  <class name="art::Wrapper<awb::PersonalPastimeDataSet>" />
+</lcgdict>

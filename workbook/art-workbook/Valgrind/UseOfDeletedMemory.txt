@@ -1,0 +1,255 @@
+- What is use of deleted memory?
+
+Normally when your program allocates memory for
+objects dynamically using the new operator eventually
+it releases that memory using the delete operator.
+
+The new operator returns a pointer to the allocated
+object and the delete operator is given that pointer
+to tell it what object to release.
+
+If during the running of the code a copy of that
+object pointer was made, which is frequently the case,
+then unless all copies are set to the nullptr when the
+memory is released, it will be possible for the
+code to attempt to read or write to the released
+memory using the copied pointer.  This is commonly
+called a "dangling pointer".
+
+Unfortunately what happens when this is done is
+undefined.  The program may function perfectly
+fine for many years with no errors.  But if the
+released memory gets reused by a subsequent new
+operator, sometime later in the execution of
+the code, then mysterious errors and crashes will
+begin happening as two different pieces of code
+read and write to the same block of memory.
+
+
+- Example of a read of deleted memory.
+
+Let's run vex09 to see an example of reading from memory which was allocated
+and then later released.
+
+// vex09.cc
+// vim: set sw=2:
+//
+// Read of deleted memory.
+//
+
+int
+main()
+{
+  int* p = new int(35);
+  delete p;
+  auto n = *p;
+  (void) n;
+}
+
+$ valgrind --leak-check=no --keep-stacktraces=alloc-and-free ./vex09
+==32094== Memcheck, a memory error detector
+==32094== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==32094== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==32094== Command: ./vex09
+==32094== 
+==32094== Invalid read of size 4
+==32094==    at 0x4006A4: main (vex09.cc:12)
+==32094==  Address 0x5162040 is 0 bytes inside a block of size 4 free'd
+==32094==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==32094==    by 0x40069F: main (vex09.cc:11)
+==32094==  Block was alloc'd at
+==32094==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==32094==    by 0x400689: main (vex09.cc:10)
+==32094== 
+==32094== 
+==32094== HEAP SUMMARY:
+==32094==     in use at exit: 0 bytes in 0 blocks
+==32094==   total heap usage: 1 allocs, 1 frees, 4 bytes allocated
+==32094== 
+==32094== For a detailed leak analysis, rerun with: --leak-check=full
+==32094== 
+==32094== For counts of detected and suppressed errors, rerun with: -v
+==32094== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice that the error report tells us on what line of code the error happened,
+and shows us the stack traces of both the deletion and allocation of the
+memory block we tried to access.
+
+Also note that the error report tells us that our access happened at the
+beginning of the block and not somewhere inside of it.
+
+- Example of a write to deleted memory.
+
+Let's run vex10 to see an example of trying to write into released memory.
+
+// vex10.cc
+// vim: set sw=2:
+//
+// Write into deleted memory.
+//
+
+int
+main()
+{
+  int* p = new int(35);
+  *p = 10;
+  delete p;
+  *p = 15;
+}
+
+$ valgrind --leak-check=no --keep-stacktraces=alloc-and-free ./vex10
+==32241== Memcheck, a memory error detector
+==32241== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==32241== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==32241== Command: ./vex10
+==32241== 
+==32241== Invalid write of size 4
+==32241==    at 0x4006AE: main (vex10.cc:13)
+==32241==  Address 0x5162040 is 0 bytes inside a block of size 4 free'd
+==32241==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==32241==    by 0x4006A9: main (vex10.cc:12)
+==32241==  Block was alloc'd at
+==32241==    at 0x4A07E05: operator new(unsigned long)
+(vg_replace_malloc.c:324)
+==32241==    by 0x400689: main (vex10.cc:10)
+==32241== 
+==32241== 
+==32241== HEAP SUMMARY:
+==32241==     in use at exit: 0 bytes in 0 blocks
+==32241==   total heap usage: 1 allocs, 1 frees, 4 bytes allocated
+==32241== 
+==32241== For a detailed leak analysis, rerun with: --leak-check=full
+==32241== 
+==32241== For counts of detected and suppressed errors, rerun with: -v
+==32241== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+We have very similar output to the previous example, except this time
+the error is for an attempted write to a memory block that has been released.
+
+
+-- Example of attempting to read and write to a deleted object.
+
+Let's run vex11 to see what happens when we attempt to read from and write to a
+released block that used to hold an object of class type.
+
+// vex11.cc
+// vim: set sw=2:
+//
+// Demo of reading and writing to deleted memory using an object of class
+// type.
+//
+
+#include <iostream>
+
+using namespace std;
+
+class Point {
+private:
+  double x_;
+  double y_;
+  double z_;
+public:
+  Point() : x_(3.0) , y_(5.0) , z_(9.0) {}
+  double y() const { return y_; }
+  void y(double const val) { y_ = val; }
+  void print() const {
+    cout << "x_: " << x_ << endl;
+    cout << "y_: " << y_ << endl;
+    cout << "z_: " << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  cout << "p:" << endl;
+  auto p = new Point;
+  p->print();
+  cout << "-----" << endl;
+  cout << "p->y_: " << p->y() << endl;
+  cout << "-----" << endl;
+  cout << "setting p->y_ to 45.0 ..." << endl;
+  p->y(45.0);
+  cout << "p->y(): " << p->y() << endl;
+  cout << "-----" << endl;
+  cout << "deleting p ..." << endl;
+  delete p;
+  cout << "-----" << endl;
+  cout << "reading p->y_ using deleted p ..." << endl;
+  cout << "p->y(): " << p->y() << endl;
+  cout << "-----" << endl;
+  cout << "setting p->y_ to 23.0 using deleted p ..." << endl;
+  p->y(23.0);
+  cout << "p->y(): " << p->y() << endl;
+  return 0;
+}
+
+$ valgrind --leak-check=no --keep-stacktraces=alloc-and-free ./vex11
+==32320== Memcheck, a memory error detector
+==32320== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==32320== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==32320== Command: ./vex11
+==32320== 
+p:
+x_: 3
+y_: 5
+z_: 9
+-----
+p->y_: 5
+-----
+setting p->y_ to 45.0 ...
+p->y(): 45
+-----
+deleting p ...
+-----
+reading p->y_ using deleted p ...
+==32320== Invalid read of size 8
+==32320==    at 0x400C8A: Point::y() const (vex11.cc:18)
+==32320==    by 0x400B20: main (vex11.cc:44)
+==32320==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==32320==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==32320==    by 0x400ADC: main (vex11.cc:41)
+==32320==  Block was alloc'd at
+==32320==    at 0x4A07E05: operator new(unsigned long)
+(vg_replace_malloc.c:324)
+==32320==    by 0x400996: main (vex11.cc:31)
+==32320== 
+p->y(): 45
+-----
+setting p->y_ to 23.0 using deleted p ...
+==32320== Invalid write of size 8
+==32320==    at 0x400CAF: Point::y(double) (vex11.cc:19)
+==32320==    by 0x400BA5: main (vex11.cc:47)
+==32320==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==32320==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==32320==    by 0x400ADC: main (vex11.cc:41)
+==32320==  Block was alloc'd at
+==32320==    at 0x4A07E05: operator new(unsigned long)
+(vg_replace_malloc.c:324)
+==32320==    by 0x400996: main (vex11.cc:31)
+==32320== 
+==32320== Invalid read of size 8
+==32320==    at 0x400C8A: Point::y() const (vex11.cc:18)
+==32320==    by 0x400BB1: main (vex11.cc:48)
+==32320==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==32320==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==32320==    by 0x400ADC: main (vex11.cc:41)
+==32320==  Block was alloc'd at
+==32320==    at 0x4A07E05: operator new(unsigned long)
+(vg_replace_malloc.c:324)
+==32320==    by 0x400996: main (vex11.cc:31)
+==32320== 
+p->y(): 23
+==32320== 
+==32320== HEAP SUMMARY:
+==32320==     in use at exit: 0 bytes in 0 blocks
+==32320==   total heap usage: 1 allocs, 1 frees, 24 bytes allocated
+==32320== 
+==32320== For a detailed leak analysis, rerun with: --leak-check=full
+==32320== 
+==32320== For counts of detected and suppressed errors, rerun with: -v
+==32320== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 5 from 5)
+
+Notice that the error reports are issued at the point of error, so
+the program output is intermixed with the memcheck output.
+

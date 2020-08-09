@@ -1,0 +1,40 @@
+#
+# Run the exercise with Summary_module.cc
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : summary1
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  producers: {
+    summary : {
+      module_type : Summary2
+      fitsTag     : "fitter"
+    }
+  }
+
+  t1 : [ summary ]
+  e1 : [ out1 ]
+  trigger_paths : [ t1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  out1 : {
+    module_type : RootOutput
+    fileName    : "output/summary2.art"
+  }
+
+}

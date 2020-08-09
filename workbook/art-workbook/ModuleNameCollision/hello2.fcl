@@ -1,0 +1,28 @@
+#
+# How to choose one of the modules
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : hello
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    english : {
+      module_type : "toyExperiment/Analyzers/HelloWorld"
+    }
+  }
+
+  e1        : [ english ]
+  end_paths : [ e1 ]
+
+}

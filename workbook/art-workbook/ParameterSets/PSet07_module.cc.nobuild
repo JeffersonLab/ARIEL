@@ -1,0 +1,46 @@
+//
+// Third exercise in the ParameterSets directory
+//  - Read a parameter of type string whose name is "key".
+//  - Introduce a deliberte error.
+//
+
+#include "toyExperiment/MCDataProducts/GenParticleCollection.h"
+
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+namespace tex {
+
+  class PSet07 : public art::EDAnalyzer {
+
+  public:
+
+    explicit PSet07(fhicl::ParameterSet const& );
+
+    void analyze(art::Event const& event) override;
+
+  private:
+
+    std::string key_;
+
+  };
+
+}
+
+tex::PSet07::PSet07(fhicl::ParameterSet const& pset ):
+  art::EDAnalyzer(pset),
+  key_(pset.get("key")){
+
+  std::cout << "The parameter named key has a value of: " << key_ << std::endl;
+
+}
+
+void tex::PSet07::analyze(art::Event const& ){
+}
+
+DEFINE_ART_MODULE(tex::PSet07)

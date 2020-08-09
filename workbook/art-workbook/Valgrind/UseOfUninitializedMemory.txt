@@ -1,0 +1,248 @@
+- What is use of uninitialized memory?
+
+The memcheck tool is able to report any use of memory which has never been set
+to any definite value, that is, it has not been initialized.
+
+- Simple example of an unitialized data member.
+
+Let's run vex15 which demonstrates the use of an uninitialized data
+member of an object of class type.
+
+// vex15.cc
+// vim: set sw=2:
+//
+// Show use of unitialized memory in a cout.
+
+#include <iostream>
+
+using namespace std;
+
+class AInt {
+public:
+  int i;
+};
+
+int
+main()
+{
+  AInt p;
+  cout << "p.i: " << p.i << endl;
+  return 0;
+}
+
+$ valgrind --leak-check=no ./vex15
+==33958== Memcheck, a memory error detector
+==33958== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==33958== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==33958== Command: ./vex15
+==33958== 
+==33958== Use of uninitialised value of size 8
+==33958==    at 0x4C9F903: int std::__int_to_char<char, unsigned long>(char*,
+unsigned long, char const*, std::_Ios_Fmtflags, bool) (locale_facets.tcc:798)
+==33958==    by 0x4C9FA2C: std::ostreambuf_iterator<char,
+std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.tcc:871)
+==33958==    by 0x4C9FF7C: std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.h:2475)
+==33958==    by 0x4CAD019: put (locale_facets.h:2336)
+==33958==    by 0x4CAD019: std::ostream& std::ostream::_M_insert<long>(long)
+(ostream.tcc:73)
+==33958==    by 0x4008EC: main (vex15.cc:19)
+==33958== 
+==33958== Conditional jump or move depends on uninitialised value(s)
+==33958==    at 0x4C9F90F: int std::__int_to_char<char, unsigned long>(char*,
+unsigned long, char const*, std::_Ios_Fmtflags, bool) (locale_facets.tcc:796)
+==33958==    by 0x4C9FA2C: std::ostreambuf_iterator<char,
+std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.tcc:871)
+==33958==    by 0x4C9FF7C: std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.h:2475)
+==33958==    by 0x4CAD019: put (locale_facets.h:2336)
+==33958==    by 0x4CAD019: std::ostream& std::ostream::_M_insert<long>(long)
+(ostream.tcc:73)
+==33958==    by 0x4008EC: main (vex15.cc:19)
+==33958== 
+==33958== Conditional jump or move depends on uninitialised value(s)
+==33958==    at 0x4C9FA55: std::ostreambuf_iterator<char,
+std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.tcc:891)
+==33958==    by 0x4C9FF7C: std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, long) const
+(locale_facets.h:2475)
+==33958==    by 0x4CAD019: put (locale_facets.h:2336)
+==33958==    by 0x4CAD019: std::ostream& std::ostream::_M_insert<long>(long)
+(ostream.tcc:73)
+==33958==    by 0x4008EC: main (vex15.cc:19)
+==33958== 
+p.i: 0
+==33958== 
+==33958== HEAP SUMMARY:
+==33958==     in use at exit: 0 bytes in 0 blocks
+==33958==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==33958== 
+==33958== For a detailed leak analysis, rerun with: --leak-check=full
+==33958== 
+==33958== For counts of detected and suppressed errors, rerun with: -v
+==33958== Use --track-origins=yes to see where uninitialised values come from
+==33958== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 5 from 5)
+
+Notice here that class AInt has no constructor, so its data member
+is not intialized and has no set value.
+
+When we attempt to print that datamember to cout memcheck complains every time
+the operator<< call attempts to use the uninitialized value of that data
+member to make a decision or to produce output.
+
+- A more complicated example.
+
+Let's run vex16 which is has a class Point with an unitialized data member and
+an accessor/setter member function for that data member.
+
+This time we will see use of uninitialized data returned by member functions.
+
+// vex16.cc
+// vim: set sw=2:
+//
+// Show use of unitialized value returned by a member function.
+//
+
+#include <iomanip>
+#include <iostream>
+
+using namespace std;
+
+class Point {
+private:
+  float x_ = 3.0;
+  float y_;
+  float z_ = 9.0;
+public:
+  Point() = default;
+  float y() const { return y_; }
+  void y(float const val) { y_ = val; }
+  void print() const {
+    cout << "x_: " << scientific << x_ << endl;
+    cout << "y_: " << scientific << y_ << endl;
+    cout << "z_: " << scientific << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  Point p;
+  cout << "p.y_: " << p.y() << endl;;
+}
+
+$ valgrind --leak-check=no ./vex16
+==37057== Memcheck, a memory error detector
+==37057== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==37057== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==37057== Command: ./vex16
+==37057== 
+==37057== Conditional jump or move depends on uninitialised value(s)
+==37057==    at 0x336D249CF0: __printf_fp (printf_fp.c:382)
+==37057==    by 0x336D24589F: vfprintf (vfprintf.c:1640)
+==37057==    by 0x336D26F751: vsnprintf (vsnprintf.c:120)
+==37057==    by 0x4C99F3E: std::__convert_from_v(__locale_struct* const&,
+char*, int, char const*, ...) (c++locale.h:92)
+==37057==    by 0x4CA0ED9: std::ostreambuf_iterator<char,
+std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> >
+>::_M_insert_float<double>(std::ostreambuf_iterator<char,
+>std::char_traits<char> >, std::ios_base&, char, char, double) const
+>(locale_facets.tcc:996)
+==37057==    by 0x4CA119F: std::num_put<char, std::ostreambuf_iterator<char,
+std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char,
+std::char_traits<char> >, std::ios_base&, char, double) const
+(locale_facets.tcc:1142)
+==37057==    by 0x4CADB44: put (locale_facets.h:2399)
+==37057==    by 0x4CADB44: std::ostream&
+std::ostream::_M_insert<double>(double) (ostream.tcc:73)
+==37057==    by 0x400908: main (vex16.cc:32)
+==37057== 
+
+... and a lot more
+
+That's a lot of errors!
+
+- Use of unitialized memory in an if statement.
+
+Now let's see what happens if the test in an if statement uses an uninitialized
+value by running vex17.
+
+// vex17.cc
+// vim: set sw=2:
+//
+// Show use of initialized memory in an if statement.
+//
+
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+
+using namespace std;
+
+class Point {
+private:
+  float x_ = 3.0f;
+  float y_;
+  float z_ = 9.0f;
+public:
+  Point() = default;
+  float y() const { return y_; }
+  void y(float const val) { y_ = val; }
+  void print() const {
+    cout << "x_: " << scientific << x_ << endl;
+    cout << "y_: " << scientific << y_ << endl;
+    cout << "z_: " << scientific << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  Point p;
+  if (fabsf(fabsf(p.y()) - 5.0f) < 1e-6f) {
+    cout << "p.y() is equal (enough) to 5.0!" << endl;
+  }
+  return 0;
+}
+
+$ valgrind --leak-check=no ./vex17 
+==37172== Memcheck, a memory error detector
+==37172== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==37172== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==37172== Command: ./vex17
+==37172== 
+==37172== Conditional jump or move depends on uninitialised value(s)
+==37172==    at 0x4008CD: main (vex17.cc:33)
+==37172== 
+==37172== 
+==37172== HEAP SUMMARY:
+==37172==     in use at exit: 0 bytes in 0 blocks
+==37172==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==37172== 
+==37172== For a detailed leak analysis, rerun with: --leak-check=full
+==37172== 
+==37172== For counts of detected and suppressed errors, rerun with: -v
+==37172== Use --track-origins=yes to see where uninitialised values come from
+==37172== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice that we get told that a conditional jump depends on an uninitialized
+value, and on what line of code that conditional test and branch was made.
+
+Errors like this are very bad since they cause the program to because
+randomly.
+

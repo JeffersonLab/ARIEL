@@ -1,0 +1,11 @@
+#
+# A minimal configuration of the message service.
+#
+
+#include "fcl/messageService.fcl"
+
+BEGIN_PROLOG
+
+default_message : @local::mf_interactive
+
+END_PROLOG

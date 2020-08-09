@@ -1,0 +1,40 @@
+#
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : read
+
+source : {
+  module_type : RootInput
+  fileNames   : nil         # Requires command line -s
+  maxEvents   : -1
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/read.root" }
+
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+
+}
+
+physics :{
+  analyzers : {
+
+    massPlot : {
+      module_type      : "art-workbook/ExN/MassPlot"
+      combinerInputTag : "makeCombos"
+      cuts : {
+        minHitsPerTrack     : 0
+        pmin                : 0. // MeV
+      }
+    }
+
+  }
+
+  e1        : [ massPlot ]
+  end_paths : [ e1 ]
+
+}

@@ -1,0 +1,207 @@
+Introduction
+
+- Introduction.
+- The sample code and handout material.
+- How to build the example programs.
+- About debugging symbols and debugging optimized code.
+
+Getting Started
+
+- How to run gdb to debug a program.
+- How to start the program running using the run command.
+  - run
+- How to single step through the program using the "start" command and
+  the "next" command.
+  - start
+- How to single step through the program one line at a time using the
+  "next" command until the program exits.
+  - next
+- Command abbreviations and command repetition.
+
+Basics
+
+- Start the program again and examine some variables.
+- Look at some global variables.
+  - print
+- Displaying the type of a variable.
+  - whatis
+- How to print the declaration of a class type.
+  - ptype
+- Printing of a value of class type.
+- Show printing of a class member.
+- Show printing a std::string.
+- Show how using the member functions of std::string can make things
+  easier to read.
+- Displaying the current line of code.
+  - frame
+- About listing source code.
+  - list
+
+Function Calls
+
+- About stepping into a function call.
+  - step
+- Single stepping through the function.
+- Displaying the function call stack.
+  - backtrace
+- How to use the "frame" command to examine the calling code and
+  then return to the current line.
+- Switching back to the current function and stack frame.
+- We can also use the "up" and "down" commands.
+  - up
+  - down
+
+Breakpoints and Watchpoints
+
+- Setting a breakpoint and using the "continue" command.
+  - break
+- Displaying breakpoints.
+  - info break
+- The "continue" command.
+  - continue
+- The "info break" command will show us how many times a break has
+  been hit.
+- Deleting breakpoints.
+  - delete
+- Conditional breakpoints.
+  - break if
+  - conditional
+- Breakpoint commands, or how to make breakpoints do work for you.
+  - command
+- Using watchpoints to monitor changes in the value of a variable.
+  - watch
+
+Exceptions
+
+- Using "catch throw".
+- Using "catch catch".
+- Using "catch rethrow"
+
+Infinite Loops
+
+- Debugging a program that is already running.
+  - attach
+
+---------------------------------------------------------------
+
+Problem Sets.
+
+- Missing break.
+- Missing continue.
+- Divide by zero.
+- NaN generation.
+- Square root of negative number.
+- Index out of range, c-style array.
+- Index out of range, vector.
+- Dereference a null pointer.
+
+---------------------------------------------------------------
+
+Other things I would like to cover.
+
+C-x a - visual mode
+Deal with printing messy types.
+Deal with setting source code substitution path
+Explain stack frames and program state.
+Explain how to tell whether an address is a global/static, a stack address, a heap address, or a code address.
+tb - temporary break
+finish
+__cxa_throw
+__cxa_catch
+record
+record stop
+reverse *
+Working with shared libraries, especially in the art environment.
+Discussion of asserts and -DNDEBUG
+
+---------------------------------------------------------------
+
+gdb initialization file
+
+${HOME}/.gdbinit
+set auto-load safe-path /
+set print pretty on
+set print static-members off
+set print null-stop on
+set print sevenbit-strings on
+#set print address on
+#set print frame-arguments all
+#set print frame-arguments none
+#set print frame-arguments scalars
+
+---------------------------------------------------------------
+
+Where the data members of std::vector come from.
+
+32        vector<int> myVec = { 2, 3, 5, 9 };
+(gdb) p myVec
+$1 = {
+  <std::_Vector_base<int, std::allocator<int> >> = {
+    _M_impl = {
+      <std::allocator<int>> = {
+        <__gnu_cxx::new_allocator<int>> = {<No data fields>}, <No data fields>}, 
+      members of std::_Vector_base<int, std::allocator<int> >::_Vector_impl: 
+      _M_start = 0x603010, 
+      _M_finish = 0x603020, 
+      _M_end_of_storage = 0x603020
+    }
+  }, <No data fields>}
+
+./include/bits/stl_vector.h
+  template<typename _Tp, typename _Alloc>
+    struct _Vector_base
+    {
+      struct _Vector_impl
+      : public _Tp_alloc_type
+      {
+        pointer _M_start;
+        pointer _M_finish;
+        pointer _M_end_of_storage;
+      }
+     public:
+      _Vector_impl _M_impl;
+    }
+  template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
+    class vector : protected _Vector_base<_Tp, _Alloc>
+    {
+    }
+
+---------------------------------------------------------------
+
+Setting the source code path substitution rules.
+
+(gdb) f
+#0  main (argc=3, argv=0x7fffffffb458) at
+/scratch/workspace/art-release-build/v1_14_02/e7/SLF6/debug/build/art/v1_14_02/build-Linux64bit+2.6-2.12-e7-debug/art/Framework/Art/art.cc:8
+8       in /scratch/workspace/art-release-build/v1_14_02/e7/SLF6/debug/build/art/v1_14_02/build-Linux64bit+2.6-2.12-e7-debug/art/Framework/Art/art.cc
+(gdb) set substitute-path /scratch/workspace/art-release-build/v1_14_02/e7/SLF6/debug/build/art/v1_14_02/build-Linux64bit+2.6-2.12-e7-debug/ /home/russo/work/art/
+(gdb) show substitute-path 
+List of all source path substitution rules:
+  `/scratch/workspace/art-release-build/v1_14_02/e7/SLF6/debug/build/art/v1_14_02/build-Linux64bit+2.6-2.12-e7-debug' -> `/home/russo/work/art'.
+
+---------------------------------------------------------------
+
+Explain how to tell whether an address is a global/static, a stack address, a heap address, or a code address.
+
+$ cat /proc/self/maps
+00400000-0040b000 r-xp 00000000 08:02 3932192 /bin/cat
+0060a000-0060b000 rw-p 0000a000 08:02 3932192 /bin/cat
+0060b000-0060c000 rw-p 00000000 00:00 0
+0080a000-0080b000 rw-p 0000a000 08:02 3932192 /bin/cat
+016d1000-016f2000 rw-p 00000000 00:00 0 [heap]
+336ce00000-336ce20000 r-xp 00000000 08:02 4456482 /lib64/ld-2.12.so
+336d01f000-336d020000 r--p 0001f000 08:02 4456482 /lib64/ld-2.12.so
+336d020000-336d021000 rw-p 00020000 08:02 4456482 /lib64/ld-2.12.so
+336d021000-336d022000 rw-p 00000000 00:00 0
+336d200000-336d38a000 r-xp 00000000 08:02 4456486 /lib64/libc-2.12.so
+336d38a000-336d58a000 ---p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58a000-336d58e000 r--p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58e000-336d58f000 rw-p 0018e000 08:02 4456486 /lib64/libc-2.12.so
+336d58f000-336d594000 rw-p 00000000 00:00 0
+7fb945863000-7fb94b6f4000 r--p 00000000 08:02 1332821 /usr/lib/locale/locale-archive
+7fb94b6f4000-7fb94b6f7000 rw-p 00000000 00:00 0
+7fb94b71c000-7fb94b71d000 rw-p 00000000 00:00 0
+7fff3acce000-7fff3ace3000 rw-p 00000000 00:00 0 [stack]
+7fff3ad4e000-7fff3ad4f000 r-xp 00000000 00:00 0 [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0 [vsyscall]
+

@@ -1,0 +1,12 @@
+file(GLOB examples dex*.cc)
+set(dex08_opts "-Wno-uninitialized")
+set(dex12_opts "-Wno-aggressive-loop-optimizations -Wno-array-bounds")
+set(dex13_opts "-Wno-aggressive-loop-optimizations -Wno-array-bounds")
+
+foreach(ex_cc ${examples})
+  get_filename_component(ex ${ex_cc} NAME_WE)
+  if (${ex}_opts)
+    set_source_files_properties(${ex_cc} PROPERTIES COMPILE_FLAGS "${${ex}_opts}")
+  endif()
+  cet_make_exec(${ex})
+endforeach()

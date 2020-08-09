@@ -1,0 +1,41 @@
+#
+# Run the 4th producer exercise.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : producer4
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  producers : {
+    concatenateIntersections : {
+      module_type : ConcatenateIntersections4
+    }
+  }
+
+  t1            : [ concatenateIntersections ]
+  trigger_paths : [ t1 ]
+
+  e1            : [ out1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  out1 : {
+    module_type : RootOutput
+    fileName    : "output/concatenateIntersections4.art"
+  }
+
+}

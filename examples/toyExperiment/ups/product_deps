@@ -1,0 +1,227 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent	toyExperiment	v0_03_18
+defaultqual	s68:e15
+
+# These optional lines define the installed directories where headers,
+# libraries, and executables will be found.
+#
+# Format: directory_type directory_path directory_name
+#
+# The only recognized values of the first field are incdir, libdir, and bindir
+# The only recognized values of the second field are product_dir and fq_dir
+# The third field is not constrained.
+#
+# If a particular directory_type is not specified that item will not be
+# set up in the UPS table file.
+incdir      product_dir include
+libdir      fq_dir      lib
+bindir      fq_dir      bin
+
+#
+product		version
+art             v2_11_02      s68
+art             v2_11_01      s67
+art             v2_10_04      s66
+art             v2_10_03      s65
+art             v2_10_02      s64
+art             v2_10_01      s63
+art             v2_09_06      s62
+art             v2_09_04      s61
+art             v2_09_03      s60
+art             v2_09_02      s58
+art             v2_09_01      s57
+art             v2_08_04      s56
+art             v2_09_00      s55
+art             v2_08_03      s54
+art             v2_08_02      s53
+art             v2_08_01      s52
+art             v2_07_03      s50
+art             v2_06_03      s48
+art             v2_06_02      s47
+art             v2_06_01      s46
+art             v2_06_00      s45
+art             v2_05_00      s43
+art             v2_04_01      s44
+art             v2_04_00      s42
+art             v2_03_00      s41
+art             v2_02_02a     s40
+art             v2_02_02      s39
+art             v2_02_01      s38
+cetbuildtools	v7_03_03	-	only_for_build
+end_product_list
+
+# c2  - with Clang 5.0.1 and -std=c++17
+# e17 - with gcc 7.3 and -std=c++17
+# e15 - with gcc 6.4 and -std=c++14
+# e14 - with gcc 6.3 and -std=c++14
+# e10 - with gcc 4.9.3a and -std=c++14
+# -nq- here means there is no qualifier
+# a - here means the dependent product is not required by the parent and will not be setup
+qualifier         art		notes
+s68:e17:debug    e17:debug
+s68:e17:prof     e17:prof
+s68:e15:debug    e15:debug
+s68:e15:prof     e15:prof
+s68:c2:debug     c2:debug
+s68:c2:prof      c2:prof
+s67:e17:debug    e17:debug
+s67:e17:prof     e17:prof
+s67:e15:debug    e15:debug
+s67:e15:prof     e15:prof
+s67:c2:debug     c2:debug
+s67:c2:prof      c2:prof
+s66:e15:debug    e15:debug
+s66:e15:prof     e15:prof
+s66:c2:debug     c2:debug
+s66:c2:prof      c2:prof
+s65:e15:debug    e15:debug
+s65:e15:prof     e15:prof
+s65:c2:debug     c2:debug
+s65:c2:prof      c2:prof
+s64:e15:debug    e15:debug
+s64:e15:prof     e15:prof
+s64:c2:debug     c2:debug
+s64:c2:prof      c2:prof
+s63:e15:debug    e15:debug
+s63:e15:prof     e15:prof
+s63:c2:debug     c2:debug
+s63:c2:prof      c2:prof
+s62:e15:debug    e15:debug
+s62:e15:prof     e15:prof
+s62:nu:e15:debug nu:e15:debug
+s62:nu:e15:prof  nu:e15:prof
+s62:e14:debug    e14:debug
+s62:e14:prof     e14:prof
+s62:nu:e14:debug nu:e14:debug
+s62:nu:e14:prof  nu:e14:prof
+s61:e15:debug    e15:debug
+s61:e15:prof     e15:prof
+s61:nu:e15:debug nu:e15:debug
+s61:nu:e15:prof  nu:e15:prof
+s61:e14:debug    e14:debug
+s61:e14:prof     e14:prof
+s61:nu:e14:debug nu:e14:debug
+s61:nu:e14:prof  nu:e14:prof
+s60:e15:debug    e15:debug
+s60:e15:prof     e15:prof
+s60:nu:e15:debug nu:e15:debug
+s60:nu:e15:prof  nu:e15:prof
+s60:e14:debug    e14:debug
+s60:e14:prof     e14:prof
+s60:nu:e14:debug nu:e14:debug
+s60:nu:e14:prof  nu:e14:prof
+s58:e15:debug    e15:debug
+s58:e15:prof     e15:prof
+s58:nu:e15:debug nu:e15:debug
+s58:nu:e15:prof  nu:e15:prof
+s58:e14:debug    e14:debug
+s58:e14:prof     e14:prof
+s58:nu:e14:debug nu:e14:debug
+s58:nu:e14:prof  nu:e14:prof
+s57:e15:debug    e15:debug
+s57:e15:prof     e15:prof
+s57:nu:e15:debug nu:e15:debug
+s57:nu:e15:prof  nu:e15:prof
+s57:e14:debug    e14:debug
+s57:e14:prof     e14:prof
+s57:nu:e14:debug nu:e14:debug
+s57:nu:e14:prof  nu:e14:prof
+s56:e14:debug    e14:debug
+s56:e14:prof     e14:prof
+s56:nu:e14:debug nu:e14:debug
+s56:nu:e14:prof  nu:e14:prof
+s55:e15:debug    e15:debug
+s55:e15:prof     e15:prof
+s55:nu:e15:debug nu:e15:debug
+s55:nu:e15:prof  nu:e15:prof
+s55:e14:debug    e14:debug
+s55:e14:prof     e14:prof
+s55:nu:e14:debug nu:e14:debug
+s55:nu:e14:prof  nu:e14:prof
+s54:e14:debug    e14:debug
+s54:e14:prof     e14:prof
+s54:nu:e14:debug nu:e14:debug
+s54:nu:e14:prof  nu:e14:prof
+s53:e14:debug    e14:debug
+s53:e14:prof     e14:prof
+s53:nu:e14:debug nu:e14:debug
+s53:nu:e14:prof  nu:e14:prof
+s50:e14:debug    e14:debug
+s50:e14:prof     e14:prof
+s50:nu:e14:debug nu:e14:debug
+s50:nu:e14:prof  nu:e14:prof
+s48:e14:debug    e14:debug
+s48:e14:prof     e14:prof
+s48:nu:e14:debug nu:e14:debug
+s48:nu:e14:prof  nu:e14:prof
+s48:e10:debug    e10:debug
+s48:e10:prof     e10:prof
+s48:nu:e10:debug nu:e10:debug
+s48:nu:e10:prof  nu:e10:prof
+s47:e14:debug    e14:debug
+s47:e14:prof     e14:prof
+s47:nu:e14:debug nu:e14:debug
+s47:nu:e14:prof  nu:e14:prof
+s47:e10:debug    e10:debug
+s47:e10:prof     e10:prof
+s47:nu:e10:debug nu:e10:debug
+s47:nu:e10:prof  nu:e10:prof
+s46:e14:debug    e14:debug
+s46:e14:prof     e14:prof
+s46:nu:e14:debug nu:e14:debug
+s46:nu:e14:prof  nu:e14:prof
+s46:e10:debug    e10:debug
+s46:e10:prof     e10:prof
+s46:nu:e10:debug nu:e10:debug
+s46:nu:e10:prof  nu:e10:prof
+s45:e14:debug    e14:debug
+s45:e14:prof     e14:prof
+s45:nu:e14:debug nu:e14:debug
+s45:nu:e14:prof  nu:e14:prof
+s45:e10:debug    e10:debug
+s45:e10:prof     e10:prof
+s45:nu:e10:debug nu:e10:debug
+s45:nu:e10:prof  nu:e10:prof
+s44:e10:debug    e10:debug
+s44:e10:prof     e10:prof
+s44:nu:e10:debug nu:e10:debug
+s44:nu:e10:prof  nu:e10:prof
+s43:e10:debug    e10:debug
+s43:e10:prof     e10:prof
+s43:nu:e10:debug nu:e10:debug
+s43:nu:e10:prof  nu:e10:prof
+s42:e10:debug    e10:debug
+s42:e10:prof     e10:prof
+s42:nu:e10:debug nu:e10:debug
+s42:nu:e10:prof  nu:e10:prof
+s41:e10:debug    e10:debug
+s41:e10:prof     e10:prof
+s41:nu:e10:debug nu:e10:debug
+s41:nu:e10:prof  nu:e10:prof
+s40:e10:debug    e10:debug
+s40:e10:prof     e10:prof
+s40:nu:e10:debug nu:e10:debug
+s40:nu:e10:prof  nu:e10:prof
+s39:e10:debug    e10:debug
+s39:e10:prof     e10:prof
+s39:nu:e10:debug nu:e10:debug
+s39:nu:e10:prof  nu:e10:prof
+s38:e10:debug    e10:debug
+s38:e10:prof     e10:prof
+s38:nu:e10:debug nu:e10:debug
+s38:nu:e10:prof  nu:e10:prof
+end_qualifier_list
+
+table_fragment_begin
+pathPrepend(FHICL_FILE_PATH, ".:${UPS_PROD_DIR}")
+pathPrepend(PATH, ${UPS_PROD_DIR}/scripts)
+table_fragment_end
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:

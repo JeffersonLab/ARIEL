@@ -1,0 +1,10 @@
+process_name : assnsSQO
+
+physics.analyzers.assnsSQO :
+{
+  module_type : "art-workbook/AssnsSmartQueryObjects/model/AssnsSQO"
+  intersectionTag : "detsim:inner"
+  assnsTag : makeHits
+}
+
+physics.e1 : [ assnsSQO ]

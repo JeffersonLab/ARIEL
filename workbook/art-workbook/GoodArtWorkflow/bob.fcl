@@ -1,0 +1,9 @@
+#include "alice.fcl"
+physics.analyzers.inspectHits          : {
+   module_type : InspectFittedHelix
+   fitsTag : fitter
+   maxPrint : 5
+}
+services.TFileService.fileName : "output/bob.root"
+outputs.outfile.fileName: "output/bob.art"
+

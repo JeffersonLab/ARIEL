@@ -1,0 +1,41 @@
+#
+# Read the data products produced by dev01.fcl; make histograms and diagnostic
+# printout.
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name : read01
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+services : {
+  message       : @local::default_message
+  TFileService  : { fileName : "output/read01.root" }
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+
+}
+
+physics :{
+  analyzers: {
+    inspectGens          : @local::inspectGens_default
+    inspectIntersections : @local::inspectIntersections_default
+    inspectHits          : @local::inspectHits_default
+    inspectFits          : @local::inspectFits_default
+    massPlot             : @local::massPlot_default
+  }
+
+  e1        : [ inspectGens, inspectIntersections, inspectHits, inspectFits,
+                massPlot ]
+  end_paths : [ e1 ]
+
+}

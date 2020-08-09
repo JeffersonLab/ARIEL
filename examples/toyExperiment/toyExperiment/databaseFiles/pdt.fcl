@@ -1,0 +1,21 @@
+#
+# Particle Data Table
+#
+# This is a very minimal example, just enough to support the toyExperiment package.
+#
+BEGIN_PROLOG
+
+mPiCharged :  139.57018
+mKaCharged :  493.677
+mPhi       : 1019.455
+
+END_PROLOG
+
+
+particles : [
+  { name : "pi+" pdgId :  211 mass : @local::mPiCharged charge:  1 },
+  { name : "pi-" pdgId : -211 mass : @local::mPiCharged charge: -1 },
+  { name : "K+"  pdgId :  321 mass : @local::mKaCharged charge:  1 },
+  { name : "K-"  pdgId : -321 mass : @local::mKaCharged charge: -1 },
+  { name : "phi" pdgId :  333 mass : @local::mPhi       charge:  0 }
+]

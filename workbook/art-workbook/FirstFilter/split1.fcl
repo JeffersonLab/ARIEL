@@ -1,0 +1,48 @@
+#
+# Exercise the OddEventNumber filter
+# Also illustrate how paths are aborted if filters fail.
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : split1
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  filters:{
+    odd : {
+      module_type : OddEventNumber
+    }
+  }
+
+  oddPath   : [  odd   ]
+  evenPath  : [ "!odd" ]
+  e1        : [  oddOutput, evenOutput ]
+
+  trigger_paths : [ evenPath, oddPath ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  oddOutput : {
+    module_type  : RootOutput
+    fileName     : "output/oddEvents1.art"
+    SelectEvents : { SelectEvents: [ oddPath ] }
+  }
+
+  evenOutput : {
+    module_type  : RootOutput
+    fileName     : "output/evenEvents1.art"
+    SelectEvents : { SelectEvents: [ evenPath ] }
+  }
+}

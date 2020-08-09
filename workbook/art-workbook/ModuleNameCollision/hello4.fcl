@@ -1,0 +1,33 @@
+#
+# Choosing both versions within one job does not work:
+#  - "english" sorts earlier in the alphabet than "french"
+#    so it is constructed first and both instances are from toyExperiment.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : hello
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    english : {
+      module_type : "toyExperiment/Analyzers/HelloWorld"
+    }
+    french : {
+      module_type : "art-workbook/ModuleNameCollision/HelloWorld"
+    }
+  }
+
+  e1        : [ english, french ]
+  end_paths : [ e1 ]
+
+}

@@ -1,0 +1,80 @@
+# Make 1000 events for detector simulation (based on $TOYEXPERIMENT_DIR/fcl/input04.fcl)
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name: "SimulateTheYak"
+
+source: { 
+          module_type: "EmptyEvent" 
+	  firstRun: 4 
+          maxEvents: 1000 
+        } 
+
+outputs: { 
+	 outfile: { 
+                      module_type: "RootOutput" 
+		      fileName: "output/input04_jobA.art" 
+                    } 
+         } 
+
+services : {
+
+  message               : @local::default_message
+  RandomNumberGenerator : {}
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+
+}
+
+physics: { 
+           producers: { 
+	   	      	detsim: { 
+                                  module_type: "DetectorSimulation" 
+				  genParticleTag: "evtgen" 
+                                  seed: 14 
+                                } 
+
+                        evtgen: { 
+                                  module_type: "EventGenerator" 
+                                  seed: 13 
+                                  signal: { 
+				  	    pmax: 2000 
+                                            pmin: 0 
+                                          } 
+				  background: { 
+				  	      	n: 7.5e-1 
+                                                pmax: 800 
+                                                pmin: 0 
+                                              } 
+                                } 
+
+                        fitter: { 
+                                  module_type: "FindAndFitHelix" 
+				  hitsTag: "makeHits" 
+                                  minHits: 5 
+                                  seed: 16 
+                                } 
+
+                        makeHits: { 
+                                    module_type: "HitMaker" 
+				    intersectionTags: [ "detsim:outer", "detsim:inner" ]
+                                    seed: 15 
+                                  } 
+
+                        randomsaver: {
+                                       module_type: "RandomNumberSaver" 
+                                     } 
+
+                      } # end of producers
+
+
+           p1: [ "evtgen", "detsim", "makeHits", "fitter", "randomsaver" ]
+           trigger_paths: [ "p1"  ]
+
+           e1: [ "outfile" ]
+
+}  # end of physics
