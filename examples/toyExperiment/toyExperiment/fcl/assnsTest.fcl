@@ -1,0 +1,40 @@
+#
+# Test the AssnsProducer product.
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name : assnsTest01
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 5
+}
+
+services : {
+   message : @local::default_message
+}
+
+physics :{
+  producers : {
+    test : {
+      module_type : AssnsProducer
+    }
+  }
+
+  p1            : [ test ]
+  e1            : [ outfile ]
+  trigger_paths : [ p1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "assnsTest.art"
+  }
+
+}

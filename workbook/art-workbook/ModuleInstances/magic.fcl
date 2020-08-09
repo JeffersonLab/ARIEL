@@ -1,0 +1,46 @@
+#
+# Run the first exercise in the ModuleInstances directory.
+#  Use module labels to distinguish multiple instances of the same
+#  module type in one job.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : magic
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  maxEvents   : 3
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    boomboom : {
+      module_type : MagicNumber
+      magicNumber : 5
+    }
+
+    rocket : {
+      module_type : MagicNumber
+      magicNumber : 9
+    }
+
+    flower : {
+      module_type : MagicNumber
+      magicNumber : 10
+    }
+
+    bigbird : {
+      module_type : First
+    }
+  }
+
+  e1        : [ rocket, boomboom, bigbird, flower ]
+  end_paths : [ e1 ]
+
+}

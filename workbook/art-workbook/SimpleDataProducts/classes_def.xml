@@ -1,0 +1,9 @@
+
+<!--  -->
+<!--  Rules for building the dictionary-->
+<!--  -->
+
+<lcgdict>
+ <class name="tex::EventSummary" classVersion="10"/>
+ <class name="art::Wrapper<tex::EventSummary>"/>
+</lcgdict>

@@ -1,0 +1,58 @@
+#
+# Run an analyzer module on only selected events.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : minimumGens
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : 50
+}
+
+services : {
+  message : @local::default_message
+  TFileService  : { fileName : "output/minGens.root" }
+}
+
+physics :{
+
+  analyzers: {
+    allEvents : {
+      module_type          : FirstHist1
+      genParticlesInputTag : "evtgen"
+    }
+    passedEvents :{
+      module_type          : FirstHist1
+      genParticlesInputTag : "evtgen"
+      SelectEvents : { SelectEvents: [ pass ] }
+    }
+  }
+
+  filters:{
+    minGens : {
+      module_type : MinGens
+      genParticlesInputTag : "evtgen"
+      minimumGenParticles  : 4
+    }
+  }
+
+  pass      : [ minGens  ]
+  e1        : [ allEvents, passedEvents, out ]
+
+  trigger_paths : [ pass ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  out : {
+    module_type  : RootOutput
+    fileName     : "output/minGen.art"
+    SelectEvents : { SelectEvents: [ pass ] }
+  }
+
+}

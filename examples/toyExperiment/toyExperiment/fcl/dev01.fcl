@@ -1,0 +1,67 @@
+#
+# fcl script for development testing of the art-work-book base product
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name : dev01
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 10
+}
+
+services : {
+
+  message               : @local::default_message
+  RandomNumberGenerator : {}
+  TFileService          : { fileName : "dev01.root" }
+
+  # From toyExperiment
+  Geometry   : {
+    geometryFile : "databaseFiles/geom01.fcl"
+    verbosity    : 0
+  }
+  Conditions : {
+    conditionsFile : "databaseFiles/conditions01.fcl"
+    verbosity      : 0
+  }
+  PDT : {
+    pdtFile   : "databaseFiles/pdt.fcl"
+    verbosity : 0
+  }
+
+}
+
+physics :{
+  producers : {
+    evtgen   : @local::evtgen_default
+    detsim   : @local::detsim_default
+    makeHits : @local::makeHits_default
+    fitter   : @local::fitter_default
+  }
+
+  analyzers: {
+    inspectGens          : @local::inspectGens_default
+    inspectIntersections : @local::inspectIntersections_default
+    inspectHits          : @local::inspectHits_default
+    inspectFits          : @local::inspectFits_default
+    massPlot             : @local::massPlot_default
+  }
+
+  p1            : [ evtgen, detsim, makeHits, fitter ]
+  e1            : [ inspectGens, inspectIntersections, inspectHits, inspectFits, massPlot, outfile ]
+  trigger_paths : [ p1 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "dev01.art"
+  }
+
+}

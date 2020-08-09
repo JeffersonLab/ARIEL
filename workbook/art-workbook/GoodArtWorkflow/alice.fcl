@@ -1,0 +1,111 @@
+process_name : Alice
+
+source : {
+   module_type : EmptyEvent
+   maxEvents   :  10
+   firstEvent  :  1
+}
+
+services : {
+
+   message : {
+      destinations : {
+         log : {
+            type: cout
+            threshold : INFO
+            categories : {
+               ArtReport : { limit : -1 reportEvery: 200 }
+               Prompt    : { limit : -1 }
+               default   : { limit : -1 }
+            }
+         }
+      }
+   }
+   RandomNumberGenerator : {}
+   TFileService          : { fileName : "output/alice.root" }
+
+   # From toyExperiment
+   Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+   Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+   PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+}
+
+physics :{
+   producers : {
+
+      evtgen : {
+         module_type : EventGenerator
+         seed        :    1
+         signal : {
+            pmin        :    0.
+            pmax        : 2000.
+         }
+         background  : {
+            n    : 0.75
+            pmin : 0.
+            pmax : 800.
+         }
+      }
+
+      detsim : {
+         module_type      : DetectorSimulation
+         genParticleTag   : "evtgen"
+         seed             : 2
+      }
+
+      makeHits : {
+         module_type      : HitMaker
+         seed             : 3
+         intersectionTags : [ "detsim:outer", "detsim:inner" ]
+      }
+
+      fitter : {
+         module_type      : FindAndFitHelix
+         seed             : 4
+         hitsTag          : "makeHits"
+         minHits          : 5
+      }
+   }
+
+   analyzers: {
+
+      inspectGens : {
+         module_type    : InspectGenParticles
+         genParticleTag : "evtgen"
+         maxPrint       : 0
+      }
+      
+      inspectIntersections : {
+         module_type      : InspectIntersections
+         intersectionTags : [ "detsim:outer", "detsim:inner" ]
+         maxPrint         : 0
+      }
+      
+      inspectHits : {
+         module_type : InspectTrkHits
+         hitMakerTag : "makeHits"
+         maxPrint    : 0
+      }
+      
+      inspectFits : {
+         module_type : InspectFittedHelix
+         fitsTag     : "fitter"
+         maxPrint    : 0
+      }
+      
+   }
+
+   p1            : [ evtgen, detsim, makeHits, fitter ]
+   e1            : [ inspectGens, inspectIntersections, inspectHits, inspectFits, outfile ]
+
+   trigger_paths : [ p1 ]
+   end_paths     : [ e1 ]
+
+}
+
+outputs: {
+   outfile : {
+      module_type : RootOutput
+      fileName    : "output/alice.art"
+   }
+}

@@ -1,0 +1,29 @@
+#
+# Read the EventSummary from a file.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : ReadSummary
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "output/summary1.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers : {
+    readSummary : {
+      module_type : ReadSummary
+      summaryTag  : "summary"
+    }
+  }
+
+  e1        : [ readSummary ]
+  end_paths : [ e1 ]
+
+}

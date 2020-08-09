@@ -1,0 +1,11 @@
+
+<!--  -->
+<!--  $Id: classes_def.xml,v 1.19 2012/11/01 23:38:49 gandr Exp $     -->
+<!--  -->
+
+<lcgdict>
+ <class name="art::Ptr<tex::FittedHelixData>"/>
+ <class name="tex::Combination" classVersion="10"/>
+ <class name="tex::CombinationCollection"/>
+ <class name="art::Wrapper<tex::CombinationCollection>"/>
+</lcgdict>

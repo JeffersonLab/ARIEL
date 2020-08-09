@@ -1,0 +1,23 @@
+#
+# Print the geometry.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : printGeom
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+services : {
+  message : @local::default_message
+
+  # From toyExperiment
+  Geometry   : {
+    geometryFile   : "databaseFiles/geom01.fcl"
+    verbosity      : 2
+  }
+
+}

@@ -1,0 +1,39 @@
+#
+# Run the first exercise in the ParameterSet directory.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : pset01
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  maxEvents   : 1
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  analyzers: {
+    psetTester : {
+      module_type : PSet01
+      a : "this is quoted string"
+      b : 42
+      c : 3.14159
+      d : true
+      e : [ 1, 2, 3 ]
+      f : {
+        a : 4
+        b : 5
+      }
+    }
+  }
+
+  e1        : [ psetTester ]
+  end_paths : [ e1 ]
+
+}

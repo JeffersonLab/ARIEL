@@ -1,0 +1,76 @@
+- Review of the three types of data.
+
+Let's ask the operating system to dump the memory map of a process
+running the "cat" command.
+
+$ cat /proc/self/maps
+00400000-0040b000 r-xp 00000000 08:02 3932192 /bin/cat
+0060a000-0060b000 rw-p 0000a000 08:02 3932192 /bin/cat
+0060b000-0060c000 rw-p 00000000 00:00 0 
+0080a000-0080b000 rw-p 0000a000 08:02 3932192 /bin/cat
+02484000-024a5000 rw-p 00000000 00:00 0 [heap]
+336ce00000-336ce20000 r-xp 00000000 08:02 4456482 /lib64/ld-2.12.so
+336d01f000-336d020000 r--p 0001f000 08:02 4456482 /lib64/ld-2.12.so
+336d020000-336d021000 rw-p 00020000 08:02 4456482 /lib64/ld-2.12.so
+336d021000-336d022000 rw-p 00000000 00:00 0 
+336d200000-336d38a000 r-xp 00000000 08:02 4456486 /lib64/libc-2.12.so
+336d38a000-336d58a000 ---p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58a000-336d58e000 r--p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58e000-336d58f000 rw-p 0018e000 08:02 4456486 /lib64/libc-2.12.so
+336d58f000-336d594000 rw-p 00000000 00:00 0 
+7fa5544af000-7fa55a340000 r--p 00000000 08:02 1332821 /usr/lib/locale/locale-archive
+7fa55a340000-7fa55a343000 rw-p 00000000 00:00 0 
+7fa55a368000-7fa55a369000 rw-p 00000000 00:00 0 
+7fff7ddb6000-7fff7ddcc000 rw-p 00000000 00:00 0 [stack]
+7fff7ddda000-7fff7dddb000 r-xp 00000000 00:00 0 [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0 [vsyscall]
+
+The format here is an address range, followed by a list of 4 memory
+protection flags, followed by the file offset the contents of the
+memory region was fetched from, followed by the linux device id and
+inode number of the file the memory region was fetched from, followed
+by the source file name.
+
+Here we have the memory regions for the "cat" executables code and data,
+followed by the heap, followed by code and data regions for loaded shareable
+libraries, followed by the stack, and then two special memory regions used
+by the operating system for itself.
+
+- Focusing on the globals, stack, and heap memory regions.
+
+- program data
+
+  constants: 0060a000-0060b000 rw-p 0000a000 08:02 3932192 /bin/cat
+zero filled: 0060b000-0060c000 rw-p 00000000 00:00 0 
+    .dynstr: 0080a000-0080b000 rw-p 0000a000 08:02 3932192 /bin/cat
+
+We have three memory regions allocated to hold the programs initialized
+and zero-filled data, and strings used by the dynamic linker.
+
+If you see a pointer value in any of these address ranges in the debugger,
+you are looking at program data.
+
+- stack data
+
+7fff7ddb6000-7fff7ddcc000 rw-p 00000000 00:00 0 [stack]
+
+This memory region is allocated by operating system to hold the function
+call stack, which contains local variables of functions as they are executing.
+It is allocated near the top of virtual memory and so has very large
+addresses.  This region can grow downwards into lower addresses as needed.
+
+Any pointers you see in the debugger with very large addresses are usually
+pointers to stack variables.
+
+- heap data
+
+02484000-024a5000 rw-p 00000000 00:00 0 [heap]
+
+This memory region is allocated by the operating system for the program
+to allocate memory blocks from dynamically, during the execution of the
+program, using the new operator.  It may expand, growing upwards into
+higher addresses as needed.
+
+Any pointers you see in this address range are memory blocks allocated
+from the heap.
+

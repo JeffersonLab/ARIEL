@@ -1,0 +1,35 @@
+#
+#  Exercise 8:
+#  Make some additional histograms.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : ptr1
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/ptr1.root" }
+
+  # From toyExperiment
+  PDT : { pdtFile : "databaseFiles/pdt.fcl" }
+
+}
+
+physics :{
+  analyzers: {
+    ptr : {
+      module_type          : Ptr2
+      genParticlesInputTag : "evtgen"
+    }
+  }
+
+  e1        : [ ptr ]
+  end_paths : [ e1 ]
+
+}

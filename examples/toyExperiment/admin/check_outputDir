@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Ensure the existence of a directory named output in directory passed
+# in as the first argument.
+#
+
+# The working directory in which the directory will be named.
+dir="${1}"
+
+mkdir -p ${dir}/output
+

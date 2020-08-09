@@ -1,0 +1,10 @@
+#include "bob.fcl"
+#include "evelyns_mass_analyzer.fcl"
+source.maxEvents : 2
+physics.analyzers.massPlot.maxPrint : 6
+e1 : [ inspectGens, inspectIntersections, inspectHits, inspectHits, massPlot, outfile ]
+physics.end_paths : [ e1 ]
+services.TFileService.fileName : "output/charlie.root"
+outputs.outfile.fileName: "output/charlie.art"
+
+

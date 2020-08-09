@@ -1,0 +1,132 @@
+#  exn.fcl
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : exn
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : -1
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/exn.root" }
+
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+
+}
+
+physics :{
+
+  producers: {
+    makeCombos : {
+      module_type       : MakeCombinations
+      fitterInputTag : "fitter"
+      maxPrint          : 5
+    }
+  }
+
+  filters: {
+
+    selectTight : {
+      module_type      : SelectCombinations
+      combinerInputTag : "makeCombos"
+      cuts             : {
+        minHitsPerTrack : 8
+        pmin            : 300. // MeV
+      }
+    }
+
+    selectLoose : {
+      module_type      : SelectCombinations
+      combinerInputTag : "makeCombos"
+      cuts             : {
+        minHitsPerTrack : 6
+        pmin            : 100. // MeV
+      }
+    }
+
+  }
+
+  analyzers : {
+
+    tightCuts : {
+      module_type         : "art-workbook/ExN/MassPlot"
+      combinerInputTag : "makeCombos"
+      cuts : {
+        minHitsPerTrack     : 8
+        pmin                : 300. // MeV
+      }
+      # foo : 7  # Uncomment these to get an error
+      # bar : 7
+    }
+
+    looseCuts : {
+      module_type         : "art-workbook/ExN/MassPlot"
+      combinerInputTag : "makeCombos"
+      cuts : {
+        minHitsPerTrack     : 6
+        pmin                : 100.
+      }
+    }
+
+    inspectHits : {
+      module_type      : InspectTrkHits
+      makerModuleLabel : "makeHits"
+      maxPrint         : 0
+    }
+
+  } # end analyzers
+
+  t1            : [ makeCombos, selectTight ]
+  t2            : [ makeCombos, selectLoose ]
+  e1            : [ inspectHits, tightCuts, looseCuts, allEvents,
+                    passTight, failTight, passLoose ]
+
+  trigger_paths : [ t1, t2 ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  allEvents : {
+    module_type : RootOutput
+    fileName    : "output/allEvents.art"
+  }
+
+  passTight : {
+    module_type  : RootOutput
+    fileName     : "output/passTight.art"
+    SelectEvents : { SelectEvents : [ t1 ] }
+  }
+
+  failTight : {
+    module_type  : RootOutput
+    fileName     : "output/failTight.art"
+    SelectEvents : { SelectEvents : [ "!t1" ] }
+  }
+
+  passLoose : {
+    module_type    : RootOutput
+    fileName       : "output/passLoose.art"
+    SelectEvents   : { SelectEvents : [ t2 ] }
+
+    # Drop all data products made during this job.
+    outputCommands : [ "keep *_*_*_*"
+                       ,"drop *_*_*_exn"
+                     ]
+  }
+
+  # Fixme: check grammar to do logic on multiple paths.
+  #passLooseFailTight : {
+  #  module_type : RootOutput
+  #  fileName    : "output/passLooseFailTight.art"
+  #  SelectEvents : { SelectEvents : [ "t2+(!t1)" ] }
+  #}
+
+}

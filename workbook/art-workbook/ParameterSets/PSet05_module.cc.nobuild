@@ -1,0 +1,45 @@
+//
+// Third exercise in the ParameterSets directory
+//  - Introduce a deliberte error.
+//
+
+#include "toyExperiment/MCDataProducts/GenParticleCollection.h"
+
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+namespace tex {
+
+  class PSet05 : public art::EDAnalyzer {
+
+  public:
+
+    explicit PSet05(fhicl::ParameterSet const& );
+
+    void analyze(art::Event const& event) override;
+
+  private:
+
+    int debugLevel_;
+
+  };
+
+}
+
+tex::PSet05::PSet05(fhicl::ParameterSet const& pset ):
+  art::EDAnalyzer(pset),
+  debugLevel(pset.get<int>("debugLevel",0)){
+
+  std::cout << "\n\ndebug level: " << debugLevel_ << std::endl;
+
+}
+
+void tex::PSet05::analyze(art::Event const& ){
+}
+
+DEFINE_ART_MODULE(tex::PSet05)

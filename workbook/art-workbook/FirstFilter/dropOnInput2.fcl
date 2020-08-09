@@ -1,0 +1,31 @@
+#
+# Example of dropping data products on input
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : dropOnInput
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  inputCommands : [ "keep *_*_*_*",
+                    "drop *_detsim_*_*"
+                  ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  e1        : [ dumper ]
+  end_paths : [ e1 ]
+}
+
+outputs : {
+  dumper : {
+     module_type                  : FileDumperOutput
+     wantProductFriendlyClassName : true
+  }
+}

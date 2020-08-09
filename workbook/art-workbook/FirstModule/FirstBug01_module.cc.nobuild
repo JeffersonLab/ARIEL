@@ -1,0 +1,36 @@
+//
+//  Exercise 1: print the event id.
+//
+
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+
+#include <iostream>
+
+namespace tex {
+
+  class FirstBug01 : public art::EDAnalyzer {
+
+  public:
+
+    explicit FirstBug01(fhicl::ParameterSet const& );
+
+    void analyze(art::Event& event) override;
+
+  };
+
+}
+
+tex::FirstBug01::FirstBug01(fhicl::ParameterSet const& pset):
+  art::EDAnalyzer(pset){
+  std::cout << "Hello from FirstBug01::constructor." << std::endl;
+}
+
+void tex::FirstBug01::analyze(art::Event const& event){
+  std::cout << "Hello from FirstBug01::analyze. Event id: "
+            << event.id()
+            << std::endl;
+}
+
+DEFINE_ART_MODULE(tex::FirstBug01)

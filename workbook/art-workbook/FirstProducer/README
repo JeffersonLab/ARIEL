@@ -1,0 +1,234 @@
+Instructions for working on this exercise.
+
+First, read the talk that goes with this exercise:
+https://indico.fnal.gov/getFile.py/access?sessionId=4&resId=0&materialId=0&confId=9928
+
+0)
+If you are doing this at the August 2015 art/LArSoft school,
+you will need to update your git clone to get the material discussed
+here.  To do this:
+
+ - Ensure that you have a correct working environment.  If you have
+   logged out and logged in again, follow the steps in Chapter 11.
+
+ - In your source directory
+    - git stash
+    - git pull
+    - git stash pop
+    - If that last step results in a complaint about conflicts and merging, consult a TA.
+ - In your build dirctory
+    - buildtool -j4
+ - Then continue with the instructions in this file
+
+1)
+Examine the data products in the input file:
+
+art -c fcl/FileDumper/fileDumperFriendly.fcl  -s inputFiles/input01.art
+
+For the first event you should see the following data products.
+Make your window wide enough to see it all on one line
+
+PROCESS NAME | MODULE LABEL.. | PRODUCT INSTANCE NAME | DATA PRODUCT TYPE............................. | PRODUCT FRIENDLY TYPE..................... | SIZE
+exampleInput | detsim........ | inner................ | std::vector<tex::Intersection>................ | tex::Intersections........................ | ..28
+exampleInput | randomsaver... | ..................... | std::vector<art::RNGsnapshot>................. | art::RNGsnapshots......................... | ...3
+exampleInput | TriggerResults | ..................... | art::TriggerResults........................... | art::TriggerResults....................... | ...-
+exampleInput | makeHits...... | ..................... | art::Assns<tex::TrkHit,tex::Intersection,void> | tex::Intersectiontex::TrkHitvoidart::Assns | ..51
+exampleInput | makeHits...... | ..................... | std::vector<tex::TrkHit>...................... | tex::TrkHits.............................. | ..51
+exampleInput | fitter........ | ..................... | std::vector<tex::FittedHelixData>............. | tex::FittedHelixDatas..................... | ...6
+exampleInput | evtgen........ | ..................... | std::vector<tex::GenParticle>................. | tex::GenParticles......................... | ...7
+exampleInput | detsim........ | outer................ | std::vector<tex::Intersection>................ | tex::Intersections........................ | ..29
+
+The first 3 columns are 3 of the fields in the name of the data product.
+
+The 4th column is the C++ type of the data product.
+The 5th column is a synonym for the 4th column.  It is the C++ type name
+turned into a form that is legal to be part of a root banch name, in which
+characters like angle brackets are forbidden; this style is called the
+friendly name of the product.
+
+The name of the data product is the first 3 columns plus the friendly name.
+
+The last column is as follows
+  a) If the data product has a member function named size(),
+     then the field has the value of size()
+  b) If the data product does not have a member function named size(),
+     then the field has a value of "-"
+  c) There is a third option, not shown here, of a value of "?".
+     More on that any time.
+
+Most of the data products were discussed on page 11 of the talk for session 10.
+You saw them also in session 12.
+
+The data product of type art::TriggerResults is added by art.
+We will not talk about it in this chapter.
+
+Note that detsim makes two data products of type IntersectionCollection.
+They are distiguished by the two instance names inner and outer.
+
+The input tags that identify the two Intersection collections are:
+    "detsim::inner"
+and "detsim::outer"
+
+All Intersections for the inner 5 layers are in the former and
+all Intersections for the outer 10 layers are the latter.
+
+Aside:
+Note the use of @nil in the source block of  fcl/FileDumper/fileDumperFriendly.fcl
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+}
+
+Suppose that you forget to supply the -s argument.  Then art will just.
+It's not a good idea to provide a "default" filename for a utility like this;
+the default might actually exist and art will produce output that will
+confuse you.
+
+
+
+2)
+This exercise is to read both IntersectionCollections, concatenate them into
+a single data product and write that data product to the output file.
+All of the input file is also copied to the output file.
+
+To run the exercise:
+
+art -c fcl/FirstProducer/producer1.fcl
+
+This makes the output file  output/concatenateIntersections1.art
+
+Look at its data products:
+
+art -c fcl/FileDumper/fileDumper.fcl output/concatenateIntersections1.art
+
+The output should look like:
+
+PROCESS NAME | MODULE LABEL............ | PRODUCT INSTANCE NAME | DATA PRODUCT TYPE............................. | SIZE
+producer1... | concatenateIntersections | ..................... | std::vector<tex::Intersection>................ | ..57
+exampleInput | detsim.................. | inner................ | std::vector<tex::Intersection>................ | ..28
+exampleInput | randomsaver............. | ..................... | std::vector<art::RNGsnapshot>................. | ...3
+exampleInput | TriggerResults.......... | ..................... | art::TriggerResults........................... | ...-
+exampleInput | makeHits................ | ..................... | art::Assns<tex::TrkHit,tex::Intersection,void> | ..51
+exampleInput | makeHits................ | ..................... | std::vector<tex::TrkHit>...................... | ..51
+producer1... | TriggerResults.......... | ..................... | art::TriggerResults........................... | ...-
+exampleInput | fitter.................. | ..................... | std::vector<tex::FittedHelixData>............. | ...6
+exampleInput | evtgen.................. | ..................... | std::vector<tex::GenParticle>................. | ...7
+exampleInput | detsim.................. | outer................ | std::vector<tex::Intersection>................ | ..29
+
+Here I suppressed the friendly product name just because it's too much to look at.
+
+Notice the two new data products made by the process producer1.
+
+Inspect both FileDumper output listings.  Verify that the number of entries in the
+IntersectionCollection from producer1:concatenateIntersections is the value you
+expect by adding up the contributions from detsum:inner and detsim:outer.
+
+Now, look at the code in art-workbook/FirstProducer/ConcatenateIntersections1_module.cc
+Read this code along with the slides from Session 13.
+Understand how th code works.
+
+3)
+Next run:
+
+art -c fcl/FirstProducer/producer2.fcl
+
+This uses the module: art-workbook/FirstProducer/ConcatenateIntersections2_module.cc
+
+Compared to the first module this has two additional lines of printout:
+
+  std::cout << "Pointer before put: " << output.get() << std::endl;
+  event.put( std::move(output) );
+  std::cout << "Pointer after put: " << output.get() << std::endl;
+
+The first additional line gets the memory address of the data product
+from the object "output".  It then prints the value of that address.
+
+The call output.get() returns a bare pointer to the object held by
+the std::unique_ptr<T>.  Consult a C++ standard library manual for details
+
+Note that the "before" printout has a non-zero value for the pointer
+but that the "after" printout is zero - meaning that the pointer
+is invalid.
+
+The design of the call to event.put is that during the call, the event
+takes ownership of the data product.  On return from the call to event.put
+the object "output" has been reset; so it no longer knows the address
+of the data product.
+
+This enforces the idea that once a data product has been given to the event,
+no code is permitted to modify it.
+
+4)
+Next run:
+
+art -c fcl/FirstProducer/producer3.fcl
+
+This will produce a run-time error message.  The problem is in:
+
+   art-workbook/FirstProducer/ConcatenateIntersections3_module.cc
+
+Find and fix the problem.  Answers below.
+
+5)
+This does the same job as did FirstProducer/ConcatenateIntersections1_module.cc
+The difference is that it accesses the input data products differently.
+It illustrates the use of getManyByType, which gets all products over a
+given type.  The relevant code fragment is:
+
+  std::vector<art::Handle<IntersectionCollection>> intersections;
+  event.getManyByType(intersections);
+
+To run the example:
+
+   art-workbook/FirstProducer/ConcatenateIntersections4_module.cc
+
+To verify that it worked as advertised:
+
+art -c fcl/FileDumper/fileDumperFriendly.fcl -n 1  output/concatenateIntersections4.art
+
+6)
+
+This example illustrates how to produce an in-run data product.
+It does this by copying an existing in-run data product.
+
+Rerun:
+art -c fcl/FileDumper/fileDumperFriendly.fcl inputFiles/input01.art
+
+The in-run part of the output should look like:
+
+PROCESS NAME | MODULE LABEL | PRODUCT INSTANCE NAME | DATA PRODUCT TYPE.. | PRODUCT FRIENDLY TYPE | SIZE
+exampleInput | detsim...... | ..................... | tex::DetectorStatus | tex::DetectorStatus.. | ..15
+exampleInput | detsim...... | ..................... | tex::MCRunSummary.. | tex::MCRunSummary.... | ...-
+
+The input file contains two in-run data products.  Then pattern for getting a data product from an art::Run
+is almost the same as the patter for getting a data product from an art::Event.  The only important
+difference is that art::Run does not have  a getValidHandle<T> member function.  So you need to go back
+to the old style getByType<T>.
+
+In this case will we will copy the tex::MCRunSummary product.  The source is in
+
+     FirstProducer/ConcatenateIntersections5_module.cc
+
+To run it:
+
+     art -c fcl/FirstProducer/producer5.fcl
+
+To check that it did what was expected:
+
+     art -c fcl/FileDumper/fileDumperFriendly.fcl -n 1  output/concatenateIntersections5.art
+
+The in-run part of the output should look like:
+PROCESS NAME | MODULE LABEL............ | PRODUCT INSTANCE NAME | DATA PRODUCT TYPE.. | PRODUCT FRIENDLY TYPE | SIZE
+producer1... | concatenateIntersections | ..................... | tex::MCRunSummary.. | tex::MCRunSummary.... | ...-
+exampleInput | detsim.................. | ..................... | tex::DetectorStatus | tex::DetectorStatus.. | ..15
+exampleInput | detsim.................. | ..................... | tex::MCRunSummary.. | tex::MCRunSummary.... | ...-
+
+
+Answers:
+
+4)
+The problem is in the constructor.  The call to produces has
+the wrong type.  The net result is that this module is trying
+to produce a data product that is not among the set of data products
+declared using produces.
+

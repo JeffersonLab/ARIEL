@@ -1,0 +1,47 @@
+//
+//  Exercise 6:
+//    ReadGens3 with another bug introduced on purpose.
+//
+
+#include "toyExperiment/MCDataProducts/GenParticleCollection.h"
+
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+
+#include <iostream>
+#include <string>
+
+namespace tex {
+
+  class ReadGensBug02 : public art::EDAnalyzer {
+
+  public:
+
+    explicit ReadGensBug02(fhicl::ParameterSet const& );
+
+    void analyze(art::Event const& event) override;
+
+  private:
+
+    art::InputTag gensTag_;
+
+  };
+
+}
+
+tex::ReadGensBug02::ReadGensBug02(fhicl::ParameterSet const& pset ):
+  gensTag_(pset.get<std::string>("genParticlesInputTag")){
+}
+
+void tex::ReadGensBug02::analyze(art::Event const& event ){
+
+  auto gens = event.getValidHandle<GenParticleCollection>(gensTag_);
+
+  std::cout << "ReadGensBug02::analyze event: " << event.id().event()
+            << " GenParticles: "                << gens->size()
+            << std::endl;
+
+}
+
+DEFINE_ART_MODULE(tex::ReadGensBug02)

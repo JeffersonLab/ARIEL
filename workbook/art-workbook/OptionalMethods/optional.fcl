@@ -1,0 +1,28 @@
+#
+# Run the exercise to illustrate the optional methods
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : optional
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input03.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    opt : {
+      module_type : Optional
+    }
+  }
+
+  e1        : [ opt ]
+  end_paths : [ e1 ]
+
+}

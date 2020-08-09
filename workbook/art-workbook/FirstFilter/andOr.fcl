@@ -1,0 +1,57 @@
+#
+# Run an analyzer module on only selected events.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : minimumGens
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : 50
+}
+
+services : {
+  message : @local::default_message
+  TFileService  : { fileName : "output/minGens.root" }
+}
+
+physics :{
+
+  filters:{
+    minGens : {
+      module_type : MinGens
+      genParticlesInputTag : "evtgen"
+      minimumGenParticles  : 4
+    }
+    odd : {
+      module_type : OddEventNumber
+    }
+  }
+
+  oddOnly     : [ odd ]
+  minGensOnly : [ minGens ]
+  AND         : [ minGens, odd  ]   // Logical AND
+  e1          : [ outAND, outOR ]
+
+  trigger_paths : [ oddOnly, minGensOnly, AND ]
+  end_paths     : [ e1 ]
+
+}
+
+outputs : {
+
+  outAND : {
+    module_type  : RootOutput
+    fileName     : "output/and.art"
+    SelectEvents : { SelectEvents: [ AND ] }
+  }
+
+  outOR : {
+    module_type  : RootOutput
+    fileName     : "output/or.art"
+    SelectEvents : { SelectEvents: [ oddOnly, minGensOnly ] } // Logical OR
+  }
+
+}

@@ -1,0 +1,564 @@
+- More on memory leaks.
+
+So we have seen that when your program exits the memcheck tool
+will report on all memory leaks it finds.
+
+To be able to do this the memcheck tool intercepts all of your
+program's requests for memory from the heap and records how
+much memory was allocated, and the pointer that was returned.
+
+It also intercepts all memory releases, and records them too.
+
+In addition memcheck will hold onto released memory blocks,
+up to a limit, so that the blocks are not recycled.  This
+allows it to detect uses of deleted memory.
+
+- The different kinds of leaks.
+
+- Still Reachable
+
+When your program exits, the memcheck tool scans through
+its list of still-allocated memory blocks and searches
+for any pointers your code may still have to these never
+released blocks.
+
+This can happen if you have global variables that are pointers,
+or global variables of class type which have a data member that
+is a pointer, or have function local static variables of either
+kind.
+
+This is not as uncommon a situation as it might seem to be
+because of the Singleton pattern, a technique commonly used
+to create global registries of information that exist for
+the lifetime of the program.
+
+If the memcheck tools finds any such pointers, then it reports
+the memory blocks they are pointing at as "Still Reachable" in
+the leak summary.
+
+- Definitely Lost
+
+If the scan of the still allocated memory blocks shows that
+there are no remaining pointers to a block in your program
+then the memcheck tools reports such blocks as "Definitely Lost"
+in the leak summary.
+
+- Indirectly Lost
+
+If the scan of the still allocated memory blocks shows that
+there are no remaining pointers to a block in your program
+but there is a pointer from some other lost block of memory
+to that block, then memcheck reports that block as
+"Indirectly Lost" in the leak summary.
+
+- Possibly Lost
+
+If the scan of the still allocated memory blocks shows that
+there are no remaining pointers to a block in your program
+but there is a pointer from some other lost block of memory
+to somewhere in the interior of that block, then memcheck
+reports that block as "Possibly Lost" in the leak summary.
+
+This is often memory that is part of a larger data structure
+and such blocks are usually not shown by valgrind because
+fixing the leak of the larger data structure will make these
+errors go away.
+
+-- Further examples.
+
+So let's see some further examples.
+
+Let's run vex02 which is an example of a simple memory leak
+of a whole object of class type.
+
+// vex02.cc
+// vim: set sw=2:
+//
+// Memory leak of an object of class type.
+//
+
+class Point {
+private:
+  float x_;
+  float y_;
+  float z_;
+};
+
+int
+main()
+{
+  auto p = new Point;
+  (void) p;
+}
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./vex02
+==27727== Memcheck, a memory error detector
+==27727== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==27727== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==27727== Command: ./vex02
+==27727== 
+==27727== 
+==27727== HEAP SUMMARY:
+==27727==     in use at exit: 12 bytes in 1 blocks
+==27727==   total heap usage: 1 allocs, 0 frees, 12 bytes allocated
+==27727== 
+==27727== 12 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==27727==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==27727==    by 0x400639: main (vex02.cc:17)
+==27727== 
+==27727== LEAK SUMMARY:
+==27727==    definitely lost: 12 bytes in 1 blocks
+==27727==    indirectly lost: 0 bytes in 0 blocks
+==27727==      possibly lost: 0 bytes in 0 blocks
+==27727==    still reachable: 0 bytes in 0 blocks
+==27727==         suppressed: 0 bytes in 0 blocks
+==27727== 
+==27727== For counts of detected and suppressed errors, rerun with: -v
+==27727== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice that the head summary report that 12 bytes were leaked,
+in one memory block.
+
+Following the heap summary we get one loss record showing
+those 12 bytes were allocated in function main() at vex02.cc line 17.
+This is the "auto p = new Point;" line.
+
+Why is this leak 12 bytes?  The class Point has three data
+members of type float, each of which is 4 bytes long, so they
+total to 12 bytes.
+
+Notice that the memcheck tool did not tell us that the leaked
+memory block was for an oject of type Point.  We have to go
+look at the source line mentioned and work it out for
+ourselves.  This is very annoying.
+
+- A more complicated example, with indirectly lost blocks.
+
+Ok, now let's run vex03 which demonstrates leaking an object
+of class type, which itself leaks an object of class type
+by forgetting to release it in the destructor.
+
+// vex03.cc
+// vim: set sw=2:
+//
+// Memory leak of an object of class type
+// with a leak in the destructor.
+//
+
+class Point {
+private:
+  float x_;
+  float y_;
+  float z_;
+};
+
+class Track {
+private:
+  Point* begin_;
+  Point* middle_;
+  Point* end_;
+public:
+  ~Track()
+  {
+    delete begin_;
+    //delete middle_;
+    delete end_;
+  }
+  Track()
+    : begin_(new Point)
+    , middle_(new Point)
+    , end_(new Point)
+  {
+  }
+};
+
+int
+main()
+{
+  auto p = new Track;
+  (void) p;
+}
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./vex03
+==27888== Memcheck, a memory error detector
+==27888== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==27888== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==27888== Command: ./vex03
+==27888== 
+==27888== 
+==27888== HEAP SUMMARY:
+==27888==     in use at exit: 60 bytes in 4 blocks
+==27888==   total heap usage: 4 allocs, 0 frees, 60 bytes allocated
+==27888== 
+==27888== 12 bytes in 1 blocks are indirectly lost in loss record 1 of 4
+==27888==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==27888==    by 0x4007C7: Track::Track() (vex03.cc:28)
+==27888==    by 0x400787: main (vex03.cc:38)
+==27888== 
+==27888== 12 bytes in 1 blocks are indirectly lost in loss record 2 of 4
+==27888==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==27888==    by 0x4007DB: Track::Track() (vex03.cc:29)
+==27888==    by 0x400787: main (vex03.cc:38)
+==27888== 
+==27888== 12 bytes in 1 blocks are indirectly lost in loss record 3 of 4
+==27888==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==27888==    by 0x4007F0: Track::Track() (vex03.cc:30)
+==27888==    by 0x400787: main (vex03.cc:38)
+==27888== 
+==27888== 60 (24 direct, 36 indirect) bytes in 1 blocks are definitely lost in loss record 4 of 4
+==27888==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==27888==    by 0x40077C: main (vex03.cc:38)
+==27888== 
+==27888== LEAK SUMMARY:
+==27888==    definitely lost: 24 bytes in 1 blocks
+==27888==    indirectly lost: 36 bytes in 3 blocks
+==27888==      possibly lost: 0 bytes in 0 blocks
+==27888==    still reachable: 0 bytes in 0 blocks
+==27888==         suppressed: 0 bytes in 0 blocks
+==27888== 
+==27888== For counts of detected and suppressed errors, rerun with: -v
+==27888== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice here that we now have 3 indirectly lost blocks, and one
+directly lost block.
+
+The directly lost block is the Track object, and the indirectly
+lost blocks are the three Point objects that the Track object
+had allocated.
+
+Look this example over closely and see if you can explain to
+yourself what each line of the memcheck output is telling you.
+
+For example notice that the output does mention class Track,
+but never mentions class Point.
+
+-- An example of a directly lost block from a memory leak
+   in a destructor.
+
+Now let's run vex04.cc which is the same code as vex03.cc but
+this time we delete the Track object, so the only memory
+leak remaining is the single block leak of a Point object
+in the Track destructor.
+
+// vex04.cc
+// vim: set sw=2:
+//
+// Same as vex03, but no leak
+// of the Track object, just the
+// Point object.
+//
+
+class Point {
+private:
+  float x_;
+  float y_;
+  float z_;
+};
+
+class Track {
+private:
+  Point* begin_;
+  Point* middle_;
+  Point* end_;
+public:
+  ~Track()
+  {
+    delete begin_;
+    //delete middle_;
+    delete end_;
+  }
+  Track()
+    : begin_(new Point)
+    , middle_(new Point)
+    , end_(new Point)
+  {
+  }
+};
+
+int
+main()
+{
+  auto p = new Track;
+  delete p;
+}
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./vex04
+==28526== Memcheck, a memory error detector
+==28526== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==28526== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==28526== Command: ./vex04
+==28526== 
+==28526== 
+==28526== HEAP SUMMARY:
+==28526==     in use at exit: 12 bytes in 1 blocks
+==28526==   total heap usage: 4 allocs, 3 frees, 60 bytes allocated
+==28526== 
+==28526== 12 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==28526==    at 0x4A07E05: operator new(unsigned long)
+(vg_replace_malloc.c:324)
+==28526==    by 0x400823: Track::Track() (vex04.cc:30)
+==28526==    by 0x400787: main (vex04.cc:39)
+==28526== 
+==28526== LEAK SUMMARY:
+==28526==    definitely lost: 12 bytes in 1 blocks
+==28526==    indirectly lost: 0 bytes in 0 blocks
+==28526==      possibly lost: 0 bytes in 0 blocks
+==28526==    still reachable: 0 bytes in 0 blocks
+==28526==         suppressed: 0 bytes in 0 blocks
+==28526== 
+==28526== For counts of detected and suppressed errors, rerun with: -v
+==28526== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice how we are down to only one leaked block, and that leak
+is a definitely lost.  The stack trace tells us exactly where
+the lost block was originally allocated.
+
+- An even more complicated leak, with three levels of pointers.
+
+Now let's run vex05 which extends the set of classes of vex03 and
+vex04 so that we have a more complicated set of leaks.
+
+// vex05.cc
+// vim: set sw=2:
+//
+// More complicated three level leak.
+//
+
+class Point {
+private:
+  float x_;
+  float y_;
+  float z_;
+};
+
+class Track {
+private:
+  Point* begin_;
+  Point* middle_;
+  Point* end_;
+public:
+  ~Track()
+  {
+    //delete begin_;
+    //delete middle_;
+    //delete end_;
+  }
+  Track()
+    : begin_(new Point)
+    , middle_(new Point)
+    , end_(new Point)
+  {
+  }
+};
+
+class Particle {
+private:
+  Track* track1_;
+public:
+  ~Particle()
+  {
+    //delete track1_;
+  }
+  Particle()
+    : track1_(new Track)
+  {
+  }
+};
+
+int
+main()
+{
+  auto p = new Particle;
+  delete p;
+}
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./vex05
+==28612== Memcheck, a memory error detector
+==28612== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==28612== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==28612== Command: ./vex05
+==28612== 
+==28612== 
+==28612== HEAP SUMMARY:
+==28612==     in use at exit: 60 bytes in 4 blocks
+==28612==   total heap usage: 5 allocs, 1 frees, 68 bytes allocated
+==28612== 
+==28612== 12 bytes in 1 blocks are indirectly lost in loss record 1 of 4
+==28612==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28612==    by 0x4007E1: Track::Track() (vex05.cc:27)
+==28612==    by 0x400845: Particle::Particle() (vex05.cc:43)
+==28612==    by 0x400787: main (vex05.cc:51)
+==28612== 
+==28612== 12 bytes in 1 blocks are indirectly lost in loss record 2 of 4
+==28612==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28612==    by 0x4007F5: Track::Track() (vex05.cc:28)
+==28612==    by 0x400845: Particle::Particle() (vex05.cc:43)
+==28612==    by 0x400787: main (vex05.cc:51)
+==28612== 
+==28612== 12 bytes in 1 blocks are indirectly lost in loss record 3 of 4
+==28612==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28612==    by 0x40080A: Track::Track() (vex05.cc:29)
+==28612==    by 0x400845: Particle::Particle() (vex05.cc:43)
+==28612==    by 0x400787: main (vex05.cc:51)
+==28612== 
+==28612== 60 (24 direct, 36 indirect) bytes in 1 blocks are definitely lost in loss record 4 of 4
+==28612==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28612==    by 0x40083A: Particle::Particle() (vex05.cc:43)
+==28612==    by 0x400787: main (vex05.cc:51)
+==28612== 
+==28612== LEAK SUMMARY:
+==28612==    definitely lost: 24 bytes in 1 blocks
+==28612==    indirectly lost: 36 bytes in 3 blocks
+==28612==      possibly lost: 0 bytes in 0 blocks
+==28612==    still reachable: 0 bytes in 0 blocks
+==28612==         suppressed: 0 bytes in 0 blocks
+==28612== 
+==28612== For counts of detected and suppressed errors, rerun with: -v
+==28612== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+
+Once again we have definitely lost and indirectly lost blocks.
+
+Notice that the stack traces in the loss records are deeper now.
+
+Start from the record of the definitely lost block, and try to
+understand how each block of memory was allocated, explain why
+it is the size that it is, and trace the chain of pointers to
+see why some blocks are reported as indirectly lost instead of
+directly lost.
+
+- An even more complicated example with every kind of memory leak.
+
+Ok, now let's run vex06 which expands on vex05 in order to
+demonstrate all four kinds of memory leaks that the
+memcheck tool is capable of reporting.
+
+$ cat vex06.cc
+// vex06.cc
+// vim: set sw=2:
+//
+// Master example of every possible
+// kind of memory leak.
+//
+
+class Point {
+private:
+  float x_;
+  float y_;
+  float z_;
+public:
+  float*
+  getSpecialY()
+  {
+    return &y_;
+  }
+};
+
+class Track {
+private:
+  Point* begin_;
+  Point* middle_;
+  Point* end_;
+  float* special_y_;
+public:
+  ~Track()
+  {
+    delete begin_;
+    delete middle_;
+    delete end_;
+    //special_y_ = nullptr;
+  }
+  Track()
+  {
+    auto hit = new Point;
+    special_y_ = hit->getSpecialY();
+    hit = nullptr;
+  }
+};
+
+class Particle {
+private:
+  Track* track1_;
+public:
+  ~Particle()
+  {
+    //delete track1_;
+  }
+  Particle()
+    : track1_(new Track)
+  {
+  }
+};
+
+void
+f()
+{
+  static Track* T = new Track;
+  (void) T;
+}
+
+static Track* T = nullptr;
+
+int
+main()
+{
+  T = new Track;
+  new Track;
+  f();
+}
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./vex06
+==28781== Memcheck, a memory error detector
+==28781== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==28781== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==28781== Command: ./vex06
+==28781== 
+==28781== 
+==28781== HEAP SUMMARY:
+==28781==     in use at exit: 132 bytes in 6 blocks
+==28781==   total heap usage: 6 allocs, 0 frees, 132 bytes allocated
+==28781== 
+==28781== 12 bytes in 1 blocks are possibly lost in loss record 1 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x400997: Track::Track() (vex06.cc:37)
+==28781==    by 0x400915: main (vex06.cc:69)
+==28781== 
+==28781== 12 bytes in 1 blocks are possibly lost in loss record 2 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x400997: Track::Track() (vex06.cc:37)
+==28781==    by 0x4008AE: f() (vex06.cc:60)
+==28781==    by 0x400936: main (vex06.cc:71)
+==28781== 
+==28781== 12 bytes in 1 blocks are indirectly lost in loss record 3 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x400997: Track::Track() (vex06.cc:37)
+==28781==    by 0x400931: main (vex06.cc:70)
+==28781== 
+==28781== 32 bytes in 1 blocks are still reachable in loss record 4 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x40090A: main (vex06.cc:69)
+==28781== 
+==28781== 32 bytes in 1 blocks are still reachable in loss record 5 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x4008A3: f() (vex06.cc:60)
+==28781==    by 0x400936: main (vex06.cc:71)
+==28781== 
+==28781== 44 (32 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 6 of 6
+==28781==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==28781==    by 0x400926: main (vex06.cc:70)
+==28781== 
+==28781== LEAK SUMMARY:
+==28781==    definitely lost: 32 bytes in 1 blocks
+==28781==    indirectly lost: 12 bytes in 1 blocks
+==28781==      possibly lost: 24 bytes in 2 blocks
+==28781==    still reachable: 64 bytes in 2 blocks
+==28781==         suppressed: 0 bytes in 0 blocks
+==28781== 
+==28781== For counts of detected and suppressed errors, rerun with: -v
+==28781== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 5 from 5)
+
+Notice that we now have possibly lost and still reachable kinds of memory
+leaks now.
+
+Examine the loss records carefully and use the stack traces to help you find
+how the various kinds of leak are created by the code.
+

@@ -1,0 +1,33 @@
+<!--  -->
+<!--  $Id: classes_def.xml,v 1.19 2012/11/01 23:38:49 gandr Exp $     -->
+<!--  -->
+
+<lcgdict>
+
+ <class name="tex::GenParticle" ClassVersion="6">
+  <version ClassVersion="6" checksum="1177866370"/>
+  <version ClassVersion="5" checksum="2551214631"/>
+  <version ClassVersion="4" checksum="697829685"/>
+  <version ClassVersion="3" checksum="3786123848"/>
+ </class>
+ <class name="tex::GenParticleCollection"/>
+ <class name="art::Ptr<tex::GenParticle>"/>
+ <class name="art::PtrVector<tex::GenParticle>"/>
+ <class name="tex::Intersection" ClassVersion="5">
+  <version ClassVersion="5" checksum="3952995283"/>
+  <version ClassVersion="4" checksum="517607617"/>
+  <version ClassVersion="3" checksum="1682160989"/>
+ </class>
+ <class name="tex::IntersectionCollection"/>
+ <class name="tex::MCRunSummary" ClassVersion="4">
+  <version ClassVersion="4" checksum="2559702082"/>
+  <version ClassVersion="3" checksum="831057223"/>
+ </class>
+ <class name="art::Wrapper<tex::GenParticleCollection>"/>
+ <class name="art::Wrapper<tex::IntersectionCollection>"/>
+ <class name="art::Wrapper<tex::MCRunSummary>"/>
+ <class name="tex::TrkHitMatch"/>
+ <class name="art::Wrapper<tex::TrkHitMatch>"/>
+ <class name="tex::ReverseTrkHitMatch"/>
+ <class name="art::Wrapper<tex::ReverseTrkHitMatch>"/>
+</lcgdict>

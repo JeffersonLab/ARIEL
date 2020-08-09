@@ -1,0 +1,36 @@
+#
+# Run the second exercise in the ParameterSet directory.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : pset02
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  maxEvents   : 3
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  analyzers: {
+    testPSet : {
+      module_type : PSet02
+      b : 42
+      c : 3.14159
+      f : {
+        a : 4
+        b : 5
+      }
+    }
+  }
+
+  e1        : [ testPSet ]
+  end_paths : [ e1 ]
+
+}

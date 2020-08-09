@@ -1,0 +1,34 @@
+#
+#  Exercise 9:
+#  Introduce the particle data table
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : countGens
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : 5
+}
+
+services : {
+  message      : @local::default_message
+
+  # From toyExperiment
+  PDT : { pdtFile : "databaseFiles/pdt.fcl" }
+}
+
+physics :{
+  analyzers: {
+    count : {
+      module_type          : CountGens1
+      genParticlesInputTag : "evtgen"
+    }
+  }
+
+  e1        : [ count ]
+  end_paths : [ e1 ]
+
+}

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+NARGS=$#
+
+if [ $NARGS != 2 ]
+then
+   echo $'\nERROR: Missing at least one file to run diff\n'
+   exit
+fi
+
+file1=$1
+file2=$2
+diff -w <(cut -d '#' -f 1 $file1) <(cut -d '#' -f 1 $file2)
+if [ $? -eq 0 ]
+then
+   echo "No differences found between '$1' and '$2'"
+fi

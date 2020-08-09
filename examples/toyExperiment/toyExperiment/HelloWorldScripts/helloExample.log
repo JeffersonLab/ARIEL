@@ -1,0 +1,30 @@
+%MSG-i MF_INIT_OK:  art 27-Apr-2013 21:22:13 CDT JobSetup
+Messagelogger initialization complete.
+%MSG
+27-Apr-2013 21:22:14 CDT  Initiating request to open file inputFiles/input01_data.root
+27-Apr-2013 21:22:14 CDT  Successfully opened file inputFiles/input01_data.root
+Begin processing the 1st record. run: 1 subRun: 0 event: 1 at 27-Apr-2013 21:22:14 CDT
+Hello World! This event has the id: run: 1 subRun: 0 event: 1
+Begin processing the 2nd record. run: 1 subRun: 0 event: 2 at 27-Apr-2013 21:22:14 CDT
+Hello World! This event has the id: run: 1 subRun: 0 event: 2
+Hello World! This event has the id: run: 1 subRun: 0 event: 3
+Hello World! This event has the id: run: 1 subRun: 0 event: 4
+Hello World! This event has the id: run: 1 subRun: 0 event: 5
+Hello World! This event has the id: run: 1 subRun: 0 event: 6
+Hello World! This event has the id: run: 1 subRun: 0 event: 7
+Hello World! This event has the id: run: 1 subRun: 0 event: 8
+Hello World! This event has the id: run: 1 subRun: 0 event: 9
+Hello World! This event has the id: run: 1 subRun: 0 event: 10
+27-Apr-2013 21:22:14 CDT  Closed file inputFiles/input01_data.root
+
+TrigReport ---------- Event  Summary ------------
+TrigReport Events total = 10 passed = 10 failed = 0
+
+TrigReport ------ Modules in End-Path: e1 ------------
+TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
+TrigReport     0    0         10         10          0          0 hi
+
+TimeReport ---------- Time  Summary ---[sec]----
+TimeReport CPU = 0.004000 Real = 0.002411
+
+Art has completed and will exit with status 0.

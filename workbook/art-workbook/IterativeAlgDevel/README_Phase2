@@ -1,0 +1,172 @@
+##############################################
+#                                            #
+#  Iterative Algorithm Development           #
+#                                            #
+#  Phase 2                                   #
+#                                            #
+##############################################
+
+In Phase 1, we concentrated on abstracting the track concepts into its
+own class 'RecoTrk', unit testing that class, and placing a data
+product on the event.  Now we will focus on the design of the
+'produce' function.
+
+The double-for loop in the 'produce' function does multiple things:
+
+(a) it creates combinations of tracks
+(b) it fills the data product
+(c) it fills histograms
+
+Even though it is possibly efficient, combining each of these
+functionalities into a set of nested loops makes the algorithm
+difficult to test and potentially difficult to understand.  In this
+phase, we will factorize the code and add a test for the
+RecoTrk-combining algorithm.
+
+
+#=============================================
+Part 1: Separating out the histogramming step
+#=============================================
+
+[1.0]  In art-workbook/art-workbook/IterativeAlgDevel/:
+       
+           cp answers/v2/* ./
+       
+[1.1] For this step, start with MakeCombinationsV2_module.cc.  Remove
+       the histogram-filling code from outside of the double loop.
+       Use a single loop using one of the already-present containers
+       to fill the histograms after the double loop.
+       
+[1.2]  Recompile, run the job 
+       
+           art -c fcl/IterativeAlgDevel/iterV2.fcl
+       
+       and check the histograms, ensuring they are the same as before.
+       Rerun the TestRecoTrk unit test.
+       
+[1.3]  If you didn't use a range-for loop for the histogram filling, go
+       back and replace the single loop you implemented with a
+       range-for.
+       
+[1.4]  Repeat 1.2.
+
+
+#=============================================
+Part 2: Extracting the combination algorithm
+#=============================================
+
+The histogramming step has been removed from the double-for loop.
+However the loop still does multiple things:
+
+(a) it creates combinations of tracks
+(b) it fills the data product
+
+Step (b) is specific to art, and should be considered as an
+independent step compared to the algorithm that does the track
+combination creation.  The goal for this step will be to extract (b)
+from the for-loop so that the track-combining algorithm takes care of
+only (a).
+
+[2.0]  In art-workbook/art-workbook/IterativeAlgDevel/:
+       
+           cp answers/v3/* ./
+       
+[2.1]  Start with MakeCombinationsV3_module.cc.  Instead of filling the
+       combination container in the double-for loop with a type that
+       contains
+       
+          { tex::RecoTrk, art::Ptr<FittedHelixData>,art::Ptr<FittedHelixData>}, 
+       
+       introduce a new class or typedef (e.g. 'CombinationData') that
+       allows you to fill a container with type
+       
+          { tex::RecoTrk, std::size_t, std::size_t }.
+       
+       By doing this, the track-combining algorithm is now independent
+       of any art-specific concepts.
+       
+[2.2]  After the RecoTrk-combining loop, loop over the new container,
+       filling the data product.  Your produce function should now look
+       like:
+       
+          std::vector<CombinationData> combs;
+          ... for loops that fill combs
+          
+          ... for loop that fills histograms
+       
+          auto combProduct = std::make_unique<CombinationCollection>();
+          ... for loop over 'combs' that fills combProduct
+          
+          event.put( std::move(combProduct) );
+       
+[2.3]  Recompile, run the job
+       
+          art -c fcl/IterativeAlgDevel/iterV3.fcl
+       
+       and rerun the PhysicsValidation and RecoTrk tests, ensuring they
+       pass.
+       
+[2.4]  The entire track-combination algorithm can now be placed in its
+       own function, in a separate file.  Call this function
+       'makeCombinationsAlg' with a return type of
+       std::vector<CombinationData>.  Place it in a file called
+       'CombinationHelper.h/cc'.  Your 'produce' function should now
+       look like:
+       
+          std::vector<CombinationData> combs = makeCombosAlg( [ SOME ARGS ] );
+          
+          ... for loop that fills histograms
+       
+          auto combProduct = std::make_unique<CombinationCollection>();
+          ... for loop over 'combs' that fills combProduct
+            
+          event.put( std::move(combProduct) );
+       
+[2.5]  After #include-ing the correct header, repeat step 2.3.
+
+
+#=============================================
+Part 3: Testing the combination algorithm
+#=============================================
+
+Now that the RecoTrk-combining algorithm has been extracted from the
+module, it can be tested.  Remember from before, a test here DOES NOT
+mean that the histograms you get before look the same as they did in
+the past.  That is a 'validation test'.  Here we are going to perform
+a 'unit test'.
+
+In this case, we are going to unit test 'makeCombinationsAlg'.  This
+means that we are going to test that the algorithm is doing what it's
+supposed to be doing -- specifically, if there are 'p' positive tracks
+and 'n' negative tracks, we expect that the function will return 'p*n'
+combinations.  That will be our test.  That way, we know that if there
+is a problem in the (e.g.) combined mass distribution, it is not a
+problem with how many combinations are generated, but something else.
+
+[3.1]  Inside of 'TestMakeCombinationsAlg.cc', you will have everything
+       you need in the anonymous namespace.  A special function
+       'FittedHelixDataFactory::make' exists so that you can test if
+       the input number of positive and negative tracks yields the
+       correct set of combinations.  For example, in the main(), you
+       would write:
+       
+           auto const coll = FittedHelixDataFactory::make(npos,nneg);
+           std::vector<CombinationData> test = makeCombinationsAlg( [ ARGS ] );
+       
+       And now you have a container of combinations whose size can be
+       tested against what you expect.
+       
+       Develop as many tests as you wish, but make sure to test the
+       corner cases---how many combinations do you expect when you have
+       0 tracks, 'p' positive tracks and no negative tracks, etc.  It's
+       often the corner cases where algorithms have trouble.
+       
+[3.2]  Adjust the IterativeAlgDevel/CMakeLists.txt file by adding:
+       
+          cet_test(TestMakeCombinationsAlg
+                   LIBRARIES art-workbook_IterativeAlgDevel
+                   OPTIONAL_GROUPS IterativeAlgDevel )
+       
+[3.3]  Now recompile, and run the IterativeAlgDevel tests, using the
+       same commands as given in README_Phase1.  If there are any test
+       failures, fix them.

@@ -1,0 +1,28 @@
+#
+# Run the first HelloWorld exercise.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : hello
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    hi : {
+      module_type : HelloWorld
+    }
+  }
+
+  e1        : [ hi ]
+  end_paths : [ e1 ]
+
+}

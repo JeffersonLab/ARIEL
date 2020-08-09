@@ -1,0 +1,115 @@
+##############################################
+#                                            #
+#  Iterative Algorithm Development           #
+#                                            #
+#  Phase 3                                   #
+#                                            #
+##############################################
+
+
+#=============================================
+Part 1: Improving 'makeCombinations Alg'
+#=============================================
+
+In order to make the RecoTrk combinations, a few things must happen:
+
+(a) FittedHelix objects are created.
+(b) From the FittedHelix objects, tracks are created
+(c) The charge of track pairs is compared
+(d) If the paired tracks are oppositely charged, the combination is
+    created
+
+We can redesign 'makeCombinationsAlg' to look like the list of items
+(a) through (d).  Doing so not only makes things easier to
+read/understand, but also makes it easier to extend the algorithm, and
+also easier to test the individual elements of the algorithm.  We will
+redesign 'makeCombinationsAlg' to follow this listed pattern.
+
+For the next steps, you may find the following algorithms helpful:
+
+   std::transform  // From <algorithm>
+   std::for_each   // "
+   cet::for_all    // From "cetlib/container_algorithms.h"
+
+We encourage you to use them.  If you need information about lambdas,
+do a web search for "c++ lambda tutorial".
+
+[1.0] In art-workbook/art-workbook/IterativeAlgDevel/:
+
+          cp answers/v4/* ./
+
+You will start with: MakeCombinationsV4_module.cc
+
+[1.1] Look at 'makeCombinationsAlg'.  Notice that FittedHelix objects
+      are created for all FittedHelixCollectionData entries. (How many
+      times?)  To improve the readability (and efficiency) of this
+      step, rewrite the algorithm so that it looks like:
+      
+         std::vector<FittedHelix> const fits = makeFits( fithelixdatacoll );
+         // N.B. 'fits' is now a different type than it was MakeCombinationsV2        
+         
+         for ( i LOOP OVER fits ) {
+           RecoTrk1 creation
+           for ( j LOOP over fits ) {
+              RecoTrk2 creation
+              ...
+           }
+         }      
+
+[1.2] At this point, all information is available for determining
+      which track combinations will be interesting.  Create a function
+      that returns an std::vector<std::pair<std::size_t,std::size_t>>
+      where the std::size_t pair corresponds to the indices of
+      oppositely-charged tracks.
+
+[1.3] We need to create the tracks, of course, from the fits.  So
+      write a function that takes the 'fits' from 4.1 and creates
+      tracks from them.
+
+[1.4] Lastly, loop over all the index pairs from 4.2 and create the
+      track combinations.  The final form should look similar to:
+
+         auto const fits   = makeFits( fithelixdatacoll );
+         auto const pairs  = getIndexPairs( fits );
+         auto const tracks = makeTracks( fits, [ SOMETHING ELSE ] ); 
+         
+         LOOP OVER 'pairs' to create combinations
+
+      The individual steps are now factorized, making the code easier
+      to understand, easier to extend (if necessary), and testable.
+
+[1.5] Recompile, run the IterativeAlgDevel tests and fix any test
+      failures.
+
+At this point, you now have an improved algorithm, which is:
+
+(a) easier to understand, designed in a way similar to how you would
+    describe the algorithm on a whiteboard
+(b) easier to extend, which is good for maintenance
+(c) testable
+(d) structured in a way so as to use parallel algorithms (see README_Extra)
+
+
+#=============================================  
+Part 2: Practice with lambdas                   
+#=============================================
+
+Now we will switch back to the MakeCombinations module.  The purpose
+of this step is to replace any remaining for loops with lambdas, using
+std::for_each() or cet::for_all().
+
+[2.0] Do the following:
+
+          cp answers/v5/* ./
+
+[2.1] Starting with MakeCombinationsV5_module.cc, write two lambdas to
+      replace the code inside the histogramming and
+      data-product-filling code.  What variables must be specified in
+      the capture lists?  Call the lambdas in the for loop.
+
+[2.2] Recompile, run the unit tests, run the job, and verify that the
+      histogram output is the same as before.
+
+[2.3] Replace the for loops with std::for_each() or cet::for_all().
+
+[2.4] Repeat step 2.2.

@@ -1,0 +1,60 @@
+- Introduction
+
+Today we will be talking about the memcheck tool from
+the valgrind tool suite.  Using memcheck we can detect
+memory leaks, invalid memory accesses, uses of deleted
+memory, and uses of uninitialized variables.
+
+- What is a memory leak?
+
+int
+main()
+{
+  auto p = new int;
+}
+
+This is just about the simplest example of a memory
+leak you can imagine.  We allocate enough memory from
+the heap to store an int, and initialize the variable p
+with a pointer to that memory.
+
+Then we exit the program without releasing the memory
+block we allocated from the heap.
+
+This is a memory leak.
+
+- Why are memory leaks bad?
+
+A first this may not seem like much of a problem.  When
+the program finishes executing the operating system is
+going to unconditionally release all memory the program
+was using anyway, so why worry?
+
+The problem is that we may have been allocating memory
+without releasing it for a long time while the program
+was executing, and the total memory usage of the process
+climbs so high that we reach the resource limits of the
+system, and our job is killed.
+
+In general it is wiser to release memory as soon as it
+is no longer needed to prevent resource exhaustion.
+
+- Requirements for running the memcheck tool.
+
+The memcheck tool can be run on any executable without
+any special preparations.  However, you will get more
+useful information out of it if the executable and
+shareable libraries are at least compiled with debug
+symbols included.
+
+If the executable and libraries are compiled debug, then
+you can use gdb and memcheck in combination, which is
+very useful.
+
+- Suppression Files.
+
+Certain libraries intentionally leave memory uninitialized
+or leak memory on purpose.  Suppression files can be created
+to prevent valgrind from reporting these as errors.  For
+example the ROOT library is shipped with a suppression file.
+

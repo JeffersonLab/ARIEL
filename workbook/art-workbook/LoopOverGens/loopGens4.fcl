@@ -1,0 +1,32 @@
+#
+#  Exercise 8:
+#  Loop over GenParticles and make some histograms of their properties
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : loopGens
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "output/loopGens4.root" }
+}
+
+physics :{
+  analyzers: {
+    gens : {
+      module_type          : LoopGens4
+      genParticlesInputTag : "evtgen"
+      maxPrint             : 10
+    }
+  }
+
+  e1        : [ gens ]
+  end_paths : [ e1 ]
+
+}

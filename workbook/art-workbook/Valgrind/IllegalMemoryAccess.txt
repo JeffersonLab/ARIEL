@@ -1,0 +1,275 @@
+- What is an illegal memory access?
+
+The valgrind memcheck tool will report any attempt by your code to read or
+write to memory which was not allocated to hold your global variables,
+or your stack, or the heap.
+
+- Example of an illegal read.
+
+Let's run vex07 which demonstrates the error reported when your code attempts to
+use a null pointer to fetch data.
+
+// vex07.cc
+// vim: set sw=2:
+//
+// Illegal read.
+//
+
+#include <iostream>
+
+using namespace std;
+
+int
+main()
+{
+  int* p = nullptr;
+  cout << *p << endl;
+}
+
+$ valgrind --leak-check=no ./vex07
+==29158== Memcheck, a memory error detector
+==29158== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==29158== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==29158== Command: ./vex07
+==29158== 
+==29158== Invalid read of size 4
+==29158==    at 0x40085C: main (vex07.cc:15)
+==29158==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==29158== 
+==29158== 
+==29158== Process terminating with default action of signal 11 (SIGSEGV)
+==29158==  Access not within mapped region at address 0x0
+==29158==    at 0x40085C: main (vex07.cc:15)
+==29158==  If you believe this happened as a result of a stack
+==29158==  overflow in your program's main thread (unlikely but
+==29158==  possible), you can try to increase the size of the
+==29158==  main thread stack using the --main-stacksize= flag.
+==29158==  The main thread stack size used in this run was 10485760.
+==29158== 
+==29158== HEAP SUMMARY:
+==29158==     in use at exit: 0 bytes in 0 blocks
+==29158==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==29158== 
+==29158== For a detailed leak analysis, rerun with: --leak-check=full
+==29158== 
+==29158== For counts of detected and suppressed errors, rerun with: -v
+==29158== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+Segmentation fault
+
+This is reported by memcheck as an invalid read of size 4 on the first line of
+the error report.
+
+Then we are told this happened at line 15 of file vex07.cc which is the
+"cout << *p << endl;" line.  In particular it was the *p expression which
+involves dereferencing a null pointer for reading purposes.
+
+Note also that memcheck tells us explicitly that the value of the pointer was
+0x0 on the third line of the error report, and that this address is not the
+address of memory that was allocated on the stack or heap, or was recently
+released.
+
+And finally notice that this caused a "Segmentation fault" resulting in the
+death of the program.
+
+- Example of an illegal write.
+
+Ok, now that we have seen how memcheck reports an illegal read error, let's
+look at an example of an illegal write.
+
+To do this we will run vex08 under the memcheck tool.
+
+// vex08.cc
+// vim: set sw=2:
+//
+// Illegal write.
+
+#include <iostream>
+
+using namespace std;
+
+int
+main()
+{
+  int* p = nullptr;
+  *p = 10;
+  cout << "*p:" << *p << endl;
+}
+
+$ valgrind --leak-check=no ./vex08
+==29502== Memcheck, a memory error detector
+==29502== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==29502== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==29502== Command: ./vex08
+==29502== 
+==29502== Invalid write of size 4
+==29502==    at 0x4008DD: main (vex08.cc:14)
+==29502==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==29502== 
+==29502== 
+==29502== Process terminating with default action of signal 11 (SIGSEGV)
+==29502==  Access not within mapped region at address 0x0
+==29502==    at 0x4008DD: main (vex08.cc:14)
+==29502==  If you believe this happened as a result of a stack
+==29502==  overflow in your program's main thread (unlikely but
+==29502==  possible), you can try to increase the size of the
+==29502==  main thread stack using the --main-stacksize= flag.
+==29502==  The main thread stack size used in this run was 10485760.
+==29502== 
+==29502== HEAP SUMMARY:
+==29502==     in use at exit: 0 bytes in 0 blocks
+==29502==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==29502== 
+==29502== For a detailed leak analysis, rerun with: --leak-check=full
+==29502== 
+==29502== For counts of detected and suppressed errors, rerun with: -v
+==29502== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+Segmentation fault
+
+Notice that the error report is essentially the same as the previous example
+except this time it is a write instead of a read.
+
+Our program still dies with a "Segmentation fault", which is all we would have
+seen without memcheck.
+
+- Example of writing to a memory location which is not valid.
+
+Ok, now let'd run vex19 to see an example of writing to memory which does not
+belong to our variables, our stack, or our heap.
+
+// vex19.cc
+// vim: set sw=2:
+//
+// Illegal write past end of bss.
+
+#include <iostream>
+
+using namespace std;
+
+int I = 4;
+
+int
+main()
+{
+  int* p = &I;
+  *p = 15;
+  for (auto J = 0; J < 275; ++J) {
+    p[J] = 0xFF;
+  }
+}
+
+$ valgrind --leak-check=no ./vex19
+==29592== Memcheck, a memory error detector
+==29592== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==29592== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==29592== Command: ./vex19
+==29592== 
+==29592== Invalid write of size 4
+==29592==    at 0x40071B: main (vex19.cc:18)
+==29592==  Address 0x601000 is not stack'd, malloc'd or (recently) free'd
+==29592== 
+==29592== 
+==29592== Process terminating with default action of signal 11 (SIGSEGV)
+==29592==  Access not within mapped region at address 0x601000
+==29592==    at 0x40071B: main (vex19.cc:18)
+==29592==  If you believe this happened as a result of a stack
+==29592==  overflow in your program's main thread (unlikely but
+==29592==  possible), you can try to increase the size of the
+==29592==  main thread stack using the --main-stacksize= flag.
+==29592==  The main thread stack size used in this run was 10485760.
+==29592== 
+==29592== HEAP SUMMARY:
+==29592==     in use at exit: 0 bytes in 0 blocks
+==29592==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==29592== 
+==29592== For a detailed leak analysis, rerun with: --leak-check=full
+==29592== 
+==29592== For counts of detected and suppressed errors, rerun with: -v
+==29592== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 5)
+Segmentation fault
+
+Notice that the error report is very similar to the previous example but this
+time the write is to the invalid address 0x601000 which is not part of the
+stack, the heap, or of any memory allocated to hold our variables.
+
+Once again our program dies with a "Segmentation fault", which is the only
+error we would have seen without using the memcheck tool.
+
+- Reading past the end of a heap memory block.
+
+Finally, let's run vex13 to see an example of what happens when your code is
+using unchecked vector indexing on a vector you have allocated from the heap
+and you have a mistake that attempts to read from vector members that do not
+exist.
+
+// vex13.cc
+// vim: set sw=2:
+//
+// Invalid read on heap allocated vector using unchecked indexing.
+//
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int
+main()
+{
+  auto V = new vector<int>({2, 5, 9});
+  cout << "*V:" << endl;
+  for (auto I = 0; I < 5; ++I) {
+    cout << "(*V)["
+         << I
+         << "]: "
+         << (*V)[I]
+         << endl;
+  }
+  delete V;
+  V = 0;
+  return 0;
+}
+
+$ valgrind --leak-check=no ./vex13
+==30993== Memcheck, a memory error detector
+==30993== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==30993== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==30993== Command: ./vex13
+==30993== 
+*V:
+(*V)[0]: 2
+(*V)[1]: 5
+(*V)[2]: 9
+==30993== Invalid read of size 4
+==30993==    at 0x400B83: main (vex13.cc:21)
+==30993==  Address 0x51620ac is 0 bytes after a block of size 12 alloc'd
+==30993==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==30993==    by 0x401227: __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) (new_allocator.h:104)
+==30993==    by 0x401175: std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long) (alloc_traits.h:357)
+==30993==    by 0x401071: std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) (stl_vector.h:170)
+==30993==    by 0x400EFB: void std::vector<int, std::allocator<int> >::_M_range_initialize<int const*>(int const*, int const*, >std::forward_iterator_tag) (stl_vector.h:1287)
+==30993==    by 0x400D8C: std::vector<int, std::allocator<int> >::vector(std::initializer_list<int>, std::allocator<int> const&) >(stl_vector.h:377)
+==30993==    by 0x400B38: main (vex13.cc:15)
+==30993== 
+(*V)[3]: 0
+(*V)[4]: 0
+==30993== 
+==30993== HEAP SUMMARY:
+==30993==     in use at exit: 0 bytes in 0 blocks
+==30993==   total heap usage: 2 allocs, 2 frees, 36 bytes allocated
+==30993== 
+==30993== For a detailed leak analysis, rerun with: --leak-check=full
+==30993== 
+==30993== For counts of detected and suppressed errors, rerun with: -v
+==30993== ERROR SUMMARY: 2 errors from 1 contexts (suppressed: 5 from 5)
+
+Notice that we do not go past the end of the vector until we get to index 3,
+and when we get there memcheck immediately reports that we are attempting to
+make an invalid access.
+
+Notice that memcheck tells us that the address we are trying to read from
+is 0 bytes after a block of size 12 allocated from the heap by the stack trace
+it shows us.
+
+The stack trace tells us that the block of memory just before our illegal read
+was allocated by a std::vector constructor, which is useful to know.
+

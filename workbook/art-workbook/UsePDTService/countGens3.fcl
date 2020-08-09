@@ -1,0 +1,35 @@
+#
+#  Exercise 9:
+#  Count the number of each type of GenParticle
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : countGens
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+}
+
+services : {
+  message : @local::default_message
+
+  # From toyExperiment
+  PDT : { pdtFile : "databaseFiles/pdt.fcl" }
+
+}
+
+physics :{
+  analyzers: {
+    count : {
+      module_type          : CountGens3
+      genParticlesInputTag : "evtgen"
+      outputFilename       : "output/countGens3.txt"
+    }
+  }
+
+  e1        : [ count ]
+  end_paths : [ e1 ]
+
+}

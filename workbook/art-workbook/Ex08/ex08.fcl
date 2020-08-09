@@ -1,0 +1,38 @@
+#  ex08 - Introduce the Geometry Service.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : ex08
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input04.art" ]
+  maxEvents   : 1
+}
+
+services : {
+  message      : @local::default_message
+
+  # From toyExperiment
+  Geometry   : {
+    geometryFile : "databaseFiles/geom01.fcl"
+    verbosity    : 0
+  }
+
+}
+
+physics :{
+
+  analyzers: {
+    inspectGenParts : {
+      module_type       : Ex08
+      genParticlesInputTag : "evtgen"
+      maxPrint          : 5
+    }
+  }
+
+  e1        : [ inspectGenParts ]
+  end_paths : [ e1 ]
+
+}

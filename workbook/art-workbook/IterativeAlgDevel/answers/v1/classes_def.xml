@@ -1,0 +1,7 @@
+<lcgdict>
+  < NEED TO INCLUDE YOUR RecoTrk object here >
+  <class name="art::Ptr<tex::FittedHelixData>" classVersion="10"/>
+  <class name="italgdev::Combination" classVersion="10"/>
+  <class name="std::vector<italgdev::Combination>" classVersion="10"/>
+  <class name="art::Wrapper<std::vector<italgdev::Combination>>" classVersion="10"/>
+</lcgdict>

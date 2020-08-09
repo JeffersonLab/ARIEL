@@ -1,0 +1,96 @@
+Instructions for this Exercise
+
+Read the slides for Session 14; they accompany this exercise.
+
+The code for this Exercise lives in this directory plus
+art-workbook/SimpleDataProducts
+
+In that directory understand, EventSummary.h and EventSummary.cc
+Read what the slides have to say about classes_def.xml, classes.h
+and CMakeLists.txt
+
+In this directory the files are:
+Summary_module.cc
+  - This is much like the producer modules you have alread seen
+  - The only difference is that is uses the new data product
+
+ReadSummary_module.cc
+  - This is like other analyzer modules you have already seen
+  - It reads back the new data product and prints it out
+
+Summary2_module.cc
+  - Start of your homework.
+  - This is the same as Summary1 put it fills the TrackSummary for each
+    track, prints out the result and discards it.
+
+CMakeLists.txt
+  - Note the addition of art-workbook_SimpleDataProducts to MODULE_LIBRARIES
+  - This is the library that holds newly created EventSummaryCollection
+  - Otherwise it is the same as the one for the FirstProducer exercise
+
+
+To run the exercise:
+
+1)
+Remind your self of the data products in the input file
+
+art -c fcl/FileDumper/fileDumper.fcl inputFiles/input01.art
+
+2)
+Run the first part of the exercise.  Reads the input file, makes
+the new data product, adds it to the event and writes out the event:
+
+art -c  fcl/UsingSimpleDataProducts/summary1.fcl
+
+3)
+Look at the data products in the output file:
+
+art -c fcl/FileDumper/fileDumper.fcl output/summary1.art
+
+Compare the output to that from step 1.
+You should see that the new data product is present
+(plus the TriggerResults product created by art in this job)
+fcl/UsingSimpleDataProducts/readSummary1.fcl
+
+4)
+Read back the new data product from the output file:
+
+art -c  fcl/UsingSimpleDataProducts/readSummary1.fcl
+
+Compare the printout here to the printout from step 2.
+
+
+5)
+Here is a big exercise for you to try.
+
+art -c  fcl/UsingSimpleDataProducts/summary2.fcl
+
+This runs Summary2_module.cc, which exercises TrackSummary.
+
+Create the file:
+SimpleDataProducts/TrackSummaryCollection.h
+
+You do not need a matching .cc - understand why.
+You can use this as a model
+$TOYEXPERIMENT_DIR/source/toyExperiment/MCDataProducts/GenParticleCollection.h
+
+Modify classes_def.xml and classes.h to dictionary entries for the
+TrackSummaryCollection data  product
+
+Hint:
+ - you need to add 3 lines to classes_def.xmk and 2 lines to classe.sh
+
+Run buildtool to make the dictionaries.
+
+Edit Summary2_module.cc so that it makes a TrackSummaryCollection product
+and puts it in the event.
+
+Run buildtool
+
+Run the job:
+art -c  fcl/UsingSimpleDataProducts/summary2.fcl
+
+Check that the data product is in the output file:
+art -c fcl/FileDumper/fileDumper.fcl output/summary2.art
+
+Write analyzer module to read back the new data product and print it out.

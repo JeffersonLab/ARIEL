@@ -1,0 +1,33 @@
+#
+# Run the foruth exercise in the ParameterSet directory.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : pset04
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  maxEvents   : 1
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+
+  analyzers: {
+    pset : {
+      module_type : PSet04
+      a           : 123.456e4
+      b           : 3.1415926
+      c           : +1.0
+    }
+  }
+
+  e1        : [ pset ]
+  end_paths : [ e1 ]
+
+}

@@ -1,0 +1,37 @@
+#
+# Write an output file.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : writeFile
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  firstEvent  : 4
+  maxEvents   : 4
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    hi : {
+      module_type : HelloWorld
+    }
+  }
+
+  e1        : [ hi, output1 ]
+  end_paths : [ e1 ]
+
+}
+
+outputs : {
+  output1 : {
+    module_type : RootOutput
+    fileName    : "output/writeFile.art"
+  }
+}

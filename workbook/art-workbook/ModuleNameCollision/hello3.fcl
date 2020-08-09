@@ -1,0 +1,28 @@
+#
+# How to choose the other module.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : hello
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    french : {
+      module_type : "art-workbook/ModuleNameCollision/HelloWorld"
+    }
+  }
+
+  e1        : [ french ]
+  end_paths : [ e1 ]
+
+}

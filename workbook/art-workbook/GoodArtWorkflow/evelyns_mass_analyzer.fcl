@@ -1,0 +1,5 @@
+physics.analyzers.massPlot : {
+   module_type : MassPlot
+   fitsTag     : "fitter"
+   maxPrint    : 0
+}

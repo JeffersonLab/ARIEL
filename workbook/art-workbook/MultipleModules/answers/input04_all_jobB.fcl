@@ -1,0 +1,63 @@
+# Make 1000 events for detector simulation (based on $TOYEXPERIMENT_DIR/fcl/input04.fcl)
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardModules.fcl"
+
+process_name: "AnalyzeTheYak"
+
+source: { 
+          module_type: "RootInput"
+          fileNames: ["output/input04_jobA.art"]
+        } 
+
+services : {
+
+  message               : @local::default_message
+  RandomNumberGenerator : {}
+  TFileService          : { fileName : "output/input04_jobB.root" }
+
+  # From toyExperiment
+  Geometry   : { geometryFile   : "databaseFiles/geom01.fcl"       }
+  Conditions : { conditionsFile : "databaseFiles/conditions01.fcl" }
+  PDT        : { pdtFile        : "databaseFiles/pdt.fcl"          }
+}
+
+physics: { 
+
+	 analyzers: { 
+  	 	       inspectFits: { 
+                                       module_type: "InspectFittedHelix" 
+				       fitsTag: "fitter" 
+                                       maxPrint: 0 
+                                  } 
+
+                        inspectGens: { 
+                                       module_type: "InspectGenParticles" 
+				       genParticleTag: "evtgen" 
+                                       maxPrint: 0 
+                                     } 
+
+                        inspectHits: { 
+                                       module_type: "InspectTrkHits" 
+				       hitMakerTag: "makeHits" 
+                                       maxPrint: 0 
+                                     } 
+
+                        inspectIntersections: { 
+                                                module_type: "InspectIntersections" 
+					      	intersectionTags: [ "detsim:outer", "detsim:inner" ]
+                                                maxPrint: 0 
+                                              } 
+
+                        massPlot: { 
+                                    module_type: "MassPlot" 
+				    fitsTag: "fitter" 
+                                    maxPrint: 0 
+                                  } 
+
+                      } # end of analyzers
+
+           e1: [ "inspectGens", "inspectIntersections", "inspectHits", "inspectFits", "massPlot"]
+           end_paths: [ e1 ]
+
+}  # end of physics

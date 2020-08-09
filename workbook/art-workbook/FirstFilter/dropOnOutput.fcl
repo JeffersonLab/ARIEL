@@ -1,0 +1,71 @@
+#
+# Exercise outputCommands
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : dropOnOutput
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+  e1        : [ drop0, drop1, drop2, drop3 ]
+  end_paths : [ e1 ]
+}
+
+outputs : {
+
+  drop0 : {
+    module_type    : RootOutput
+    fileName       : "output/drop0.art"
+    outputCommands : [ "keep *_*_*_*",
+                       "drop tex::FittedHelixDatas_*_*_*"
+                      ]
+  }
+
+  drop1 : {
+    module_type    : RootOutput
+    fileName       : "output/drop1.art"
+    outputCommands : [ "keep *_*_*_*",
+                       "drop *_detsim_*_*"
+                      ]
+  }
+
+  drop2 : {
+    module_type    : RootOutput
+    fileName       : "output/drop2.art"
+    outputCommands : [ "keep *_*_*_*",
+                       "drop *_detsim_*_*",
+                       "keep *_detsim_inner_*"
+                      ]
+  }
+
+  drop3 : {
+    module_type    : RootOutput
+    fileName       : "output/drop3.art"
+    outputCommands : [ "keep *_*_*_*",
+                       "drop *_detsim_*_*",
+                       "keep *_detsim_inner_*",
+                       "drop tex::FittedHelixDatas_*_*_*"
+                      ]
+  }
+
+
+  drop4 : {
+    module_type    : RootOutput
+    fileName       : "output/drop4.art"
+    outputCommands : [ "drop *_*_*_*",
+                       "keep *_detsim_*_*"
+                      ]
+  }
+
+
+
+}

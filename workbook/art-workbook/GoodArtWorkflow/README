@@ -1,0 +1,285 @@
+===========
+A. Practice
+===========
+
+[A.1] For the following:
+
+        // test1.fcl
+        BEGIN_PROLOG
+        x : 2
+        END_PROLOG
+        x : 3
+        y : @local::x
+      
+      What do you expect the processed FHiCL file to look like?
+      Check that you are right with 'fhicl-dump test1.fcl'
+
+      What happens if you type 'y:x' instead of 'y : @local::x'?
+      What happens if you remove the '@' sign in front of 'local'?
+      What happens if you type '@local::z' instead of '@local::x'?
+
+[A.2] Consider the following FHiCL files:
+
+        // test2a.fcl
+        BEGIN_PROLOG
+        c : { d : e }
+        b : { c : @local::c }
+        END_PROLOG
+        a : { b : @local::b }
+      
+        // test2b.fcl
+        BEGIN_PROLOG
+        c : { d : e }
+        b : { @table::c }
+        END_PROLOG
+        a : { @table::b }
+      
+      What do you expect the processed FHiCL files to look like?
+      Run 'fhicl-dump' over them and check your predictions.
+
+[A.3] Consider the following FHiCL file:
+    
+        // test3.fcl
+        BEGIN_PROLOG
+        seq1 : [ 1, 2, 3 ]
+        seq2 : [ a, b, c ]
+        END_PROLOG
+        seq : [ @sequence::seq1, @sequence::seq2 ]
+        seq[0] : 0
+      
+      What do you expect the processed FHiCL file to look like?
+      Check it with 'fhicl-dump'.
+
+[A.4] Consider the following FHiCL file:
+    
+        // test4.fcl
+        BEGIN_PROLOG
+        seq1 : [ 1, 2, 3 ]
+        seq2 : [ a, b, c ]
+        END_PROLOG
+        seq : [ @local::seq1, @sequence::seq2 ]
+        seq[0] : 0
+      
+      What do you expect the processed FHiCL file to look like?
+      Check it with 'fhicl-dump'.
+      
+[A.5] Can you guess what was intended with the below file and how to
+      achieve what was intended?
+
+        // test5.fcl
+        BEGIN_PROLOG
+        table1 : { foo : bar }
+        END_PROLOG
+        seq : [ @table::table1, {f:2} ]
+
+==============================
+B. Single Point of Maintenance
+==============================
+
+Alice, Bob and Charlie and are working on an analysis together, and
+they have been sharing FHiCL files.  Alice put together the first
+FHiCL file, and then Bob and Charlie have borrowed from it and made
+their own additions.  None of them have used FHiCL best practices, and
+so they decide to just forge ahead with whatever works.
+
+Bob is able to put together something that he thinks does what he
+wants.  He wants to run all of the same modules as Alice, but he wants
+to change the value of 'maxPrint' for 'inspectHits'; he wants to make
+no other changes.  He thinks he needs to reassign the value of
+'inspectHits' instead of just reassigning the 'maxPrint' value.
+
+[B.1] Can you spot the problem with Bob's file ('bob.fcl')?
+
+      Spend a few minutes comparing their files by eye, and if you get
+      stuck, try:
+
+        fhicl-diff <(fhicl-dump alice.fcl) <(fhicl-dump bob.fcl)
+
+      (Did you remember to adjust the FHICL_FILE_PATH environment
+      variable?)
+
+      Fix Bob's problem.  And run Bob's file 'art -c bob.fcl', verifying
+      the change in behavior.
+
+Charlie's file ('charlie.fcl') is in worse shape.  Charlie wants to
+incorporate Alice's modules, including Bob's change.  But he also
+wants to add a new module from Evenlyn with 'module_type : MassPlot'.
+Unfortunately, he, Bob and Alice are having trouble figuring out why
+the 'massPlot' module is not being included on the path.
+
+[B.2] What is Charlie's problem(s)?  Correct his FHiCL file.  If you
+      need help, use the 'fhicl-diff' command above.
+
+After figuring out their problem, Alice, Bob and Charlie decide to
+refactor their FHiCL so that common code can be placed in a PROLOG.
+They also want to design their code so that they can make it robust
+against future changes.  You are a consultant to help them get there.
+You'll start with 'alice.fcl', and correct Bob's and Charlie's files
+after 'alice.fcl' is cleaned up.
+
+[B.3] First save the configuration of the old file.
+
+        fhicl-dump alice.fcl -o alice.ref
+
+[B.4] Now start with the services.  Users of these services will want
+      a 'services' block that looks like:
+
+        services : { 
+          @table::services
+          TFileService : { fileName : "output/job_config.root" }
+        }
+
+      Make modifications to the file so that the services that are
+      inserted by '@table::services' table are in a new file.  How
+      would the user know that that file could be seen by art?
+
+      Run 'fhicl-dump alice_new.fcl -o alice_new.ref' with the
+      modifications above and verify, using: 
+        
+        fhicl-diff alice_new.ref alice.ref
+      
+      that the configurations are identical.
+
+[B.5] Now restructure the 'producers' and 'analyzers' in the same way as
+      the 'services' so that you have:
+
+        producers : { 
+          @table::simulation
+          @table::tracking
+        }
+        
+        analyzers : { 
+          @table::alices.analyzers
+        }     
+  
+      or something similar. Run 'fhicl-dump' again with these
+      modifications and compare against the reference file as before.
+
+Things are still not quite optimal because you still have to
+explicitly list the modules in the 'p1' and 'e1' paths.  
+
+[B.6] Use the '@sequence::' syntax so the 'p1' and 'e1' files look like:
+
+        p1 : [ @sequence::simList, @sequence::trackList ]
+        e1 : [ @sequence::alices.analyzerList, outfile ]
+
+      or something similar. Run 'fhicl-dump' again and make the same
+      comparison against 'alice.ref' as before.
+
+The 'alice.fcl' file is now robust against future changes, should the
+experiment decide to add modules to the 'simulation' and 'tracking'
+producers, or should Alice decide to add additional analyzer modules.
+
+[B.7] Now restructure 'bob.fcl' to reflect the same types of changes
+      in 'alice.fcl'.  But do not explicitly use "#include
+      "alice.fcl".  Alice's FHiCL file is now short enough that the
+      same patterns can be used in Bob's file that were used in
+      Alice's.  Since Bob only wants to make one change relative to
+      Alice, the FHiCL file should be nearly identical to Alice's.
+
+[B.8] Do the same thing to Charlie's, given what he wants to do.
+      Design the code so you can type:
+      
+        analyzers: {
+          @table::alices.analyzers
+          massPlot : @local::evelyns.massPlot
+        }
+
+      How would you adjust the 'end_paths' aspects of the file?
+
+[B.9] Someone wants to introduce a new producer module to the
+      producers introduced by '@table::simulation', with the
+      specification 'module_type : Producer'.  Adjust the 'simulation'
+      table so that the new 'Producer' module is the first producer
+      module inserted by the '@table' clause.
+
+      Make sure you adjust the value of 'simList'.  If you've done
+      everything correctly, none of the FHiCL files ('alice.fcl',
+      'bob.fcl', or 'charlie.fcl') will need any modifications.
+
+      Rerun 'art -c bob.fcl'.
+
+==================
+C. Grid submission
+==================
+
+Alice has now been tasked with submitting 10 production jobs to the
+grid.  The same underlying FHiCL file needs to be used for each job,
+but there can be no overlapping event numbers.  All Alice is given is
+her 'alice.fcl' file (without the 'Selector' module), and her
+knowledge how FHiCL and bash work.
+
+Although the improved 'alice.fcl' above is good for interactive work,
+there are a few parameters in there that have been hard coded, such as
+'firstEvent' and the two 'fileName' parameters.  
+
+[C.1] Replace the values of these parameters with a FHiCL symbol that
+      implies the parameters must be assigned later on.
+
+The values of these three parameters from can be assigned at the
+command line using various 'art' options.  Type 'art --help' and
+determine what those options are.
+
+[C.2] Using the options you found in [6], execute 
+
+        art -c alice.fcl <OPTIONS_WITH_ARGUMENTS> 
+      
+      which corresponds to one job.  Make the output files to be located
+      here:
+      
+        output/alice.root
+        output/alice.art
+
+[C.3] Now write a "for" loop on the command line that runs 10 art
+      processes.  It should write 10 .art and 10 .root files to the
+      output directory with filenames like:
+      
+        output/alice_0.root    output/alice_0.art
+        output/alice_1.root    output/alice_1.art
+        ...                    ...
+      
+      HINT 1:
+      
+        for i in {0..9}   
+        do  
+           echo "===================================="
+           # The "${i}" syntax means the numerical value of 'i' is
+           # printed as a string
+           echo "Now submitting to the grid job no. ${i}"
+           echo "===================================="
+           art -c job_config.fcl <OPTIONS WITH APPROPRIATE ${i} SUBSTITUTIONS>
+        done
+      
+      HINT 2:
+      
+        In order to ensure that the files can serve together as input
+        files into another art process, all event numbers must be
+        unique.  You must, therefore, specify starting event numbers
+        that guarantee no event-number overlaps from file-to-file.
+
+==================
+D. Reporting tools
+==================
+
+As you can tell, debugging problems in FHiCL files can be very
+difficult.  A utility exists that dumps not only the post-processed
+art configuration, but also provides the source and line number where
+parameters are defined/overridden.
+
+[D.1] In your build area, execute 
+      
+        art --debug-config=ref.fcl -c charlie.fcl
+
+      and look at the 'ref.fcl' output.
+      
+      Does the output make sense to you?  Check the printed-out source
+      location for
+      
+        a) 'physics.producers.makeHits.seed'
+        b) 'physics.analyzers.massPlot.maxPrint'
+        c) 'physics.e1[0]'
+        d) 'physics.inspectFits'
+        e) 'physics.inspectHits'
+      
+      Verify by looking at the reported files that these location are
+      correct.

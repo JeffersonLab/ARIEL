@@ -1,0 +1,434 @@
+Memory debugging
+
+What is a memory leak?
+
+int
+main()
+{
+  auto p = new int;
+  (void)p;
+}
+
+Here an integer is allocated from the heap
+and never released.
+
+Review of the three types of data
+
+00400000-0040b000 r-xp 00000000 08:02 3932192 /bin/cat
+0060a000-0060b000 rw-p 0000a000 08:02 3932192 /bin/cat
+0060b000-0060c000 rw-p 00000000 00:00 0 
+0080a000-0080b000 rw-p 0000a000 08:02 3932192 /bin/cat
+02484000-024a5000 rw-p 00000000 00:00 0 [heap]
+336ce00000-336ce20000 r-xp 00000000 08:02 4456482 /lib64/ld-2.12.so
+336d01f000-336d020000 r--p 0001f000 08:02 4456482 /lib64/ld-2.12.so
+336d020000-336d021000 rw-p 00020000 08:02 4456482 /lib64/ld-2.12.so
+336d021000-336d022000 rw-p 00000000 00:00 0 
+336d200000-336d38a000 r-xp 00000000 08:02 4456486 /lib64/libc-2.12.so
+336d38a000-336d58a000 ---p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58a000-336d58e000 r--p 0018a000 08:02 4456486 /lib64/libc-2.12.so
+336d58e000-336d58f000 rw-p 0018e000 08:02 4456486 /lib64/libc-2.12.so
+336d58f000-336d594000 rw-p 00000000 00:00 0 
+7fa5544af000-7fa55a340000 r--p 00000000 08:02 1332821 /usr/lib/locale/locale-archive
+7fa55a340000-7fa55a343000 rw-p 00000000 00:00 0 
+7fa55a368000-7fa55a369000 rw-p 00000000 00:00 0 
+7fff7ddb6000-7fff7ddcc000 rw-p 00000000 00:00 0 [stack]
+7fff7ddda000-7fff7dddb000 r-xp 00000000 00:00 0 [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0 [vsyscall]
+
+program data
+
+  constants: 0060a000-0060b000 rw-p 0000a000 08:02 3932192 /bin/cat
+zero filled: 0060b000-0060c000 rw-p 00000000 00:00 0 
+    .dynstr: 0080a000-0080b000 rw-p 0000a000 08:02 3932192 /bin/cat
+
+stack data
+
+7fff7ddb6000-7fff7ddcc000 rw-p 00000000 00:00 0 [stack]
+
+heap data
+
+02484000-024a5000 rw-p 00000000 00:00 0 [heap]
+
+Why are memory leaks a problem?
+
+Memory that is allocated and never released can accumulate over the
+lifetime of a running program and eventually cause a crash when
+the system virtual memory limits are exceeded.
+
+Unreleased resources can eventually run out, like open files, database
+connections, file server connections, etc.
+
+What is an illegal access?
+
+#include <iostream>
+using namespace std;
+
+int
+main()
+{
+  int* p = nullptr;
+  cout << *p << endl;
+}
+
+==4226== 1 errors in context 1 of 1:
+==4226== Invalid read of size 4
+==4226==    at 0x40085C: main (ex07.cc:12)
+==4226==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+
+#include <iostream>
+using namespace std;
+int
+main()
+{
+  int* p = nullptr;
+  *p = 10;
+  cout << *p << endl;
+}
+
+==10131== 1 errors in context 1 of 1:
+==10131== Invalid write of size 4
+==10131==    at 0x40085C: main (ex08.cc:12)
+==10131==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+
+#include <iostream>
+using namespace std;
+
+int
+main()
+{
+  int* p = new int(35);
+  cout << *p << endl;
+  delete p;
+  cout << *p << endl;
+}
+
+==10251== 1 errors in context 1 of 1:
+==10251== Invalid read of size 4
+==10251==    at 0x400933: main (ex09.cc:14)
+==10251==  Address 0x5162040 is 0 bytes inside a block of size 4 free'd
+==10251==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==10251==    by 0x40092E: main (ex09.cc:13)
+
+#include <iostream>
+using namespace std;
+
+int
+main()
+{
+  int* p = new int(35);
+  cout << *p << endl;
+  *p = 10;
+  cout << *p << endl;
+  delete p;
+  *p = 15;
+}
+
+==10423== 1 errors in context 1 of 1:
+==10423== Invalid write of size 4
+==10423==    at 0x40095C: main (ex10.cc:16)
+==10423==  Address 0x5162040 is 0 bytes inside a block of size 4 free'd
+==10423==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==10423==    by 0x400957: main (ex10.cc:15)
+
+#include <iostream>
+using namespace std;
+
+class Point {
+private:
+  double x_;
+  double y_;
+  double z_;
+public:
+  Point()
+    : x_(3.0)
+    , y_(5.0)
+    , z_(9.0)
+  {
+  }
+  double
+  y() const
+  {
+    return y_;
+  }
+  void
+  y(double const val)
+  {
+    y_ = val;
+  }
+  void
+  print() const
+  {
+    cout << "x_: " << x_ << endl;
+    cout << "y_: " << y_ << endl;
+    cout << "z_: " << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  auto p = new Point;
+  p->print();
+  cout << "-----" << endl;
+  cout << "fetched y_: " << p->y() << endl;
+  cout << "-----" << endl;
+  p->y(45.0);
+  cout << "set y_: " << p->y() << endl;
+  delete p;
+  cout << "-----" << endl;
+  cout << "broken fetched y_: " << p->y() << endl;
+  cout << "-----" << endl;
+  p->y(23.0);
+  cout << "broken set y_: " << p->y() << endl;
+  return 0;
+}
+
+==36544== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 4 from 4)
+==36544== 
+==36544== 1 errors in context 1 of 3:
+==36544== Invalid read of size 8
+==36544==    at 0x400BE2: Point::y() const (ex11.cc:23)
+==36544==    by 0x400B09: main (ex11.cc:54)
+==36544==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==36544==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==36544==    by 0x400A6C: main (ex11.cc:49)
+==36544== 
+==36544== 
+==36544== 1 errors in context 2 of 3:
+==36544== Invalid write of size 8
+==36544==    at 0x400C07: Point::y(double) (ex11.cc:28)
+==36544==    by 0x400AFD: main (ex11.cc:53)
+==36544==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==36544==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==36544==    by 0x400A6C: main (ex11.cc:49)
+==36544== 
+==36544== 
+==36544== 1 errors in context 3 of 3:
+==36544== Invalid read of size 8
+==36544==    at 0x400BE2: Point::y() const (ex11.cc:23)
+==36544==    by 0x400A94: main (ex11.cc:51)
+==36544==  Address 0x5162048 is 8 bytes inside a block of size 24 free'd
+==36544==    at 0x4A067CA: operator delete(void*) (vg_replace_malloc.c:507)
+==36544==    by 0x400A6C: main (ex11.cc:49)
+
+Problems that valgrind memcheck cannot detect
+
+Memory overwrite on stack variables
+
+#include <iostream>
+using namespace std;
+
+class Point {
+private:
+  double x_;
+  double y_;
+  double z_;
+public:
+  Point()
+    : x_(3.0)
+    , y_(5.0)
+    , z_(9.0)
+  {
+  }
+  double
+  y() const
+  {
+    return y_;
+  }
+  void
+  y(double const val)
+  {
+    y_ = val;
+  }
+  void
+  print() const
+  {
+    cout << "x_: " << x_ << endl;
+    cout << "y_: " << y_ << endl;
+    cout << "z_: " << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  Point p1;
+  Point p2;
+  double a[] = { 42.0 };
+  cout << "p1:" << endl;
+  p1.print();
+  cout << "-----" << endl;
+  cout << "p2:" << endl;
+  p2.print();
+  cout << "-----" << endl;
+  cout << "a:" << endl;
+  for (auto val : a) {
+    cout << val << endl;
+  }
+  for (auto I = 0; I < 5; ++I) {
+    a[I] = 53.0;
+  }
+  cout << "-----" << endl;
+  cout << "p1:" << endl;
+  p1.print();
+  cout << "-----" << endl;
+  cout << "p2:" << endl;
+  p2.print();
+  return 0;
+}
+
+==37362== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 4 from 4)
+
+Memory bound violation on heap can be detected
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int
+main()
+{
+  auto V = new vector<int>({2, 5, 9});
+  cout << "*V:" << endl;
+  for (auto I = 0; I < 5; ++I) {
+    cout << "(*V)["
+         << I
+         << "]: "
+         << (*V)[I]
+         << endl;
+  }
+  delete V;
+  return 0;
+}
+
+*V:
+(*V)[0]: 2
+(*V)[1]: 5
+(*V)[2]: 9
+==4316== Invalid read of size 4
+==4316==    at 0x400B83: main (ex13.cc:18)
+==4316==  Address 0x51620ac is 0 bytes after a block of size 12 alloc'd
+==4316==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==4316==    by 0x40121F: __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) (new_allocator.h:104)
+==4316==    by 0x40116D: std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long) (alloc_traits.h:357)
+==4316==    by 0x401069: std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) (stl_vector.h:170)
+==4316==    by 0x400EF3: void std::vector<int, std::allocator<int> >::_M_range_initialize<int const*>(int const*, int const*, std::forward_iterator_tag) (stl_vector.h:1287)
+==4316==    by 0x400D84: std::vector<int, std::allocator<int> >::vector(std::initializer_list<int>, std::allocator<int> const&) (stl_vector.h:377)
+==4316==    by 0x400B38: main (ex13.cc:12)
+==4316== 
+(*V)[3]: 0
+(*V)[4]: 0
+--4316-- REDIR: 0x4c6ca40 (libstdc++.so.6:operator delete(void*)) redirected to 0x4a06743 (operator delete(void*))
+--4316-- REDIR: 0x336d27b520 (libc.so.6:free) redirected to 0x4a06b5d (free)
+==4316== 
+==4316== HEAP SUMMARY:
+==4316==     in use at exit: 0 bytes in 0 blocks
+==4316==   total heap usage: 2 allocs, 2 frees, 36 bytes allocated
+==4316== 
+==4316== ERROR SUMMARY: 2 errors from 1 contexts (suppressed: 4 from 4)
+==4316== 
+==4316== 2 errors in context 1 of 1:
+==4316== Invalid read of size 4
+==4316==    at 0x400B83: main (ex13.cc:18)
+==4316==  Address 0x51620ac is 0 bytes after a block of size 12 alloc'd
+==4316==    at 0x4A07E05: operator new(unsigned long) (vg_replace_malloc.c:324)
+==4316==    by 0x40121F: __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) (new_allocator.h:104)
+==4316==    by 0x40116D: std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long) (alloc_traits.h:357)
+==4316==    by 0x401069: std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) (stl_vector.h:170)
+==4316==    by 0x400EF3: void std::vector<int, std::allocator<int> >::_M_range_initialize<int const*>(int const*, int const*, std::forward_iterator_tag) (stl_vector.h:1287)
+==4316==    by 0x400D84: std::vector<int, std::allocator<int> >::vector(std::initializer_list<int>, std::allocator<int> const&) (stl_vector.h:377)
+==4316==    by 0x400B38: main (ex13.cc:12)
+
+Suppression Files
+
+Certain libraries intentionally leave memory uninitialized
+or leak memory on purpose.  Suppression files can be created
+to prevent valgrind from reporting these as errors.  For
+example the ROOT library is shipped with a suppression file.
+
+The different kinds of leaks
+
+still reachable
+
+Accessible from a still existing pointer, usually
+a global variable or function local static.  This
+often happens when a singleton is not shutdown
+properly.
+
+definitely lost
+
+Not accessible from any still existing pointer after
+exit from main (no globals or function local statics
+have a pointer).
+
+indirectly lost
+
+Accessible by a pointer from a definitely lost block.
+
+possibly lost
+
+Accessible by a pointer to inside the block.  This
+is often memory that is part of a larger data structure.
+They are usually not shown by valgrind because fixing
+the leak of the larger data structure will make these
+errors go away.
+
+See ex06.cc for an example of all four.
+
+When --malloc-fill=0x55 --free-fill=0xAA is useful
+
+Can use various examples for this.
+
+Show Conditional jump or move depends on uninitialised value(s)
+
+Also use ex08.cc from the debugger talk.
+
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Point {
+private:
+  float x_ = 3.0f;
+  float y_;
+  float z_ = 9.0f;
+public:
+  Point() = default;
+  float
+  y() const
+  {
+    return y_;
+  }
+  void
+  y(float const val)
+  {
+    y_ = val;
+  }
+  void
+  print() const
+  {
+    cout << "x_: " << scientific << x_ << endl;
+    cout << "y_: " << scientific << y_ << endl;
+    cout << "z_: " << scientific << z_ << endl;
+  }
+};
+
+int
+main()
+{
+  Point p;
+  if (fabsf(p.y() - 5.0f) < 1e-6f) {
+    cout << "p.y() is equal (enough) to 5.0!" << endl;
+  }
+  return 0;
+}
+
+==33698== Conditional jump or move depends on uninitialised value(s)
+==33698==    at 0x4008C5: main (ex17.cc:41)
+==33698==  Uninitialised value was created by a stack allocation
+==33698==    at 0x400878: main (ex17.cc:39)
+

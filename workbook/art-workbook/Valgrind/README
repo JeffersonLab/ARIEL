@@ -1,0 +1,62 @@
+Since there is way too much information to learn about the memcheck
+tool to present in the time we have, the lecture continues in the *.txt
+files you will find in the same directory as the exercises.
+
+The exercises are simple examples of every kind of memory problem
+that the memcheck tool is capable of detecting.
+
+You should run each exercise using the valgrind memcheck tool
+this way:
+
+$ valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --keep-stacktraces=alloc-and-free <exercise-name>
+
+Then try to fix the errors reported by the memcheck tool.
+
+Here is a breakdown of the subject matter, the corresponding text file
+with the lecture, and the exercises that are related to that material.
+
+Memory Leaks
+------------
+
+Intro.txt
+Basics.txt
+TheThreeTypesOfMemory.txt
+MoreOnMemoryLeaks.txt
+
+==> vex01.cc <== // Simplest example of a memory leak.
+==> vex02.cc <== // Memory leak of an object of class type.
+==> vex03.cc <== // Memory leak of an object of class type
+==> vex04.cc <== // Same as ex03, but no leak
+==> vex05.cc <== // More complicated three level leak.
+==> vex06.cc <== // Master example of every possible kind of leak.
+
+
+Illegal Accesses
+----------------
+
+IllegalMemoryAccess.txt
+
+==> vex07.cc <== // Illegal read.
+==> vex08.cc <== // Illegal write.
+==> vex18.cc <== // Invalid delete.
+==> vex19.cc <== // Illegal write past end of bss.
+==> vex13.cc <== // Illegal memory access in the heap.
+
+Use of Deleted Memory
+---------------------
+
+UseOfDeletedMemory.txt
+
+==> vex09.cc <== // Read of deleted memory.
+==> vex10.cc <== // Write into deleted memory.
+==> vex11.cc <== // Use of deleted memory through a member function.
+
+Use of Uninitialized Memory
+---------------------------
+
+UseOfUninitializedMemory.txt
+
+==> vex15.cc <== // Uninitialized data member.
+==> vex16.cc <== // Show use of unitialized value returned by a member function.
+==> vex17.cc <== // Show use of initialized memory in an if statement.
+

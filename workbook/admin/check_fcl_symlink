@@ -1,0 +1,60 @@
+#!/bin/bash
+
+echo "Doing check fcl .... "
+
+prog=${0##*/}
+
+if [[ -z "${CETPKG_SOURCE}" ]]; then
+  echo "In check_fcl_symlink cannot $CETPKG_SOURCE is not defined!" 1>&2
+  exit 1
+fi
+
+link_src=${CETPKG_SOURCE}/art-workbook
+
+if [[ ! -d "${link_src}" ]]; then
+  cat 1>&2 <<EOF
+Link source directory ${link_src}
+ does not exist or is not a directory!
+EOF
+  exit 1
+fi
+
+function usage() {
+    cat 1>&2 <<EOF
+usage: ${prog} <dir>
+EOF
+  exit 1
+}
+
+function link() {
+  ln -sf "${link_src}" "${link}"
+}
+
+dir="${1}"
+
+if [[ -z "${dir}" ]]; then
+    usage
+elif [[ ! -d "${dir}" ]]; then
+  echo "Specified directory ${dir} is not a directory." 1>&2
+  exit 1
+elif [[ ! -w "${dir}" ]]; then
+  echo "Specified directory ${dir} is not writable." 1>&2
+  exit 1
+fi
+
+link=${dir}/fcl
+
+if [[ -e "${link}" ]]; then
+  if [[ ! -L "${link}" ]]; then
+    echo "$link exists, but is not a link!" 1>&2
+    exit 1
+  elif [[ $(readlink "${link}") !=  "${link_src}" ]]; then
+    echo "Refreshing link to ${link_src}" 1>&2
+    rm -f "${link}"
+    link
+  fi
+else
+  link
+fi
+
+exit 0

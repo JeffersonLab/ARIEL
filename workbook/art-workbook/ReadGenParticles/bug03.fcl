@@ -1,0 +1,30 @@
+#
+# Read the GenParticleCollection created by the EventGenerator.
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : readGens3
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "inputFiles/input01.art" ]
+  maxEvents   : 5
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics :{
+  analyzers: {
+    read : {
+      module_type          : ReadGens3
+      genParticlesInputTag : "Evtgen"
+    }
+  }
+
+  e1        : [ read ]
+  end_paths : [ e1 ]
+
+}

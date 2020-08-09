@@ -1,0 +1,62 @@
+#!/bin/bash
+
+prog=${0##*/}
+
+if [[ -z "${CETPKG_SOURCE}" ]]; then
+  echo "cannot find package source!" 1>&2
+  exit 1
+fi
+
+if [[ -z "${MRB_SOURCE}" ]]; then
+link_src=${CETPKG_SOURCE}/toyExperiment/inputFiles
+else
+link_src=${MRB_SOURCE}/toyExperiment/toyExperiment/inputFiles
+fi
+
+if [[ ! -d "${link_src}" ]]; then
+  cat 1>&2 <<EOF
+Link source directory ${link_src}
+ does not exist or is not a directory!
+EOF
+  exit 1
+fi
+
+function usage() {
+    cat 1>&2 <<EOF
+usage: ${prog} <dir>
+EOF
+  exit 1
+}
+
+function link() {
+  ln -sf "${link_src}" "${link}"
+}
+
+dir="${1}"
+
+if [[ -z "${dir}" ]]; then
+    usage
+elif [[ ! -d "${dir}" ]]; then
+  echo "Specified directory ${dir} is not a directory." 1>&2
+  exit 1
+elif [[ ! -w "${dir}" ]]; then
+  echo "Specified directory ${dir} is not writable." 1>&2
+  exit 1
+fi
+
+link=${dir}/inputFiles
+
+if [[ -e "${link}" ]]; then
+  if [[ ! -L "${link}" ]]; then
+    echo "$link exists, but is not a link!" 1>&2
+    exit 1
+  elif [[ $(readlink "${link}") !=  "${link_src}" ]]; then
+    echo "Refreshing link to ${link_src}" 1>&2
+    rm -f "${link}"
+    link
+  fi
+else
+  link
+fi
+
+exit 0
