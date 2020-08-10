@@ -20,7 +20,8 @@ INSTALLDIR="$1"
 export PATH="$INSTALLDIR/bin:$PATH"
 
 # Sources to build. The exact order matters.
-PACKAGES="buildtools range catch cetlib_except cetlib hep_concurrency fhiclcpp messagefacility canvas canvas_root_io art"
+PACKAGES="buildtools range catch cetlib_except cetlib hep_concurrency fhiclcpp \
+messagefacility canvas canvas_root_io art toyExperiment"
 
 # Create build directory
 BUILDDIR="$TOPDIR/tmp-build"
@@ -46,10 +47,16 @@ for PKG in $PACKAGES; do
         mkdir $PKG
     fi
     cd $PKG
-    if [ $PKG != buildtools ]; then
-        SRCDIR="$TOPDIR/src/$PKG"
-    else
-        SRCDIR="$TOPDIR/$PKG"
+    unset SRCDIR
+    for D in "$TOPDIR/src" "$TOPDIR/examples" "$TOPDIR"; do
+        if [[ -d "$D/$PKG" ]]; then
+            SRCDIR="$D/$PKG"
+            break;
+        fi
+    done
+    if [[ -z "$SRCDIR" ]]; then
+        echo Cannot find source for $PKG. Exiting.
+        exit 2
     fi
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
     make -j$ncpu install
