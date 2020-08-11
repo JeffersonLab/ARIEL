@@ -286,10 +286,10 @@ cmake_policy(PUSH)
 cmake_policy(VERSION 3.3) # For if (IN_LIST)
 
 if (catch_UPS_VERSION)
-  if (NOT DEFINED Catch2_VERSION)
-    # Deal with naming discrepancy quietly.
-    find_package(Catch2 REQUIRED QUIET)
-  endif()
+  # if (NOT DEFINED Catch2_VERSION)
+  #   # Deal with naming discrepancy quietly.
+  #   find_package(Catch2 REQUIRED QUIET)
+  # endif()
   check_ups_version(catch ${catch_UPS_VERSION} v2_4_0
     PRODUCT_MATCHES_VAR CATCH_INCLUDE_SUBDIR_IS_CATCH2
     )
