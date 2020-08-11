@@ -14,7 +14,7 @@ namespace art {
   {
     // This implementation is ripe for optimization.
     std::ostringstream oss;
-    for (auto const pid : parents_) {
+    for (auto const& pid : parents_) {
       oss << pid << ' ';
     }
 

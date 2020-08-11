@@ -380,7 +380,7 @@ Principal::findGroupsForProcess(std::vector<ProductID> const& vpid,
                                 TypeID const wanted_wrapper) const
 {
   std::size_t found{}; // Horrible hack that should go away
-  for (auto const pid : vpid) {
+  for (auto const& pid : vpid) {
     auto group = getGroup(pid);
     if (!group) {
       continue;

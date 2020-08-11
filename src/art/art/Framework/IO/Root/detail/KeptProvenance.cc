@@ -36,7 +36,7 @@ detail::KeptProvenance::insertAncestors(ProductProvenance const& iGetParents,
     return;
   }
   auto const& parents = iGetParents.parentage().parents();
-  for (auto const pid : parents) {
+  for (auto const& pid : parents) {
     auto info = principal.branchMapper().branchToProductProvenance(pid);
     if (!info || dropMetaData_ != DropMetaData::DropNone) {
       continue;

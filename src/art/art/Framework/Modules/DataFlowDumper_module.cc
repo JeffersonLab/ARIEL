@@ -215,7 +215,7 @@ art::DataFlow::processEventProvenance(art::Provenance const& p)
 {
   write_product_node(p, out_, debug_);
   write_creator_line(p, colorscheme_, out_, debug_);
-  for (art::ProductID const parent : p.parents()) {
+  for (art::ProductID const& parent : p.parents()) {
     write_parentage_line(p, parent, out_, debug_);
   }
 }

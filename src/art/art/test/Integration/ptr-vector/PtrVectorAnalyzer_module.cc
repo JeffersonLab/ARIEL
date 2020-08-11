@@ -46,7 +46,7 @@ public:
 
     int value = e.id().event();
     size_t count = 0;
-    for (const auto ptr : *h) {
+    for (const auto& ptr : *h) {
       if (*ptr != value) {
         throw cet::exception("ValueMismatch")
           << "At position " << count << " expected value " << value

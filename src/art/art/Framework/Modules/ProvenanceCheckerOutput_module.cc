@@ -56,7 +56,7 @@ namespace art {
                 std::map<ProductID, bool>& oMap,
                 std::set<ProductID>& oMapperMissing)
   {
-    for (art::ProductID const parent : iInfo.parentage().parents()) {
+    for (art::ProductID const& parent : iInfo.parentage().parents()) {
       // Don't look for parents if we've previously looked at the parents
       if (oMap.find(parent) == oMap.end()) {
         // use side effect of calling operator[] which is if the item isn't
