@@ -30,6 +30,17 @@ if [ -z "$BUILDDIR" -o ! -d "$BUILDDIR" -o ! -r "$BUILDDIR" ]; then
     exit 1
 fi
 
+case "$1" in
+    --debug)
+	debug=1
+	shift
+	;;
+    --help)
+	echo ./run-tests.sh [--debug] [--help] [module1 [module2 [module3...]]]
+	exit 0
+	;;
+esac
+
 ostype=$(uname -s)
 path_root="$INSTALLDIR/bin:$PATH"
 if [ "$ostype" = "Darwin" ]; then
@@ -73,7 +84,11 @@ for PKG in $PACKAGES; do
         export LD_LIBRARY_PATH="$CET_MODULE_PATH${ld_path_root:+:$ld_path_root}"
     fi
 
-    ctest -j$ncpu
+    if [ -z "$debug" ]; then
+	ctest -j$ncpu
+    else
+	ctest -VV
+    fi
     if [ $? -ne 0 ]; then
         exit 1;
     fi
