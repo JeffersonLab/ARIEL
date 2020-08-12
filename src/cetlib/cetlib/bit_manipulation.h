@@ -81,9 +81,8 @@ namespace cet {
   circ_lshift(U X, U n)
   {
     constexpr std::size_t nbits = bit_size<U>::value;
-    constexpr std::size_t mask = nbits - 1ul;
     n %= nbits;
-    return (X << n) | (X >> (nbits - n) & mask);
+    return (n == 0) ? X : (X << n) | (X >> (nbits - n));
   }
 }
 #endif /* cetlib_bit_manipulation_h */
