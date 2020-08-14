@@ -21,7 +21,7 @@ export PATH="$INSTALLDIR/bin:$PATH"
 
 # Sources to build. The exact order matters.
 PACKAGES="buildtools range catch cetlib_except cetlib hep_concurrency fhiclcpp \
-messagefacility canvas canvas_root_io art toyExperiment"
+messagefacility canvas canvas_root_io art gallery toyExperiment"
 
 # Create build directory
 BUILDDIR="$TOPDIR/tmp-build"
