@@ -6,6 +6,8 @@ set( @product@_UPS_VERSION @version@ )
 
 @CONFIG_FIND_UPS_COMMANDS@
 
+set(TOYEXPERIMENT_DATA_DIR "@PACKAGE_data_dir@")
+
 @CONFIG_FIND_LIBRARY_COMMANDS@
 
 check_required_components(@product@)
