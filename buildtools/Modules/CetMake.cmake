@@ -45,7 +45,8 @@
 #             [DEPENDENCIES <deps>] 
 #             [NO_INSTALL] 
 #             [GENERATED]
-#             [REMOVE_EXTENSIONS] )
+#             [REMOVE_EXTENSIONS]
+#             [NAME_AS_TARGET] )
 #
 #   Copy the named scripts to ${${product}_bin_dir} (usually bin/).
 #
@@ -57,9 +58,14 @@
 #   If REMOVE_EXTENSIONS is specified, extensions will be removed from script names 
 #   when they are installed.
 #
+#   With NAME_AS_TARGET, CMake targets with names identical to the script names
+#   are generated. This may cause certain generators, notably Ninja, to fail.
+#   Without this flag, the corresponding target names are the destination
+#   paths relative to CMAKE_BINARY_DIR with slashes and whitespace replaced by "+".
+#
 #   NOTE: If you wish to use one of these scripts in a CUSTOM_COMMAND,
 #   list its name in the DEPENDS clause of the CUSTOM_COMMAND to ensure
-#   it gets re-run if the script chagees.
+#   it gets re-run if the script changes.
 #
 # cet_lib_alias(LIB_TARGET <alias>+)
 #
@@ -397,11 +403,14 @@ endmacro( cet_make_library )
 file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/")
 
 macro (cet_script)
-  cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL;REMOVE_EXTENSIONS" ${ARGN})
+  cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL;REMOVE_EXTENSIONS;NAME_AS_TARGET" ${ARGN})
   if (CS_GENERATED)
     set(CS_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR})
   else()
     set(CS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+  if (CS_NAME_AS_TARGET)
+    set(_name_as_target NAME_AS_TARGET)
   endif()
   foreach(target_name ${CS_DEFAULT_ARGS})
     if(CS_REMOVE_EXTENSIONS)
@@ -412,7 +421,7 @@ macro (cet_script)
     cet_copy(${CS_SOURCE_DIR}/${target_name}
       PROGRAMS
       NAME ${target}
-      NAME_AS_TARGET
+      ${_name_as_target}
       DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
       )
     # Install in product if desired.
