@@ -132,7 +132,7 @@ macro( cet_cmake_config  )
     string(TOUPPER  ${my_pm_slash} ${my_pm_name}_UC )
     list(APPEND CONFIG_FIND_LIBRARY_COMMAND_LIST
       "set( ${${product}_UC}${${my_pm_name}_UC} \"${mypmdir}${my_pm}\" )" )
-    message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
+    #message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
   endforeach(my_pm)
 
   _config_package_config_file()
