@@ -101,19 +101,19 @@ outputs : {
   passTight : {
     module_type  : RootOutput
     fileName     : "output/passTight.art"
-    SelectEvents : { SelectEvents : [ t1 ] }
+    SelectEvents : [ t1 ]
   }
 
   failTight : {
     module_type  : RootOutput
     fileName     : "output/failTight.art"
-    SelectEvents : { SelectEvents : [ "!t1" ] }
+    SelectEvents : [ "!t1" ]
   }
 
   passLoose : {
     module_type    : RootOutput
     fileName       : "output/passLoose.art"
-    SelectEvents   : { SelectEvents : [ t2 ] }
+    SelectEvents : [ t2 ]
 
     # Drop all data products made during this job.
     outputCommands : [ "keep *_*_*_*"
@@ -125,7 +125,7 @@ outputs : {
   #passLooseFailTight : {
   #  module_type : RootOutput
   #  fileName    : "output/passLooseFailTight.art"
-  #  SelectEvents : { SelectEvents : [ "t2+(!t1)" ] }
+  #  SelectEvents : [ "t2+(!t1)" ]
   #}
 
 }

@@ -27,7 +27,7 @@ physics :{
     passedEvents :{
       module_type          : FirstHist1
       genParticlesInputTag : "evtgen"
-      SelectEvents : { SelectEvents: [ pass ] }
+      SelectEvents : [ pass ]
     }
   }
 
@@ -52,7 +52,7 @@ outputs : {
   out : {
     module_type  : RootOutput
     fileName     : "output/minGen.art"
-    SelectEvents : { SelectEvents: [ pass ] }
+    SelectEvents : [ pass ]
   }
 
 }

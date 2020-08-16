@@ -43,12 +43,12 @@ outputs : {
   oddOutput : {
     module_type  : RootOutput
     fileName     : "output/oddEvents2.art"
-    SelectEvents : { SelectEvents: [ oddPath ] }
+    SelectEvents : [ oddPath ]
   }
 
   evenOutput : {
     module_type  : RootOutput
     fileName     : "output/evenEvents2.art"
-    SelectEvents : { SelectEvents: [ evenPath ] }
+    SelectEvents : [ evenPath ]
   }
 }

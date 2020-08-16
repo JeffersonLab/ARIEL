@@ -45,13 +45,13 @@ outputs : {
   outAND : {
     module_type  : RootOutput
     fileName     : "output/and.art"
-    SelectEvents : { SelectEvents: [ AND ] }
+    SelectEvents : [ AND ]
   }
 
   outOR : {
     module_type  : RootOutput
     fileName     : "output/or.art"
-    SelectEvents : { SelectEvents: [ oddOnly, minGensOnly ] } // Logical OR
+    SelectEvents : [ oddOnly, minGensOnly ] // Logical OR
   }
 
 }
