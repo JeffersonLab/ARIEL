@@ -12,7 +12,7 @@
 #  make package (tar file for ups)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.3)
-project(cetbuildtools NONE)
+project(cetbuildtools VERSION 7.17.1 LANGUAGES C)
 
 set(cetbuildtools_BINDIR "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
