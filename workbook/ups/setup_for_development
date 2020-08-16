@@ -22,13 +22,6 @@ test "$ss" =  sh && eval 'tnotnull() { eval "test -n \"\${$1-}\""; }'           
 test "$ss" = csh && alias tnotnull "eval '"'test $?'"\!* -eq 1' && eval '"'test -n "$'"\!*"'"'"'" && alias nullout "\!* >& /dev/null" && alias unsetenv_ unsetenv
 test "$ss" = csh && alias return exit
 
-set_ msg1='ERROR: You MUST setup ups'
-test -z $UPS_DIR && ( echo ""; echo "$msg1"; echo "" ) && return
-
-set_ msg3='ERROR: You MUST specify either -o, -p, or -d'
-set_ msg4='Usage: setup_deps <-d|-o|-p> <qualifier list>'
-test -z "$1" && ( echo ""; echo "$msg4"; echo "$msg3"; echo "" ) && return
-
 # make sure we know where this script lives
 # now if we were passed a path or if not, we can figure it out (maybe if we are interactive)
 #   bash, zsh, ksh and tcsh pass params to a source file, csh does not. but someone will be writing csh scripts
@@ -39,7 +32,7 @@ test -z "$db" && tnotnull BASH_SOURCE && set_ me=`dirname $BASH_SOURCE` && set_ 
 
 # history is applicable only for interactive t/csh
 test -z "$db" -a "$ss" = csh && test $?history = 0 && set history=5  # make sure history 1 works
-test -z "$db" -a "$ss" = csh && set me=`history 1|sed 's/^[ 	0-9:]*//'` && test -n "$me" && set me=`dirname $me[2]` \
+test -z "$db" -a "$ss" = csh && set me=`history 1|sed 's/^[     0-9:]*//'` && test -n "$me" && set me=`dirname $me[2]` \
     && set db=`sh -c "cd $me >/dev/null 2>&1 && pwd"` && vecho_ 'setting db via interactive history'
 #echo This script lives in $db
 
@@ -47,41 +40,55 @@ test -z "$db" && echo "$msg2" || vecho_ "db=$db"
 test -n "$db" && setenv CETPKG_SOURCE `dirname $db`
 
 # make sure we know the current directory
-set_ myname=`whoami`
-setenv CETPKG_BUILD /tmp/$myname/setup_deps
-rm -rf $CETPKG_BUILD
-mkdir -p $CETPKG_BUILD
-#echo Build directory is $CETPKG_BUILD
+setenv CETPKG_BUILD `pwd`
 
+echo The working build directory is $CETPKG_BUILD
 echo The source code directory is $CETPKG_SOURCE
 
-set_ msg5='ERROR: setup of required products has failed'
+# add lib to LD_LIBRARY_PATH
+set_ osname=`uname -s`
+test -d "$CETPKG_BUILD/lib" || mkdir -p "$CETPKG_BUILD/lib"
+test $osname = "Darwin" && setenv DYLD_LIBRARY_PATH "`echo :${DYLD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`"
+test $osname = "Darwin" && setenv DYLD_LIBRARY_PATH "${CETPKG_BUILD}/lib:${DYLD_LIBRARY_PATH}"
+test $osname = "Darwin" && setenv DYLD_LIBRARY_PATH `dropit -D -p "$DYLD_LIBRARY_PATH"`
+test $osname = "Darwin" || setenv LD_LIBRARY_PATH "`echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`"
+test $osname = "Darwin" || setenv LD_LIBRARY_PATH "${CETPKG_BUILD}/lib:${LD_LIBRARY_PATH}"
+test $osname = "Darwin" || setenv LD_LIBRARY_PATH "`dropit -D -p "$LD_LIBRARY_PATH"`"
+tnotnull CET_PLUGIN_PATH && setenv CET_PLUGIN_PATH "${CETPKG_BUILD}/lib:${CET_PLUGIN_PATH}"
+tnotnull CET_PLUGIN_PATH || setenv CET_PLUGIN_PATH "${CETPKG_BUILD}/lib"
+setenv CET_PLUGIN_PATH "`dropit -D -p "${CET_PLUGIN_PATH}"`"
+# report library path
+test $osname = "Darwin" && echo $CETPKG_BUILD/lib has been added to DYLD_LIBRARY_PATH and CET_PLUGIN_PATH
+test $osname = "Darwin" || echo $CETPKG_BUILD/lib has been added to LD_LIBRARY_PATH and CET_PLUGIN_PATH
+# set ROOT_INCLUDE_PATH
+setenv ROOT_INCLUDE_PATH `echo :${ROOT_INCLUDE_PATH}: | sed -e "s|:${CETPKG_BUILD}:|:|" -e 's|^:||;s|:$||'`
+setenv ROOT_INCLUDE_PATH ${CETPKG_BUILD}:${ROOT_INCLUDE_PATH}
+echo $CETPKG_BUILD has been added to ROOT_INCLUDE_PATH
+tnotnull CETPKG_SOURCE && setenv ROOT_INCLUDE_PATH ${CETPKG_SOURCE}:${ROOT_INCLUDE_PATH}
+setenv ROOT_INCLUDE_PATH `dropit -D -p $ROOT_INCLUDE_PATH`
+echo $CETPKG_SOURCE has been added to ROOT_INCLUDE_PATH
+# cleanup
+unset osname
 
-echo ----------- check this block for errors -----------------------
-set_ setup_fail="false"
-set_ exit_now="false"
-set_ cetb=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | grep  only_for_build| awk '{ print $1 }' `
-set_ cetv=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | grep  only_for_build| awk '{ print $2 }' `
-#echo Found $cetb $cetv
-setup -B $cetb $cetv
-test "$?" = 0 || set_ setup_fail="true"
-# now get the rest of the products
-set_ cmd="$CETBUILDTOOLS_DIR/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD $*"
-#echo Ready to run $cmd
-source `$cmd`
-test "$?" = 0 || set_ setup_fail="true"
-#echo "$cmd returned $setup_fail"
-test "$setup_fail" = "true" && echo "$msg5"
-test "$setup_fail" = "true" && set_ exit_now="true"
-test -e "$CETPKG_BUILD/diag_report" && cat $CETPKG_BUILD/diag_report
-echo ----------------------------------------------------------------
+# add bin to path
+test -d "$CETPKG_BUILD/bin" || mkdir -p "$CETPKG_BUILD/bin"
+tnotnull CETPKG_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${CETPKG_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv PATH "${CETPKG_BUILD}/bin:${PATH}"
+setenv PATH `dropit -D`
+echo $CETPKG_BUILD/bin has been added to PATH
 
-test "${exit_now}" = "true" && test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return
-test "${exit_now}" = "true" && unset ss db me thisdir msg1 msg2 msg3 msg4 msg5 setup_fail set_ setenv unsetenv_ tnotnull nullout vecho_
-test "${exit_now}" = "true" && return 1
+# set FHICL_FILE_PATH
+fcldir=`cet_report fcldir_base ${CETPKG_SOURCE}/ups`
+tnotnull FHICL_FILE_PATH || setenv FHICL_FILE_PATH '.'
+test "$fcldir" = "DEFAULT" && setenv fcldir 'fcl'
+test "$fcldir" = "NONE" && unset fcldir
+tnotnull fcldir && setenv FHICL_FILE_PATH ".:${CETPKG_BUILD}/${fcldir}:${FHICL_FILE_PATH}"
 
-# final sanity check and report
-source $CETBUILDTOOLS_DIR/bin/set_dep_check_report
+# Specific to workbook project: also need path to toyExperiment's FHICL files
+tnotnull JERM && setenv FHICL_FILE_PATH "${FHICL_FILE_PATH}:${JERM}/share/toyExperiment"
+
+setenv FHICL_FILE_PATH "`dropit -D -p "$FHICL_FILE_PATH"`"
+echo FHICL_FILE_PATH is now ${FHICL_FILE_PATH}
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return
