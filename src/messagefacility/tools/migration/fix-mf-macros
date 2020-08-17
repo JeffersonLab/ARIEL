@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [[ "$#" -ne 1 ]]
+then
+    echo "ERROR in using ${BASH_SOURCE[0]}"
+    echo "Usage: ${BASH_SOURCE[0]} <top-level-dir>"
+    exit
+fi
+
+top_level_dir=$1
+echo
+echo "Migrating LOG_XXX macros to MF_LOG_XXX in directory $top_level_dir"
+echo
+
+files=$(find $top_level_dir -type f -regex ".*\.\(h\|hh\|hpp\|cc\|cpp\|cxx\)")
+for file in $files
+do
+    echo "Scanning: $file"
+    sed -i "s/\bLOG\_\(INFO\|WARNING\|ERROR\|SYSTEM\|VERBATIM\|PRINT\|PROBLEM\|ABSOLUTE\|DEBUG\|TRACE\)/MF_LOG_\1/g" $file
+    sed -i "s/\bML\_\(DEBUG\|NDEBUG\)/MF_\1/g" $file
+done

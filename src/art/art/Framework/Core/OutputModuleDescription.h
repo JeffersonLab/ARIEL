@@ -15,7 +15,7 @@ namespace art {
     OutputModuleDescription(int maxEvents) : maxEvents_(maxEvents) {}
     int maxEvents_;
   };
-}
+} // namespace art
 
 #endif /* art_Framework_Core_OutputModuleDescription_h */
 

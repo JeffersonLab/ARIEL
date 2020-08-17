@@ -42,4 +42,5 @@ namespace art {
     std::regex const regexp{glob2reg(pattern)};
     return regexMatch(strings, regexp);
   }
-}
+
+} // namespace art

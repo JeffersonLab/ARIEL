@@ -11,7 +11,11 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#ifdef ART_ROOT_IO
+#include "art_root_io/TFileService.h"
+#else
 #include "art/Framework/Services/Optional/TFileService.h"
+#endif
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "TH1F.h"
@@ -27,19 +31,17 @@ namespace tex {
   class MassPlot : public art::EDAnalyzer {
 
   public:
-
     explicit MassPlot(fhicl::ParameterSet const& pset);
 
     void beginJob() override;
     void analyze(const art::Event& event) override;
 
   private:
-
     art::InputTag _fitsTag;
-    int           _maxPrint;
+    int _maxPrint;
 
-    art::ServiceHandle<Geometry>          _geom;
-    art::ServiceHandle<PDT>               _pdt;
+    art::ServiceHandle<Geometry> _geom;
+    art::ServiceHandle<PDT> _pdt;
     art::ServiceHandle<art::TFileService> _tfs;
 
     double _mka;
@@ -61,43 +63,51 @@ namespace tex {
 
 const size_t tex::MassPlot::ntNVar(7);
 
-tex::MassPlot::MassPlot(fhicl::ParameterSet const& pset):
-  art::EDAnalyzer(pset),
-  _fitsTag( pset.get<std::string>("fitsTag") ),
-  _maxPrint( pset.get<int>("maxPrint",0) ),
-  _geom(),
-  _pdt(),
-  _tfs(),
-  _mka(_pdt->getById(PDGCode::K_plus).mass()),
-  _mphi(_pdt->getById(PDGCode::phi).mass()),
-  _printCount(0),
-  _hMass0(0),
-  _hMass1(0),
-  _hMass2(0),
-  _hSigM(0),
-  _hPull(0),
-  _nt(0){
-}
+tex::MassPlot::MassPlot(fhicl::ParameterSet const& pset)
+  : art::EDAnalyzer(pset)
+  , _fitsTag(pset.get<std::string>("fitsTag"))
+  , _maxPrint(pset.get<int>("maxPrint", 0))
+  , _geom()
+  , _pdt()
+  , _tfs()
+  , _mka(_pdt->getById(PDGCode::K_plus).mass())
+  , _mphi(_pdt->getById(PDGCode::phi).mass())
+  , _printCount(0)
+  , _hMass0(0)
+  , _hMass1(0)
+  , _hMass2(0)
+  , _hSigM(0)
+  , _hPull(0)
+  , _nt(0)
+{}
 
-void tex::MassPlot::beginJob(){
+void
+tex::MassPlot::beginJob()
+{
 
-  _hMass0 = _tfs->make<TH1F>("Mass0", "Reconstructed mass;[MeV]",        100,  900., 3000. );
-  _hMass1 = _tfs->make<TH1F>("Mass1", "Reconstructed mass;[MeV]",        100,  900., 1300. );
-  _hMass2 = _tfs->make<TH1F>("Mass2", "Reconstructed mass;[MeV]",        100, 1010., 1030. );
-  _hSigM  = _tfs->make<TH1F>("SigM",  "Reconstructed sigma(Mass);[MeV]", 100,    0.,   10. );
-  _hPull  = _tfs->make<TH1F>("Pull",  "Mass (Reco-Gen)/sigma",           100,   -5.,    5. );
+  _hMass0 =
+    _tfs->make<TH1F>("Mass0", "Reconstructed mass;[MeV]", 100, 900., 3000.);
+  _hMass1 =
+    _tfs->make<TH1F>("Mass1", "Reconstructed mass;[MeV]", 100, 900., 1300.);
+  _hMass2 =
+    _tfs->make<TH1F>("Mass2", "Reconstructed mass;[MeV]", 100, 1010., 1030.);
+  _hSigM =
+    _tfs->make<TH1F>("SigM", "Reconstructed sigma(Mass);[MeV]", 100, 0., 10.);
+  _hPull = _tfs->make<TH1F>("Pull", "Mass (Reco-Gen)/sigma", 100, -5., 5.);
 
-  _nt    = _tfs->make<TNtuple>("nt", "Mass Plot Ntuple", "mass:sigm:pull:p1:p2:cz1:cz2");
+  _nt = _tfs->make<TNtuple>(
+    "nt", "Mass Plot Ntuple", "mass:sigm:pull:p1:p2:cz1:cz2");
 
-  if ( size_t(_nt->GetNvar()) != ntNVar ){
-    throw cet::exception("HISTOGRAMS") << "Dimension mismatch between TNtuple and expectations in local code: \n"
-                                       << "Local code: " << ntNVar
-                                       << "   TNtuple: " << _nt->GetNvar() << "\n";
+  if (size_t(_nt->GetNvar()) != ntNVar) {
+    throw cet::exception("HISTOGRAMS")
+      << "Dimension mismatch between TNtuple and expectations in local code: \n"
+      << "Local code: " << ntNVar << "   TNtuple: " << _nt->GetNvar() << "\n";
   }
-
 }
 
-void tex::MassPlot::analyze(const art::Event& event){
+void
+tex::MassPlot::analyze(const art::Event& event)
+{
 
   ++_printCount;
 
@@ -108,27 +118,28 @@ void tex::MassPlot::analyze(const art::Event& event){
   float nt[ntNVar];
 
   // Loop over all unique pairs of oppositely charged tracks.
-  for ( size_t i=0; i+1<fits->size(); ++i ) {
+  for (size_t i = 0; i + 1 < fits->size(); ++i) {
 
     FittedHelix fit1(fits->at(i));
 
-    RecoTrk trk1( fit1.lorentzAtPoca(_mka),
-                  fit1.lorentzAtPocaCov(_mka) );
+    RecoTrk trk1(fit1.lorentzAtPoca(_mka), fit1.lorentzAtPocaCov(_mka));
 
-    for ( size_t j=i+1; j<fits->size(); ++j){
+    for (size_t j = i + 1; j < fits->size(); ++j) {
 
       FittedHelix fit2(fits->at(j));
 
       // Skip a pair of tracks if they have the same sign of electric charge.
-      if ( std::abs(fit1.q()+fit2.q()) > 0.5 ) continue;
+      if (std::abs(fit1.q() + fit2.q()) > 0.5)
+        continue;
 
-      RecoTrk trk2( fit2.lorentzAtPoca(_mka), fit2.lorentzAtPocaCov(_mka) );
+      RecoTrk trk2(fit2.lorentzAtPoca(_mka), fit2.lorentzAtPocaCov(_mka));
 
-      // For the two track system, compute the invariant mass, the error and the pull from the MC truth.
+      // For the two track system, compute the invariant mass, the error and the
+      // pull from the MC truth.
       RecoTrk trk3 = trk1 + trk2;
-      double m     = trk3.momentum().mag();
-      double sigm  = trk3.sigmaMass();
-      double mpull = (sigm > 0 ) ? (( m-_mphi)/sigm) : -10.;
+      double m = trk3.momentum().mag();
+      double sigm = trk3.sigmaMass();
+      double mpull = (sigm > 0) ? ((m - _mphi) / sigm) : -10.;
 
       // Fill histograms and ntuples.
       _hMass0->Fill(m);
@@ -148,15 +159,12 @@ void tex::MassPlot::analyze(const art::Event& event){
       _nt->Fill(nt);
 
       // Printout when requested
-      if ( _printCount <= _maxPrint ){
+      if (_printCount <= _maxPrint) {
         std::cout << "2 Track combination in event: " << event.id()
-                  << " mass: " << m
-                  << std::endl;
+                  << " mass: " << m << std::endl;
       }
-
     }
   }
-
 }
 
 DEFINE_ART_MODULE(tex::MassPlot)

@@ -1,6 +1,0 @@
-## Multi-threading analysis of `cet::base_converter`{.cpp}
-
-Various local `static const`{.cpp} objects, but no threading issues.  
-Usage of the member functions that receive non-`const`{.cpp} references could be problematic.  But since they are private member functions, we control them.
-
-The upshot: no threading issues.

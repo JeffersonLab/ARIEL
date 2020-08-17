@@ -8,8 +8,7 @@
 struct A {
   virtual ~A() {}
 };
-struct B : A {
-};
+struct B : A {};
 
 typedef std::vector<A> avec_t;
 typedef std::vector<A*> apvec_t;

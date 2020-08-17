@@ -31,9 +31,20 @@ namespace art {
     return os << BranchTypeToString(branchType);
   }
 
+  template <typename F>
+  void
+  for_each_branch_type(F f)
+  {
+    for (std::underlying_type<BranchType>::type i{InEvent}; i < NumBranchTypes;
+         ++i) {
+      auto const bt = static_cast<BranchType>(i);
+      f(bt);
+    }
+  }
+
 } // art
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* canvas_Persistency_Provenance_BranchType_h */
 

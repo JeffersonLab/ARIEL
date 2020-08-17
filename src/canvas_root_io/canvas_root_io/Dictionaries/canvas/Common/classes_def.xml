@@ -61,4 +61,7 @@
  <class name="art::Wrapper<std::vector<art::RNGsnapshot> >"/>
  <class name="std::pair<art::RefCore, size_t>"/>
  <class name="std::vector<std::pair<art::RefCore, size_t> >"/>
+  <class name="art::Wrapper<art::SampledEventInfo>"/>
+  <class name="art::Wrapper<art::SampledSubRunInfo>"/>
+  <class name="art::Wrapper<art::SampledRunInfo>"/>
 </lcgdict>

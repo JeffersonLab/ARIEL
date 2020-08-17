@@ -115,10 +115,10 @@
 // bool operator == (@ART_IPR_CLASS_NAME@ const& other) const;
 //
 ////////////////////////////////////////////////////////////////////////
-#include "canvas/Persistency/Common/detail/IPRHelper.h"
-#include "canvas/Persistency/Common/detail/is_handle.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/detail/IPRHelper.h"
+#include "canvas/Persistency/Common/detail/is_handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "cetlib/maybe_ref.h"
 
@@ -142,11 +142,10 @@ namespace art {
 template <typename ProdB>
 class art::@ART_IPR_CLASS_NAME@<ProdB, void> {
 public:
-
   using assoc_t = ProdB;
 
 #ifdef ART_IPR_BY_PTR
-  using bColl_t = std::vector<Ptr<assoc_t> >;
+  using bColl_t = std::vector<Ptr<assoc_t>>;
 #else
   using bColl_t = std::vector<ProdB const*>;
 #endif
@@ -250,10 +249,10 @@ public:
                        DataContainer const& dc,
                        Tag const& tag);
 
-  using base::size;
-  using base::isValid;
   using base::at;
   using base::get;
+  using base::isValid;
+  using base::size;
 
   // Association extra-data object by index (bounds-checked).
   cet::maybe_ref<Data const> data(size_type i) const;
@@ -284,7 +283,8 @@ art::@ART_IPR_CLASS_NAME@<ProdB, void>::
                      std::enable_if_t<detail::is_handle<Handle>::value>*)
 {
   using ProdA = typename Handle::element_type::value_type;
-  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{dc, detail::input_tag(tag)};
+  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, void>(tag)};
   storedException_ = finder(*aCollection, bCollection_);
 }
 
@@ -296,8 +296,10 @@ art::@ART_IPR_CLASS_NAME@<ProdB, void>::
                      Tag const& tag,
                      std::enable_if_t<std::is_pointer<typename ProdAColl::value_type>::value>*)
 {
-  using ProdA = std::remove_const_t<std::remove_pointer_t<typename ProdAColl::value_type>>;
-  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{dc, detail::input_tag(tag)};
+  using ProdA =
+    std::remove_const_t<std::remove_pointer_t<typename ProdAColl::value_type>>;
+  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, void>(tag)};
   storedException_ = finder(view, bCollection_);
 }
 
@@ -311,7 +313,8 @@ art::@ART_IPR_CLASS_NAME@<ProdB, void>::
                      art::Ptr<typename PtrProdAColl::value_type::value_type> >::value>*)
 {
   using ProdA = typename PtrProdAColl::value_type::value_type;
-  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{dc, detail::input_tag(tag)};
+  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, void>(tag)};
   storedException_ = finder(aPtrColl, bCollection_);
 }
 
@@ -322,7 +325,8 @@ art::@ART_IPR_CLASS_NAME@<ProdB, void>::
                      DataContainer const& dc,
                      Tag const& tag)
 {
-  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{dc, detail::input_tag(tag)};
+  detail::IPRHelper<ProdA, ProdB, void, void, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, void>(tag)};
   storedException_ = finder(ptrs, bCollection_);
 }
 
@@ -421,86 +425,85 @@ throwIfInvalid() const
 // Derived class implementation.
 template <typename ProdB, typename Data>
 template <typename Handle, typename DataContainer, typename Tag>
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-@ART_IPR_CLASS_NAME@(Handle const& aCollection,
-                     DataContainer const& dc,
-                     Tag const& tag,
-                     std::enable_if_t<detail::is_handle<Handle>::value>*)
+art::@ART_IPR_CLASS_NAME@<ProdB, Data>::@ART_IPR_CLASS_NAME@(
+  Handle const& aCollection,
+  DataContainer const& dc,
+  Tag const& tag,
+  std::enable_if_t<detail::is_handle<Handle>::value>*)
 {
   using ProdA = typename Handle::element_type::value_type;
-  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{dc, detail::input_tag(tag)};
-  base::setStoredException(finder(*aCollection, base::bCollection(), dataCollection_));
+  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, Data>(tag)};
+  base::setStoredException(
+    finder(*aCollection, base::bCollection(), dataCollection_));
 }
 
 template <typename ProdB, typename Data>
 template <typename ProdAColl, typename DataContainer, typename Tag>
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-@ART_IPR_CLASS_NAME@(ProdAColl const& view,
-                     DataContainer const& dc,
-                     Tag const& tag,
-                     std::enable_if_t<std::is_pointer<typename ProdAColl::value_type>::value>*)
+art::@ART_IPR_CLASS_NAME@<ProdB, Data>::@ART_IPR_CLASS_NAME@(
+  ProdAColl const& view,
+  DataContainer const& dc,
+  Tag const& tag,
+  std::enable_if_t<std::is_pointer<typename ProdAColl::value_type>::value>*)
 {
-  using ProdA = std::remove_const_t<std::remove_pointer_t<typename ProdAColl::value_type>>;
-  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{dc, detail::input_tag(tag)};
+  using ProdA =
+    std::remove_const_t<std::remove_pointer_t<typename ProdAColl::value_type>>;
+  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, Data>(tag)};
   base::setStoredException(finder(view, base::bCollection(), dataCollection_));
 }
 
 template <typename ProdB, typename Data>
 template <typename PtrProdAColl, typename DataContainer, typename Tag>
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-@ART_IPR_CLASS_NAME@(PtrProdAColl const& aPtrColl,
-                     DataContainer const& dc,
-                     Tag const& tag,
-                     std::enable_if_t<std::is_same<typename PtrProdAColl::value_type,
-                     art::Ptr<typename PtrProdAColl::value_type::value_type> >::value>*)
+art::@ART_IPR_CLASS_NAME@<ProdB, Data>::@ART_IPR_CLASS_NAME@(
+  PtrProdAColl const& aPtrColl,
+  DataContainer const& dc,
+  Tag const& tag,
+  std::enable_if_t<std::is_same<
+    typename PtrProdAColl::value_type,
+    art::Ptr<typename PtrProdAColl::value_type::value_type>>::value>*)
 {
   using ProdA = typename PtrProdAColl::value_type::value_type;
-  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{dc, detail::input_tag(tag)};
-  base::setStoredException(finder(aPtrColl, base::bCollection(), dataCollection_));
+  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, Data>(tag)};
+  base::setStoredException(
+    finder(aPtrColl, base::bCollection(), dataCollection_));
 }
 
 template <typename ProdB, typename Data>
 template <typename ProdA, typename DataContainer, typename Tag>
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-@ART_IPR_CLASS_NAME@(std::initializer_list<Ptr<ProdA> > const& ptrs,
-                     DataContainer const& dc,
-                     Tag const& tag)
+art::@ART_IPR_CLASS_NAME@<ProdB, Data>::@ART_IPR_CLASS_NAME@(
+  std::initializer_list<Ptr<ProdA>> const& ptrs,
+  DataContainer const& dc,
+  Tag const& tag)
 {
-  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{dc, detail::input_tag(tag)};
+  detail::IPRHelper<ProdA, ProdB, Data, dataColl_t, DataContainer> finder{
+    dc, detail::input_tag<ProdA, ProdB, Data>(tag)};
   base::setStoredException(finder(ptrs, base::bCollection(), dataCollection_));
 }
 
 template <typename ProdB, typename Data>
-inline
-cet::maybe_ref<Data const>
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-data(size_type i) const
+inline cet::maybe_ref<Data const> art::@ART_IPR_CLASS_NAME@<ProdB, Data>::data(size_type i) const
 {
   base::throwIfInvalid();
   return cet::maybe_ref<Data const>{*dataCollection_.at(i)};
 }
 
 template <typename ProdB, typename Data>
-inline
-void
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-get(size_type const i,
+inline void art::@ART_IPR_CLASS_NAME@<ProdB, Data>::get(size_type const i,
 #ifdef ART_IPR_BY_PTR
-    Ptr<assoc_t>& item,
+                      Ptr<assoc_t>& item,
 #else
-    cet::maybe_ref<assoc_t const>& item,
+                      cet::maybe_ref<assoc_t const>& item,
 #endif
-    cet::maybe_ref<Data const>& data) const
+                      cet::maybe_ref<Data const>& data) const
 {
   base::get(i, item); // Will check validity.
   data.reseat(*dataCollection_.at(i));
 }
 
 template <typename ProdB, typename Data>
-inline
-bool
-art::@ART_IPR_CLASS_NAME@<ProdB, Data>::
-operator == (@ART_IPR_CLASS_NAME@<ProdB, Data> const& other) const
+inline bool art::@ART_IPR_CLASS_NAME@<ProdB, Data>::operator==(@ART_IPR_CLASS_NAME@<ProdB, Data> const& other) const
 {
   return this->base::operator==(other) && // Will check validity.
          dataCollection_ == other.dataCollection_;

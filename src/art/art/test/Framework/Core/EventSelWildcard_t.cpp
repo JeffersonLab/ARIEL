@@ -1,7 +1,7 @@
 #include "art/Framework/Core/EventSelector.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceRegistry.h"
-#include "art/Framework/Services/Registry/ServiceToken.h"
+#include "art/Framework/Services/Registry/ServicesManager.h"
 #include "art/Framework/Services/System/TriggerNamesService.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -15,6 +15,7 @@
 
 using namespace art;
 using namespace fhicl;
+using namespace std;
 
 size_t const numBits = 12; // There must be a better way than this but I choose
                            // to avoid modifying a whole slew of code using the
@@ -61,13 +62,8 @@ testone(const Strings& paths,
         bool answer,
         int jmask)
 {
-  ParameterSet pset; //, parent;
-  pset.put<Strings>("SelectEvents", pattern);
-  // parent.put<ParameterSet>("SelectEvents",pset);
-
-  // There are 3 different ways to build the EventSelector.  All
-  // should give the same result.  We exercise all 3 here.
-  EventSelector select_based_on_pset(pset, paths);
+  // There are 2 different ways to build the EventSelector.  Both
+  // should give the same result.  We exercise both here.
   EventSelector select_based_on_pattern_paths(pattern, paths);
   EventSelector select_based_on_pattern(pattern);
 
@@ -108,14 +104,13 @@ testone(const Strings& paths,
 
   TriggerResults results_id(bm, trigger_pset.id());
 
-  bool x = select_based_on_pset.acceptEvent(results_id);
-  bool y = select_based_on_pattern_paths.acceptEvent(results_id);
-  bool z = select_based_on_pattern.acceptEvent(results_id);
+  bool const x = select_based_on_pattern_paths.acceptEvent(results_id);
+  bool const y = select_based_on_pattern.acceptEvent(results_id);
 
-  if (x != answer || y != answer || z != answer) {
+  if (x != answer || y != answer) {
     std::cerr << "failed to compare pattern with mask using pset ID: "
               << "correct=" << answer << " "
-              << "results=" << x << "  " << y << "  " << z << "\n"
+              << "results=" << x << "  " << y << "\n"
               << "pattern=" << pattern << "\n"
               << "mask=" << mask << "\n"
               << "jmask = " << jmask << "\n";
@@ -510,17 +505,13 @@ main()
   proc_pset.put("physics", physics_pset);
 
   // Now create and setup the service
-  typedef art::TriggerNamesService TNS;
-
   art::ActivityRegistry aReg;
 
-  ServiceToken serviceToken_ =
-    ServiceRegistry::createSet(ServiceRegistry::ParameterSets(), aReg);
+  auto servicesManager_ = make_unique<ServicesManager>(ParameterSet{}, aReg);
+  art::test::set_manager_for_tests(servicesManager_.get());
 
-  serviceToken_.add(std::unique_ptr<TNS>(new TNS(proc_pset, paths)));
-
-  // make the services available
-  ServiceRegistry::Operate operate(serviceToken_);
+  servicesManager_->put(std::make_unique<art::TriggerNamesService>(
+    paths, processName, trigPaths, physics_pset));
 
   // We are ready to run some tests
 

@@ -1,3 +1,0 @@
-## Multi-threading analysis of `cet::crc32`{.cpp}
-
-No inherent threading issues.

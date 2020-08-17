@@ -17,7 +17,7 @@
 #include "art/Framework/Core/EventSelector.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceRegistry.h"
-#include "art/Framework/Services/Registry/ServiceToken.h"
+#include "art/Framework/Services/Registry/ServicesManager.h"
 #include "art/Framework/Services/System/TriggerNamesService.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -32,6 +32,8 @@
 
 using namespace art;
 using namespace fhicl;
+using namespace std;
+using namespace string_literals;
 
 typedef std::vector<std::vector<bool>> Answers;
 
@@ -180,12 +182,8 @@ toBools(std::array<bool, nb> const& t)
 void
 evSelTest(PathSpecifiers const& ps, TrigResults const& tr, bool ans)
 {
-  ParameterSet pset;
-  pset.put<Strings>("SelectEvents", ps.path);
-
-  // There are 3 different ways to build the EventSelector.  All
-  // should give the same result.  We exercise all 3 here.
-  EventSelector select_based_on_pset(pset, trigger_path_names);
+  // There are 2 different ways to build the EventSelector.  Both
+  // should give the same result.  We exercise both here.
   EventSelector select_based_on_path_specifiers_and_names(ps.path,
                                                           trigger_path_names);
   EventSelector select_based_on_path_specifiers_only(ps.path);
@@ -215,15 +213,15 @@ evSelTest(PathSpecifiers const& ps, TrigResults const& tr, bool ans)
 
   TriggerResults results_id(bm, trigger_pset.id());
 
-  bool x = select_based_on_pset.acceptEvent(results_id);
-  bool y = select_based_on_path_specifiers_and_names.acceptEvent(results_id);
-  bool z = select_based_on_path_specifiers_only.acceptEvent(results_id);
+  bool const x =
+    select_based_on_path_specifiers_and_names.acceptEvent(results_id);
+  bool const y = select_based_on_path_specifiers_only.acceptEvent(results_id);
 
-  if (x != ans || y != ans || z != ans) {
+  if (x != ans || y != ans) {
     std::cerr
       << "failed to compare pathspecs with trigger results using pset ID: "
       << "correct=" << ans << " "
-      << "results=" << x << "  " << y << "  " << z << "\n"
+      << "results=" << x << "  " << y << "\n"
       << "pathspecs =" << ps.path << "\n"
       << "trigger results = " << tr << "\n";
     abort();
@@ -233,7 +231,6 @@ evSelTest(PathSpecifiers const& ps, TrigResults const& tr, bool ans)
 int
 main()
 {
-
   // We want to create the TriggerNamesService because it is used in
   // the tests.  We do that here, but first we need to build a minimal
   // parameter set to pass to its constructor.  Then we build the
@@ -259,19 +256,13 @@ main()
   }
   proc_pset.put("physics", physics_pset);
 
-  // Now create and setup the service
-  typedef art::TriggerNamesService TNS;
-
   art::ActivityRegistry aReg;
 
-  ServiceToken serviceToken_ =
-    ServiceRegistry::createSet(ServiceRegistry::ParameterSets(), aReg);
+  auto servicesManager_ = make_unique<ServicesManager>(ParameterSet{}, aReg);
+  art::test::set_manager_for_tests(servicesManager_.get());
 
-  serviceToken_.add(
-    std::unique_ptr<TNS>(new TNS(proc_pset, trigger_path_names)));
-
-  // make the services available
-  ServiceRegistry::Operate operate(serviceToken_);
+  servicesManager_->put(std::make_unique<art::TriggerNamesService>(
+    trigger_path_names, processName, trigPaths, physics_pset));
 
   // We are ready to run some tests
 
@@ -447,8 +438,4 @@ main()
   evSelTest(ps_n, tr_13, true);
   tr_13.set(fail, fail, fail, fail, fail, fail, fail, fail);
   evSelTest(ps_n, tr_13, true);
-
-  // Now test testSelectionOverlap
-
-  return 0;
 }

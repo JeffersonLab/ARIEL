@@ -8,7 +8,6 @@
 
 #include "cetlib/quiet_unit_test.hpp"
 
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 #include "fhiclcpp/types/KeysToIgnore.h"
@@ -63,7 +62,7 @@ BOOST_AUTO_TEST_CASE(template_test_1)
 {
   auto const& ref = Config::KeysToIgnore{}();
   auto const& test = fhicl::KeysToIgnore<Config::KeysToIgnore>{}();
-  CET_CHECK_EQUAL_COLLECTIONS(test, ref);
+  BOOST_TEST(test == ref);
 }
 
 BOOST_AUTO_TEST_CASE(template_test_2)
@@ -71,7 +70,7 @@ BOOST_AUTO_TEST_CASE(template_test_2)
   auto const& ref = {"a", "testing", "z"};
   auto const& test =
     fhicl::KeysToIgnore<Config::KeysToIgnore, KeysToIgnore2>{}();
-  CET_CHECK_EQUAL_COLLECTIONS(test, ref);
+  BOOST_TEST(test == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

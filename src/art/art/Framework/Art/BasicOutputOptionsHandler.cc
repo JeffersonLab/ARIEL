@@ -3,8 +3,8 @@
 #include "art/Framework/Art/detail/AllowedConfiguration.h"
 #include "art/Framework/Art/detail/exists_outside_prolog.h"
 #include "art/Framework/Art/detail/fhicl_key.h"
-#include "art/Framework/IO/Root/InitRootHandlers.h"
-#include "art/Framework/IO/Root/RootHandlers.h"
+#include "art/Framework/Art/detail/get_LibraryInfoCollection.h"
+#include "art/Utilities/PluginSuffixes.h"
 #include "art/Utilities/ensureTable.h"
 #include "canvas/Utilities/Exception.h"
 #include "cetlib/canonical_string.h"
@@ -12,8 +12,6 @@
 #include "fhiclcpp/extended_value.h"
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/parse.h"
-
-#include "TError.h"
 
 #include <iostream>
 #include <regex>
@@ -33,27 +31,20 @@ art::BasicOutputOptionsHandler::BasicOutputOptionsHandler(
   bpo::options_description& desc)
 {
   bpo::options_description output_options{"Output options"};
-  auto options = output_options.add_options();
-  add_opt(options,
-          "TFileName,T",
-          bpo::value<std::string>(),
-          "File name for TFileService.");
-  add_opt(
-    options,
-    "tmpdir",
-    bpo::value<std::string>(&tmpDir_),
-    "Temporary directory for in-progress output files (defaults to directory "
-    "of specified output file names).");
-  add_opt(options,
-          "tmpDir",
-          bpo::value<std::string>(&tmpDir_),
-          "Synonym for --tmpdir.");
-  add_opt(options,
-          "output,o",
-          bpo::value<stringvec>()->composing(),
-          "Event output stream file (optionally specify stream with "
-          "stream-label:fileName in which case multiples are OK).");
-  add_opt(options, "no-output", "Disable all output streams.");
+  // clang-format off
+  output_options.add_options()
+    ("TFileName,T", bpo::value<std::string>(), "File name for TFileService.")
+    ("tmpdir",
+       bpo::value<std::string>(&tmpDir_),
+       "Temporary directory for in-progress output files (defaults to directory "
+       "of specified output file names).")
+    ("tmpDir", bpo::value<std::string>(&tmpDir_), "Synonym for --tmpdir.")
+    ("output,o",
+       bpo::value<stringvec>()->composing(),
+       "Event output stream file (optionally specify stream with "
+       "stream-label:fileName in which case multiples are OK).")
+    ("no-output", "Disable all output streams.");
+  // clang-format on
   desc.add(output_options);
 }
 
@@ -162,8 +153,14 @@ namespace {
 
       if (outputs_table.find(streamName) == outputs_table.cend()) {
         new_path_entry = true;
+        std::string const defaultOutputModule =
+          art::detail::get_LibraryInfoCollection(art::Suffixes::module(),
+                                                 "RootOutput")
+              .empty() ?
+            "FileDumperOutput" :
+            "RootOutput";
         raw_config.put(outputsKey + '.' + streamName + '.' + "module_type",
-                       "RootOutput");
+                       defaultOutputModule);
       }
       std::string out_table_path(outputsKey);
       out_table_path += '.' + streamName;
@@ -225,15 +222,6 @@ namespace {
       processSpecifiedOutputs(raw_config, vm["output"].as<stringvec>());
     }
   }
-
-  struct RootErrorHandlerSentry {
-    RootErrorHandlerSentry(bool const reset)
-    {
-      art::setRootErrorHandler(reset);
-    }
-    ~RootErrorHandlerSentry() { SetErrorHandler(DefaultErrorHandler); }
-  };
-
 } // namespace
 
 int
@@ -259,8 +247,9 @@ art::BasicOutputOptionsHandler::doProcessOptions(
   if (!tmpDir_.empty()) {
     std::string const& tfile_key = fhicl_key("services", "TFileService");
     if (detail::exists_outside_prolog(raw_config, tfile_key)) {
-      assert(detail::supports_key(
-        art::suffix_type::service, "TFileService", "tmpDir"));
+      auto has_tmpDir [[maybe_unused]] =
+        detail::supports_key(Suffixes::service(), "TFileService", "tmpDir");
+      assert(has_tmpDir); // Should never happen.
       raw_config.put(fhicl_key(tfile_key, "tmpDir"), tmpDir_);
     }
 
@@ -275,31 +264,13 @@ art::BasicOutputOptionsHandler::doProcessOptions(
           continue;
 
         auto const& spec = raw_config.get<std::string>(module_type);
-        if (!detail::supports_key(art::suffix_type::module, spec, "tmpDir"))
+        if (!detail::supports_key(Suffixes::module(), spec, "tmpDir"))
           continue;
 
         raw_config.put(fhicl_key(module_label, "tmpDir"), tmpDir_);
       }
     }
   }
-
-  // Init ROOT handlers facility
-  auto const unload_key = fhicl_key("scheduler", "unloadRootSigHandler");
-  auto const unloadRSHandler =
-    detail::exists_outside_prolog(raw_config, unload_key) ?
-      raw_config.get<bool>(unload_key) :
-      true;
-  if (unloadRSHandler) {
-    art::unloadRootSigHandler();
-  }
-
-  auto const reset_key = fhicl_key("scheduler", "resetRootErrHandler");
-  auto const maybe_reset =
-    detail::exists_outside_prolog(raw_config, reset_key) ?
-      raw_config.get<bool>(reset_key) :
-      true;
-  art::setRootErrorHandler(maybe_reset);
-  art::completeRootHandlers();
 
   return 0;
 }

@@ -13,7 +13,8 @@ namespace arttest {
     art::EventID id{art::EventID::invalidEvent()};
     bool lastInSubRun{false};
   };
-}
+
+} // namespace arttest
 
 #endif /* art_test_Framework_Principal_SimpleEvent_h */
 

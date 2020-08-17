@@ -1,5 +1,6 @@
 #ifndef cetlib_sqlite_Ntuple_h
 #define cetlib_sqlite_Ntuple_h
+// vim: set sw=2 expandtab :
 
 // =====================================================================
 //
@@ -105,78 +106,75 @@
 #include "cetlib/sqlite/column.h"
 #include "cetlib/sqlite/detail/bind_parameters.h"
 #include "cetlib/sqlite/helpers.h"
+#include "hep_concurrency/RecursiveMutex.h"
+#include "hep_concurrency/tsan.h"
 
 #include "sqlite3.h"
 
 #include <iostream>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <tuple>
 #include <vector>
 
-namespace cet {
-  namespace sqlite {
+namespace cet::sqlite {
 
-    template <typename... Args>
-    class Ntuple {
-    public:
-      // Elements of row are unique_ptr's so that it is possible to bind
-      // to a null parameter.
-      template <typename T>
-      using element_t =
-        std::unique_ptr<typename sqlite::permissive_column<T>::element_type>;
+  template <typename... Args>
+  class Ntuple {
+    // Types
+  public:
+    // Elements of row are unique_ptr's so that it is possible to bind to a
+    // null parameter.
+    template <typename T>
+    using element_t =
+      std::unique_ptr<typename sqlite::permissive_column<T>::element_type>;
+    using row_t = std::tuple<element_t<Args>...>;
+    static constexpr auto nColumns = std::tuple_size_v<row_t>;
+    using name_array = sqlite::name_array<nColumns>;
+    // Special Member Functions
+  public:
+    ~Ntuple() noexcept;
+    Ntuple(Connection& connection,
+           std::string const& name,
+           name_array const& columns,
+           bool overwriteContents = false,
+           std::size_t bufsize = 1000ull);
+    Ntuple(Ntuple const&) = delete;
+    Ntuple& operator=(Ntuple const&) = delete;
+    // API
+  public:
+    std::string const&
+    name() const
+    {
+      return name_;
+    }
+    void insert(Args const...);
+    void flush();
+    // Implementation details
+  private:
+    static constexpr auto iSequence = std::make_index_sequence<nColumns>();
+    // This is the ctor that does all of the work.  It exists so that
+    // the Args... and column-names array can be expanded in parallel.
+    template <std::size_t... I>
+    Ntuple(Connection& db,
+           std::string const& name,
+           name_array const& columns,
+           bool overwriteContents,
+           std::size_t bufsize,
+           std::index_sequence<I...>);
+    int flush_no_throw();
+    // Member data
+  private:
+    // Protects all of the data members.
+    hep::concurrency::RecursiveMutex mutex_{"Ntuple::mutex_"};
+    Connection& connection_;
+    std::string const name_;
+    std::size_t const max_;
+    std::vector<row_t> buffer_{};
+    sqlite3_stmt* insert_statement_{nullptr};
+  };
 
-      using row_t = std::tuple<element_t<Args>...>;
-      static constexpr auto nColumns = std::tuple_size<row_t>::value;
-      using name_array = sqlite::name_array<nColumns>;
-
-      Ntuple(Connection& connection,
-             std::string const& name,
-             name_array const& columns,
-             bool overwriteContents = false,
-             std::size_t bufsize = 1000ull);
-
-      ~Ntuple() noexcept;
-
-      std::string const&
-      name() const
-      {
-        return name_;
-      }
-
-      void insert(Args const...);
-      void flush();
-
-      // Disable copying
-      Ntuple(Ntuple const&) = delete;
-      Ntuple& operator=(Ntuple const&) = delete;
-
-    private:
-      static constexpr auto iSequence = std::make_index_sequence<nColumns>();
-
-      // This is the c'tor that does all of the work.  It exists so that
-      // the Args... and column-names array can be expanded in parallel.
-      template <std::size_t... I>
-      Ntuple(Connection& db,
-             std::string const& name,
-             name_array const& columns,
-             bool overwriteContents,
-             std::size_t bufsize,
-             std::index_sequence<I...>);
-
-      int flush_no_throw();
-
-      Connection& connection_;
-      std::string name_;
-      std::size_t max_;
-      std::vector<row_t> buffer_{};
-      sqlite3_stmt* insert_statement_{nullptr};
-      std::recursive_mutex mutex_{};
-    };
-
-  } // sqlite
-} // cet
+} // cet::sqlite
 
 template <typename... Args>
 template <std::size_t... I>
@@ -188,13 +186,12 @@ cet::sqlite::Ntuple<Args...>::Ntuple(Connection& connection,
                                      std::index_sequence<I...>)
   : connection_{connection}, name_{name}, max_{bufsize}
 {
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
   assert(connection);
-
   sqlite::createTableIfNeeded(connection,
                               overwriteContents,
                               name,
                               sqlite::permissive_column<Args>{cnames[I]}...);
-
   std::string sql{"INSERT INTO "};
   sql += name;
   sql += " VALUES (?";
@@ -203,14 +200,13 @@ cet::sqlite::Ntuple<Args...>::Ntuple(Connection& connection,
   }
   sql += ")";
   int const rc{sqlite3_prepare_v2(
-    connection_, sql.c_str(), sql.size(), &insert_statement_, nullptr)};
+    connection_.get(), sql.c_str(), sql.size(), &insert_statement_, nullptr)};
   if (rc != SQLITE_OK) {
     auto const ec = sqlite3_step(insert_statement_);
     throw sqlite::Exception{sqlite::errors::SQLExecutionError}
       << "Failed to prepare insertion statement.\n"
       << "Return code: " << ec << '\n';
   }
-
   buffer_.reserve(bufsize);
 }
 
@@ -236,7 +232,7 @@ template <typename... Args>
 void
 cet::sqlite::Ntuple<Args...>::insert(Args const... args)
 {
-  std::lock_guard<decltype(mutex_)> lock{mutex_};
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
   if (buffer_.size() == max_) {
     flush();
   }
@@ -249,7 +245,7 @@ cet::sqlite::Ntuple<Args...>::flush_no_throw()
 {
   // Guard against any modifications to the buffer, which is about to
   // be flushed to the database.
-  std::lock_guard<decltype(mutex_)> lock{mutex_};
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
   int const rc{
     connection_.flush_no_throw<nColumns>(buffer_, insert_statement_)};
   if (rc != SQLITE_DONE) {

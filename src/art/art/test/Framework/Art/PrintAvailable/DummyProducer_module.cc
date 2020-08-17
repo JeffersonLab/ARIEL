@@ -15,13 +15,13 @@ namespace art {
   namespace test {
     class DummyProducer;
   }
-}
+} // namespace art
 
 class art::test::DummyProducer : public EDProducer {
 public:
   struct Config {};
   using Parameters = EDProducer::Table<Config>;
-  explicit DummyProducer(Parameters const&) {}
+  explicit DummyProducer(Parameters const& ps) : EDProducer{ps} {}
 
 private:
   void

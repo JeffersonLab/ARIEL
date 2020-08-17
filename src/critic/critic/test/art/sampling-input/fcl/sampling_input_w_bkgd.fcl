@@ -1,0 +1,24 @@
+#include "sampling_input_w.fcl"
+
+process_name: "SamplingInputWrite"
+
+source.firstRun: 4
+source.firstSubRun: 0
+source.firstEvent: 1
+source.numberEventsInSubRun: 5
+
+physics.producers.makeRunInt.ivalue: 4
+physics.producers.makeSubRunInt.ivalue: 0
+physics.producers.makeEventInt.ivalue: 1
+
+# Create product and drop it just to test if the SamplingInput source
+# can handle dropped products
+
+physics.producers.throwAway: {
+   module_type: IntProducer
+   ivalue: -1
+}
+physics.throw_away_products: [ throwAway ]
+
+outputs.out.fileName: "out.root"
+outputs.out.outputCommands: ["keep *", "drop *_throwAway_*_*"]

@@ -12,7 +12,7 @@
 
 namespace tex {
 
-  std::vector<art::InputTag> inputTagsFromStrings( std::vector<std::string>);
+  std::vector<art::InputTag> inputTagsFromStrings(std::vector<std::string>);
 
 }
 

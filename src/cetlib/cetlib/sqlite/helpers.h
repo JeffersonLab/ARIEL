@@ -18,28 +18,27 @@
 
 using namespace std::string_literals;
 
-namespace cet {
-  namespace sqlite {
+namespace cet::sqlite {
 
-    std::string assembleNoLockURI(std::string const& filename);
-    bool hasTableWithSchema(sqlite3* db,
-                            std::string const& tablename,
-                            std::string expectedSchema);
-    unsigned nrows(sqlite3* db, std::string const& tablename);
+  std::string assembleNoLockURI(std::string const& filename);
+  bool hasTableWithSchema(sqlite3* db,
+                          std::string const& tablename,
+                          std::string expectedSchema);
+  unsigned nrows(sqlite3* db, std::string const& tablename);
 
-    void delete_from(sqlite3* db, std::string const& tablename);
-    void drop_table(sqlite3* db, std::string const& tablename);
-    void drop_table_if_exists(sqlite3* db, std::string const& tablename);
+  void delete_from(sqlite3* db, std::string const& tablename);
+  void drop_table(sqlite3* db, std::string const& tablename);
+  void drop_table_if_exists(sqlite3* db, std::string const& tablename);
 
-    template <typename... Args> // Could arguably go in detail namespace due to
-                                // obscurity of permissive_column.
-    void createTableIfNeeded(sqlite3* db,
-                             bool const delete_contents,
-                             std::string const& tablename,
-                             permissive_column<Args> const&... cols);
+  // Could arguably go in detail namespace due to obscurity of
+  // permissive_column.
+  template <typename... Args>
+  void createTableIfNeeded(sqlite3* db,
+                           bool const delete_contents,
+                           std::string const& tablename,
+                           permissive_column<Args> const&... cols);
 
-  } // namespace sqlite
-} // namespace cet
+} // namespace cet::sqlite
 
 //====================================================
 // Implementation below

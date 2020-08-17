@@ -14,6 +14,7 @@ art_make(
     art_framework_core
     art_framework_io_root_rootinput_source
     art_framework_io_root
+    art_Framework_Principal
     mf_messagelogger
     toyexperiment_analyzers
     cetlib_except
@@ -21,6 +22,7 @@ art_make(
    MODULE_LIBRARIES
     art-workbook_EventDisplay3D_EvtDisplayService_service
     art-workbook_EventDisplay3D
+    art_Persistency_Provenance
     toyexperiment_conditions_conditions_service
     toyexperiment_geometry_geometry_service
     toyexperiment_geometry

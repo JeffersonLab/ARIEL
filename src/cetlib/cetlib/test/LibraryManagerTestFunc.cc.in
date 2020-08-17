@@ -8,5 +8,5 @@ EXTERN_C_FUNC_DECLARE_START
   std::string idString() { return "@LIBSPEC@"; }
 EXTERN_C_FUNC_DECLARE_END
 
-static_assert(std::is_same<cettest::idString_t, decltype(&idString)>::value,
+static_assert(std::is_same_v<cettest::idString_t, decltype(&idString)>,
               "Generated function idString has wrong signature!");

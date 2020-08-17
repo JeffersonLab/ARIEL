@@ -7,25 +7,27 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include <string>
 #include <iosfwd>
+#include <string>
 
 namespace tex {
 
   class ParameterSetFromFile {
 
-public:
-    ParameterSetFromFile( std::string const& fileName );
+  public:
+    ParameterSetFromFile(std::string const& fileName);
 
-    fhicl::ParameterSet const& pSet() const { return _pSet; }
+    fhicl::ParameterSet const&
+    pSet() const
+    {
+      return _pSet;
+    }
 
-    void printNames( std::ostream& ) const;
+    void printNames(std::ostream&) const;
 
-private:
-
-    std::string         _fileName;
+  private:
+    std::string _fileName;
     fhicl::ParameterSet _pSet;
-
   };
 
 }

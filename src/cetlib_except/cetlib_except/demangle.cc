@@ -9,7 +9,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cxxabi.h>
-#include <iostream>
 
 std::string
 cet::demangle_symbol(char const* symbol)

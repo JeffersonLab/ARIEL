@@ -21,28 +21,28 @@ BOOST_AUTO_TEST_CASE(trimmed_test)
 
   {
     string s2(s1);
-    BOOST_CHECK(trim_left(s2) == s1);
+    BOOST_TEST(trim_left(s2) == s1);
   }
   {
     string s2(s1);
-    BOOST_CHECK(trim_right(s2) == s1);
+    BOOST_TEST(trim_right(s2) == s1);
   }
   {
     string s2(s1);
-    BOOST_CHECK(trim(s2) == s1);
+    BOOST_TEST(trim(s2) == s1);
   }
 
   {
     string s2(s1);
-    BOOST_CHECK(trim_left_copy(s2) == s1);
+    BOOST_TEST(trim_left_copy(s2) == s1);
   }
   {
     string s2(s1);
-    BOOST_CHECK(trim_right_copy(s2) == s1);
+    BOOST_TEST(trim_right_copy(s2) == s1);
   }
   {
     string s2(s1);
-    BOOST_CHECK(trim_copy(s2) == s1);
+    BOOST_TEST(trim_copy(s2) == s1);
   }
 }
 

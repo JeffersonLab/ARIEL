@@ -13,7 +13,10 @@
 // =====================================================================
 
 #include "canvas/Persistency/Common/EDProduct.h"
+#include "canvas/Persistency/Common/Sampled.h"
+#include "canvas/Persistency/Common/detail/ProductTypeIDs.h"
 #include "canvas/Persistency/Common/detail/aggregate.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Utilities/DebugMacros.h"
 #include "cetlib/metaprogramming.h"
 #include "cetlib_except/demangle.h"
@@ -24,6 +27,9 @@
 
 namespace art {
   template <typename T>
+  struct prevent_recursion;
+
+  template <typename T>
   class Wrapper;
 
   // Implementation detail declarations.
@@ -33,28 +39,24 @@ namespace art {
 
     // has_size_member
     template <typename T, typename = void>
-    struct has_size_member : std::false_type {
-    };
+    struct has_size_member : std::false_type {};
 
     template <typename T>
     struct has_size_member<
       T,
       enable_if_function_exists_t<size_t (T::*)() const, &T::size>>
-      : std::true_type {
-    };
+      : std::true_type {};
 
     // has_makePartner_member
     template <typename T, typename = void>
-    struct has_makePartner_member : std::false_type {
-    };
+    struct has_makePartner_member : std::false_type {};
 
     template <typename T>
     struct has_makePartner_member<
       T,
       enable_if_function_exists_t<std::unique_ptr<EDProduct> (T::*)(
                                     std::type_info const&) const,
-                                  &T::makePartner>> : std::true_type {
-    };
+                                  &T::makePartner>> : std::true_type {};
   }
 
   template <typename T, bool = detail::has_size_member<T>::value>
@@ -97,13 +99,23 @@ private:
   void fillView(std::vector<void const*>& view) const override;
 
   std::string productSize() const override;
-  void do_combine(EDProduct* product) override;
 
-  void do_setRangeSetID(unsigned) override;
-  unsigned do_getRangeSetID() const override;
-
+  product_typeids_t do_getTypeIDs() const override;
   std::unique_ptr<EDProduct> do_makePartner(
     std::type_info const& wanted_type) const override;
+
+  unsigned do_getRangeSetID() const override;
+  void do_setRangeSetID(unsigned) override;
+  void do_combine(EDProduct* product) override;
+  std::unique_ptr<EDProduct> do_createEmptySampledProduct(
+    InputTag const& tag) const override;
+
+  template <typename>
+  friend struct prevent_recursion;
+
+  void do_insertIfSampledProduct(std::string const& dataset,
+                                 SubRunID const& id,
+                                 std::unique_ptr<EDProduct> product) override;
 
   bool
   isPresent_() const override
@@ -131,21 +143,20 @@ private:
 ////////////////////////////////////////////////////////////////////////
 // Implementation details.
 
+#include "boost/lexical_cast.hpp"
 #include "canvas/Persistency/Common/GetProduct.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/getElementAddresses.h"
 #include "canvas/Persistency/Common/setPtr.h"
-
-#include "boost/lexical_cast.hpp"
 #include "canvas/Persistency/Common/traits.h"
 #include "canvas/Utilities/Exception.h"
-#include <memory>
-#include <type_traits>
 
 #include <deque>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <vector>
 
@@ -153,7 +164,7 @@ private:
 // Wrapper member functions.
 template <typename T>
 art::Wrapper<T>::Wrapper(std::unique_ptr<T> ptr)
-  : present{ptr.get() != 0}, rangeSetID{-1u}, obj(refOrThrow(ptr.get()))
+  : present{ptr.get() != nullptr}, rangeSetID{-1u}, obj(refOrThrow(ptr.get()))
 {}
 
 template <typename T>
@@ -220,27 +231,108 @@ art::Wrapper<T>::do_getRangeSetID() const
 }
 
 template <typename T>
+art::product_typeids_t
+art::Wrapper<T>::do_getTypeIDs() const
+{
+  return detail::ProductTypeIDs<T>::get();
+}
+
+template <typename T>
 std::unique_ptr<art::EDProduct>
 art::Wrapper<T>::do_makePartner(std::type_info const& wanted_wrapper) const
 {
   std::unique_ptr<art::EDProduct> retval;
-  std::conditional_t<detail::has_makePartner_member<T>::value,
-                     DoMakePartner<T>,
-                     DoNotMakePartner<T>>
-    maybe_maker;
-  retval = maybe_maker(obj, wanted_wrapper);
+  if constexpr (detail::has_makePartner_member<T>::value) {
+    retval = obj.makePartner(wanted_wrapper);
+  } else {
+    throw Exception{errors::LogicError, "makePartner"}
+      << "Attempted to make partner of a product ("
+      << cet::demangle_symbol(typeid(T).name()) << ") that does not know how!\n"
+      << "Please report to the art framework developers.\n";
+  }
   return retval;
+}
+
+namespace art {
+  template <typename T>
+  struct prevent_recursion {
+    static std::unique_ptr<EDProduct>
+    create_empty_sampled_product(InputTag const& tag)
+    {
+      auto emptySampledProduct = std::make_unique<Sampled<T>>(tag);
+      return std::make_unique<Wrapper<Sampled<T>>>(move(emptySampledProduct));
+    }
+
+    [[noreturn]] static void
+    insert_if_sampled_product(T&,
+                              std::string const& dataset,
+                              SubRunID const&,
+                              std::unique_ptr<EDProduct>)
+    {
+      throw Exception{errors::LogicError}
+        << "An attempt was made to insert a product from dataset '" << dataset
+        << "'\ninto a non-sampled product of type '"
+        << cet::demangle_symbol(typeid(T).name()) << "'.\n"
+        << "Please contact artists@fnal.gov for guidance.";
+    }
+  };
+
+  template <typename T>
+  struct prevent_recursion<Sampled<T>> {
+    [[noreturn]] static std::unique_ptr<EDProduct>
+    create_empty_sampled_product(InputTag const&)
+    {
+      throw Exception{errors::LogicError}
+        << "An attempt was made to create an empty sampled product\n"
+        << "for a sampled product.  This type of recursion is not allowed.\n"
+        << "Please contact artists@fnal.gov for guidance.";
+    }
+
+    static void
+    insert_if_sampled_product(Sampled<T>& obj,
+                              std::string const& dataset,
+                              SubRunID const& id,
+                              std::unique_ptr<EDProduct> product)
+    {
+      auto& wp = dynamic_cast<Wrapper<T>&>(*product);
+      obj.insert(dataset, id, std::move(wp.obj));
+    }
+  };
+}
+
+template <typename T>
+std::unique_ptr<art::EDProduct>
+art::Wrapper<T>::do_createEmptySampledProduct(InputTag const& tag) const
+{
+  return prevent_recursion<T>::create_empty_sampled_product(tag);
+}
+
+template <typename T>
+void
+art::Wrapper<T>::do_insertIfSampledProduct(std::string const& dataset,
+                                           SubRunID const& id,
+                                           std::unique_ptr<EDProduct> product)
+{
+  prevent_recursion<T>::insert_if_sampled_product(
+    obj, dataset, id, move(product));
 }
 
 template <typename T>
 inline void
 art::Wrapper<T>::do_setPtr(std::type_info const& toType,
-                           unsigned long index,
+                           unsigned long const index [[maybe_unused]],
                            void const*& ptr) const
 {
-  std::conditional_t<has_setPtr<T>::value, DoSetPtr<T>, DoNotSetPtr<T>>
-    maybe_filler;
-  maybe_filler(this->obj, toType, index, ptr);
+  if constexpr (has_setPtr<T>::value) {
+    // Allow setPtr customizations by introducing the art::setPtr
+    // overload set, and not requiring art::setPtr(...).
+    using art::setPtr;
+    setPtr(obj, toType, index, ptr);
+  } else {
+    throw Exception{errors::ProductDoesNotSupportPtr}
+      << "The product type " << cet::demangle_symbol(typeid(T).name())
+      << " does not support art::Ptr\n";
+  }
 }
 
 template <typename T>
@@ -250,9 +342,18 @@ art::Wrapper<T>::do_getElementAddresses(
   std::vector<unsigned long> const& indices,
   std::vector<void const*>& ptrs) const
 {
-  std::conditional_t<has_setPtr<T>::value, DoSetPtr<T>, DoNotSetPtr<T>>
-    maybe_filler;
-  maybe_filler(this->obj, toType, indices, ptrs);
+  if constexpr (has_setPtr<T>::value) {
+    // getElementAddresses is the name of an overload set; each
+    // concrete collection T should supply a getElementAddresses
+    // function, in the same namespace at that in which T is
+    // defined, or in the 'art' namespace.
+    using art::getElementAddresses;
+    getElementAddresses(obj, toType, indices, ptrs);
+  } else {
+    throw Exception{errors::ProductDoesNotSupportPtr}
+      << "The product type " << cet::demangle_symbol(typeid(T).name())
+      << " does not support art::PtrVector\n";
+  }
 }
 
 template <typename T>
@@ -294,119 +395,27 @@ namespace art {
 
   template <class E>
   struct productSize<std::vector<E>, false>
-    : public productSize<std::vector<E>, true> {
-  };
+    : public productSize<std::vector<E>, true> {};
 
   template <class E>
   struct productSize<std::list<E>, false>
-    : public productSize<std::list<E>, true> {
-  };
+    : public productSize<std::list<E>, true> {};
 
   template <class E>
   struct productSize<std::deque<E>, false>
-    : public productSize<std::deque<E>, true> {
-  };
+    : public productSize<std::deque<E>, true> {};
 
   template <class E>
   struct productSize<std::set<E>, false>
-    : public productSize<std::set<E>, true> {
-  };
+    : public productSize<std::set<E>, true> {};
 
   template <class E>
   struct productSize<PtrVector<E>, false>
-    : public productSize<PtrVector<E>, true> {
-  };
+    : public productSize<PtrVector<E>, true> {};
 
   template <class E>
   struct productSize<cet::map_vector<E>, false>
-    : public productSize<cet::map_vector<E>, true> {
-  };
-
-  template <typename T>
-  struct DoMakePartner {
-    std::unique_ptr<EDProduct>
-    operator()(T const& obj, std::type_info const& wanted_wrapper_type) const
-    {
-      return obj.makePartner(wanted_wrapper_type);
-    }
-  };
-
-  template <typename T>
-  struct DoNotMakePartner {
-    std::unique_ptr<EDProduct>
-    operator()(T const&, std::type_info const&) const
-    {
-      throw Exception(errors::LogicError, "makePartner")
-        << "Attempted to make partner of a product ("
-        << cet::demangle_symbol(typeid(T).name())
-        << ") that does not know how!\n"
-        << "Please report to the ART framework developers.\n";
-    }
-  };
-
-  template <typename T>
-  struct DoSetPtr {
-    void operator()(T const& obj,
-                    std::type_info const& toType,
-                    unsigned long index,
-                    void const*& ptr) const;
-    void operator()(T const& obj,
-                    std::type_info const& toType,
-                    std::vector<unsigned long> const& index,
-                    std::vector<void const*>& ptrs) const;
-  };
-
-  template <typename T>
-  struct DoNotSetPtr {
-    void
-    operator()(T const&,
-               std::type_info const&,
-               unsigned long,
-               void const*&) const
-    {
-      throw Exception(errors::ProductDoesNotSupportPtr)
-        << "The product type " << cet::demangle_symbol(typeid(T).name())
-        << "\ndoes not support art::Ptr\n";
-    }
-
-    void
-    operator()(T const&,
-               std::type_info const&,
-               std::vector<unsigned long> const&,
-               std::vector<void const*>&) const
-    {
-      throw Exception(errors::ProductDoesNotSupportPtr)
-        << "The product type " << cet::demangle_symbol(typeid(T).name())
-        << "\ndoes not support art::PtrVector\n";
-    }
-  };
-
-  template <typename T>
-  void
-  DoSetPtr<T>::operator()(T const& obj,
-                          std::type_info const& toType,
-                          unsigned long const index,
-                          void const*& ptr) const
-  {
-    // setPtr is the name of an overload set; each concrete collection
-    // T should supply a setPtr function, in the same namespace at
-    // that in which T is defined, or in the 'art' namespace.
-    setPtr(obj, toType, index, ptr);
-  }
-
-  template <typename T>
-  void
-  DoSetPtr<T>::operator()(T const& obj,
-                          std::type_info const& toType,
-                          std::vector<unsigned long> const& indices,
-                          std::vector<void const*>& ptr) const
-  {
-    // getElementAddresses is the name of an overload set; each
-    // concrete collection T should supply a getElementAddresses
-    // function, in the same namespace at that in which T is
-    // defined, or in the 'art' namespace.
-    getElementAddresses(obj, toType, indices, ptr);
-  }
+    : public productSize<cet::map_vector<E>, true> {};
 }
 
 #endif /* canvas_Persistency_Common_Wrapper_h */

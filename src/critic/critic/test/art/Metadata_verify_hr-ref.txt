@@ -1,0 +1,18 @@
+
+File catalog metadata from file ../Metadata_plugin_t.d/out.root:
+
+ 1: file_type            "unknown"
+ 2: art.process_name     "DEVEL"
+ 3: file_format          "artroot"
+ 4: start_time           "<date-time>"
+ 5: end_time             "<date-time>"
+ 6: event_count          1
+ 7: first_event          1
+ 8: last_event           1
+ 9: art.first_event      [ 1, 0, 1 ]
+10: art.last_event       [ 1, 0, 1 ]
+11: art.file_format_era  "ART_2011a"
+12: art.file_format_version 13
+13: key1                 "value1"
+14: key2                 "value2"
+<separator (-)>

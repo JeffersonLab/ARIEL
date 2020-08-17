@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// Exception: art-specific customizations for cetlib/coded_exception
+// Exception: art-specific customizations for cetlib_except/coded_exception
 //
 // Note that errors::ErrorCodes is tightly coupled to detail::translate()
 // such that any change to one will necessitate a corresponding change to
@@ -20,9 +20,6 @@ ExceptionDetail::translate(errors::ErrorCodes code)
   using namespace errors;
 
   switch (code) {
-      // Let the compiler tell us we missed one.
-      // default                        : return "Unknown code";
-
     case OtherArt:
       return "OtherArt";
     case StdException:
@@ -94,5 +91,3 @@ ExceptionDetail::translate(errors::ErrorCodes code)
     << "Internal error: missing string translation for error " << code
     << " which was not caught at compile time!\n";
 }
-
-// ======================================================================

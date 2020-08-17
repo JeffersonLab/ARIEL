@@ -24,13 +24,10 @@
 #include <string>
 #include <type_traits>
 
-namespace art {
-  namespace detail {
-
-    struct ToolConfig {
-      fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type")};
-    };
-  }
+namespace art::detail {
+  struct ToolConfig {
+    fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type")};
+  };
 }
 
 #define ART_PROVIDE_ALLOWED_CONFIGURATION_FUNCTION_TOOL()                      \

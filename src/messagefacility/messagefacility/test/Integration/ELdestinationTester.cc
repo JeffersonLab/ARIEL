@@ -1,7 +1,7 @@
 // vim: set sw=2 expandtab :
 
 //#define NDEBUG
-#define ML_DEBUG // always enable debug
+#define MF_DEBUG // always enable debug
 
 #include "boost/filesystem.hpp"
 #include "boost/program_options.hpp"
@@ -175,15 +175,15 @@ main(int argc, char* argv[])
     mf::LogError("catError"s) << "Error information."s;
     mf::LogWarning("catWarning"s) << "Warning information."s;
     mf::LogInfo("catInfo"s) << "Info information."s;
-    LOG_DEBUG("debug"s) << "DEBUG information."s;
+    MF_LOG_DEBUG("debug"s) << "DEBUG information."s;
   }
   // Test move operations
   {
     // normal macro
-    auto logPROBLEM = LOG_PROBLEM("problem"s);
+    auto logPROBLEM = MF_LOG_PROBLEM("problem"s);
     logPROBLEM << "clever way to ensure persistence of temporary object"s;
     // macro w/ternary operator
-    auto log = LOG_DEBUG("debug2"s) << "first line.\n"s;
+    auto log = MF_LOG_DEBUG("debug2"s) << "first line.\n"s;
     log << "second line."s;
   }
   runModule("module1"s);

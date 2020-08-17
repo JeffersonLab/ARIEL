@@ -35,29 +35,28 @@ BOOST_FIXTURE_TEST_SUITE(PluginFactory_t, PluginFactoryTestFixture)
 
 BOOST_AUTO_TEST_CASE(checkType)
 {
-  BOOST_REQUIRE_EQUAL("TestPluginBase"s,
-                      PluginTypeDeducer<cettest::TestPluginBase>::value);
-  BOOST_REQUIRE_EQUAL(pf.pluginType("TestPlugin"),
-                      PluginTypeDeducer<cettest::TestPluginBase>::value);
+  BOOST_TEST_REQUIRE("TestPluginBase"s ==
+                     PluginTypeDeducer_v<cettest::TestPluginBase>);
+  BOOST_TEST_REQUIRE(pf.pluginType("TestPlugin") ==
+                     PluginTypeDeducer_v<cettest::TestPluginBase>);
 }
 
 BOOST_AUTO_TEST_CASE(checkMaker)
 {
   auto p = pf.makePlugin<std::unique_ptr<cettest::TestPluginBase>, std::string>(
     "TestPlugin", "Hi");
-  BOOST_REQUIRE_EQUAL(p->message(), "Hi"s);
+  BOOST_TEST_REQUIRE(p->message() == "Hi"s);
 }
 
 BOOST_AUTO_TEST_CASE(CheckFinder)
 {
   auto fptr = pf.find<std::string>(
     "TestPlugin", "pluginType", cet::PluginFactory::nothrow);
-  BOOST_REQUIRE(fptr);
-  BOOST_REQUIRE_EQUAL(fptr(),
-                      PluginTypeDeducer<cettest::TestPluginBase>::value);
-  BOOST_REQUIRE(pf.find<std::string>("TestPlugin",
-                                     "oops",
-                                     cet::PluginFactory::nothrow) == nullptr);
+  BOOST_TEST_REQUIRE(fptr);
+  BOOST_TEST_REQUIRE(fptr() == PluginTypeDeducer_v<cettest::TestPluginBase>);
+  BOOST_TEST_REQUIRE(
+    pf.find<std::string>("TestPlugin", "oops", cet::PluginFactory::nothrow) ==
+    nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(checkError)

@@ -16,20 +16,20 @@
 
 namespace cet {
   template <class T>
-  std::enable_if_t<std::is_arithmetic<T>::value, T> hypot(T x, T y);
+  std::enable_if_t<std::is_arithmetic_v<T>, T> hypot(T x, T y);
 
   template <class T>
-  std::enable_if_t<std::is_arithmetic<T>::value, T> unchecked_hypot(T x, T y);
+  std::enable_if_t<std::is_arithmetic_v<T>, T> unchecked_hypot(T x, T y);
 
   template <class T>
-  std::enable_if_t<std::is_arithmetic<T>::value, T> checked_hypot(T x, T y);
+  std::enable_if_t<std::is_arithmetic_v<T>, T> checked_hypot(T x, T y);
 }
 
 // ----------------------------------------------------------------------
 // unchecked_hypot<>:
 
 template <class T>
-inline std::enable_if_t<std::is_arithmetic<T>::value, T>
+inline std::enable_if_t<std::is_arithmetic_v<T>, T>
 cet::unchecked_hypot(T x, T y)
 {
   return std::hypot(x, y);
@@ -39,7 +39,7 @@ cet::unchecked_hypot(T x, T y)
 // checked_hypot<>:
 
 template <class T>
-std::enable_if_t<std::is_arithmetic<T>::value, T>
+std::enable_if_t<std::is_arithmetic_v<T>, T>
 cet::checked_hypot(T x, T y)
 {
 
@@ -56,13 +56,13 @@ cet::checked_hypot(T x, T y)
 // hypot<>:
 
 template <class T>
-inline std::enable_if_t<std::is_arithmetic<T>::value, T>
+inline std::enable_if_t<std::is_arithmetic_v<T>, T>
 cet::hypot(T x, T y)
 {
   return checked_hypot(x, y);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_hypot_h */
 

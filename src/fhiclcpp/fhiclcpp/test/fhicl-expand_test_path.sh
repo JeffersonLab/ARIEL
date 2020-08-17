@@ -3,7 +3,7 @@
 [[ -n "$DEBUG" ]] && set -x
 
 TEST_PGM=fhicl-expand
-TEST_ARGS=-l2
+TEST_ARGS="--lookup-policy=nonabsolute"
 WORKDIR=`mktemp -d ${TMPDIR:-/tmp}/${TEST_PGM}.XXXXXXXXXX`
 [[ -n "$WORKDIR" ]] && [[ -d "$WORKDIR" ]] || [[ -w "$WORKDIR" ]] || exit 1
 

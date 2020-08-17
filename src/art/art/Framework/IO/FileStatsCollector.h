@@ -9,6 +9,7 @@
 
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 #include "canvas/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/Timestamp.h"
 
 #include <cstddef> // For std::size_t.
 #include <set>
@@ -35,6 +36,12 @@ public:
   std::string const& processName() const;
   boost::posix_time::ptime outputFileOpenTime() const;
   boost::posix_time::ptime outputFileCloseTime() const;
+  boost::posix_time::ptime lowestRunStartTime() const;
+  boost::posix_time::ptime highestRunStartTime() const;
+  boost::posix_time::ptime lowestSubRunStartTime() const;
+  boost::posix_time::ptime highestSubRunStartTime() const;
+  RunID lowestRunID() const;
+  RunID highestRunID() const;
   SubRunID const& lowestSubRunID() const;
   SubRunID const& highestSubRunID() const;
   EventID const& lowestEventID() const;
@@ -50,12 +57,18 @@ private:
 
   std::string const moduleLabel_;
   std::string const processName_;
+  RunID lowestRun_{};
+  RunID highestRun_{};
   SubRunID lowestSubRun_{};
   SubRunID highestSubRun_{};
   EventID lowestEventIDSeen_{};
   EventID highestEventIDSeen_{};
   boost::posix_time::ptime fo_{};
   boost::posix_time::ptime fc_{};
+  boost::posix_time::ptime lowestRunStartTime_{};
+  boost::posix_time::ptime highestRunStartTime_{};
+  boost::posix_time::ptime lowestSubRunStartTime_{};
+  boost::posix_time::ptime highestSubRunStartTime_{};
   bool fileCloseRecorded_{false};
   std::string lastOpenedInputFile_{};
   std::vector<std::string> inputFilesSeen_{};
@@ -85,6 +98,42 @@ inline boost::posix_time::ptime
 art::FileStatsCollector::outputFileCloseTime() const
 {
   return fc_;
+}
+
+inline boost::posix_time::ptime
+art::FileStatsCollector::lowestRunStartTime() const
+{
+  return lowestRunStartTime_;
+}
+
+inline boost::posix_time::ptime
+art::FileStatsCollector::highestRunStartTime() const
+{
+  return highestRunStartTime_;
+}
+
+inline boost::posix_time::ptime
+art::FileStatsCollector::lowestSubRunStartTime() const
+{
+  return lowestSubRunStartTime_;
+}
+
+inline boost::posix_time::ptime
+art::FileStatsCollector::highestSubRunStartTime() const
+{
+  return highestSubRunStartTime_;
+}
+
+inline art::RunID
+art::FileStatsCollector::lowestRunID() const
+{
+  return lowestRun_;
+}
+
+inline art::RunID
+art::FileStatsCollector::highestRunID() const
+{
+  return highestRun_;
 }
 
 inline art::SubRunID const&

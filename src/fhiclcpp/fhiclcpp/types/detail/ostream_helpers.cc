@@ -1,26 +1,17 @@
+#include "fhiclcpp/types/detail/ostream_helpers.h"
 
-#include "cetlib_except/demangle.h"
-
-#include <ostream>
 #include <regex>
 #include <string>
 
-namespace fhicl {
-  namespace detail {
-    namespace no_defaults {
+namespace {
+  std::regex const re_std_prefix{"std::"};
+}
 
-      std::string
-      stripped_typename(std::string const& fullName)
-      {
-        // Remove 'std::' from fullName
-        std::string const strippedName =
-          std::regex_replace(fullName, std::regex("std::"), "");
-        return strippedName;
-      }
-    }
+namespace fhicl::detail::no_defaults {
+  std::string
+  stripped_typename(std::string const& fullName)
+  {
+    // Remove 'std::' from fullName
+    return std::regex_replace(fullName, re_std_prefix, "");
   }
-} // fhicl::detail::no_defaults
-
-// Local variables:
-// mode : c++
-// End:
+}

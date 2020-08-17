@@ -4,20 +4,26 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
+#include <vector>
 
 //-----------------------------------------------------------------
 // std::vector<double> ====> CLHEP::Hep3Vector
 //-----------------------------------------------------------------
-template<>
-bool fhicl::ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const {
+template <>
+bool
+fhicl::ParameterSet::get_if_present<CLHEP::Hep3Vector>(
+  std::string const& key,
+  CLHEP::Hep3Vector& value) const
+{
   std::vector<double> val;
-  const bool present = get_if_present<std::vector<double> >(key,val);
-  if(present) {
-    if(val.size() != 3) {
+  const bool present = get_if_present<std::vector<double>>(key, val);
+  if (present) {
+    if (val.size() != 3) {
       std::ostringstream os;
-      os<<"Error converting std::vector<double> to CLHEP::Hep3Vector for key \""<<key<<"\": wrong input size = "<<val.size();
+      os << "Error converting std::vector<double> to CLHEP::Hep3Vector for key "
+            "\""
+         << key << "\": wrong input size = " << val.size();
       throw std::runtime_error(os.str());
     }
     value = CLHEP::Hep3Vector(val[0], val[1], val[2]);

@@ -1,8 +1,10 @@
 #ifndef canvas_Persistency_Provenance_type_aliases_h
 #define canvas_Persistency_Provenance_type_aliases_h
 
+#include "canvas/Persistency/Provenance/BranchDescription.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/TypeLabel.h"
 
 #include <array>
 #include <map>
@@ -13,8 +15,9 @@
 namespace art {
   // The key is the process name
   using ProcessLookup = std::map<std::string, std::vector<ProductID>>;
-
   using ViewLookup_t = ProcessLookup;
+
+  using TypeLabelLookup_t = std::map<TypeLabel, BranchDescription>;
 
   // The key is the friendly class name
   using ProductLookup_t = std::map<std::string, ProcessLookup>;

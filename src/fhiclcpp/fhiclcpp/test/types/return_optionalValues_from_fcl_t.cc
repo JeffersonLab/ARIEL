@@ -19,7 +19,6 @@
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/test/types/FixtureBase.h"
 
 #include <iostream>
@@ -31,8 +30,7 @@ using namespace std;
 
 namespace {
 
-  double const tolerance [[gnu::unused]] = std::numeric_limits<double>::epsilon();
-  double const ftolerance [[gnu::unused]] = std::numeric_limits<float>::epsilon();
+  constexpr auto tolerance = std::numeric_limits<double>::epsilon();
 
   struct Physics {
     Tuple<std::string, double> energyCutoff{Name("energyCutoff")};
@@ -67,10 +65,10 @@ BOOST_AUTO_TEST_CASE(optAtom_t)
 {
   int i{};
   std::string n;
-  BOOST_CHECK(config().atom(i));
-  BOOST_CHECK(!config().name(n));
-  BOOST_CHECK_EQUAL(i, 5);
-  BOOST_CHECK(n.empty());
+  BOOST_TEST(config().atom(i));
+  BOOST_TEST(!config().name(n));
+  BOOST_TEST(i == 5);
+  BOOST_TEST(n.empty());
 }
 
 // [2] OptionalTable<T>
@@ -78,18 +76,19 @@ BOOST_AUTO_TEST_CASE(optTable_t)
 {
   Physics phys;
   std::string name;
-  BOOST_CHECK(config().physics(phys));
-  BOOST_CHECK(phys.moniker(name));
-  BOOST_CHECK_EQUAL(name, "Johnny");
-  BOOST_CHECK_EQUAL(phys.energyCutoff.get<0>(), "QGSP");
-  BOOST_CHECK_CLOSE_FRACTION(phys.energyCutoff.get<1>(), 14.6, tolerance);
+  BOOST_TEST(config().physics(phys));
+  BOOST_TEST(phys.moniker(name));
+  BOOST_TEST(name == "Johnny");
+  BOOST_TEST(phys.energyCutoff.get<0>() == "QGSP");
+  BOOST_TEST(phys.energyCutoff.get<1>() == 14.6, tolerance);
 }
 
 // [3] OptionalSequence<T>
 BOOST_AUTO_TEST_CASE(optSeqVector_t1)
 {
   std::vector<int> intList;
-  BOOST_CHECK(!config().list1(intList));
+  BOOST_TEST(!config().list1.hasValue());
+  BOOST_TEST(!config().list1(intList));
 }
 
 // [4] OptionalSequence<T,SIZE>
@@ -97,20 +96,21 @@ BOOST_AUTO_TEST_CASE(optSeqVector_t2)
 {
   std::array<int, 4> intList;
   auto ref = {1, 2, 4, 8};
-  BOOST_CHECK(config().list2(intList));
-  CET_CHECK_EQUAL_COLLECTIONS(intList, ref);
+  BOOST_TEST(config().list2.hasValue());
+  BOOST_TEST(config().list2(intList));
+  BOOST_TEST(intList == ref, boost::test_tools::per_element{});
 }
 
 // [5] OptionalSequence<T>
 BOOST_AUTO_TEST_CASE(optSeqVector_t3)
 {
   std::vector<std::array<int, 2>> intLists;
-  BOOST_CHECK(config().list3(intLists));
+  BOOST_TEST(config().list3(intLists));
 
   decltype(intLists) const ref{{{0, 1}}, {{1, 2}}, {{2, 4}}, {{3, 8}}};
   std::size_t i{};
   for (auto const& list : intLists) {
-    CET_CHECK_EQUAL_COLLECTIONS(list, ref[i]);
+    BOOST_TEST(list == ref[i], boost::test_tools::per_element{});
     ++i;
   }
 }
@@ -119,14 +119,14 @@ BOOST_AUTO_TEST_CASE(optSeqVector_t3)
 BOOST_AUTO_TEST_CASE(optSeqVector_t4)
 {
   std::array<Composer, 4> composers;
-  BOOST_CHECK(config().list4(composers));
+  BOOST_TEST(config().list4(composers));
 
   std::array<std::string, 4> const ref{
     {"Mozart", "Beethoven", "Brahms", "Mahler"}};
 
   std::size_t i{};
   for (auto const& comp : composers) {
-    BOOST_CHECK_EQUAL(comp.composer(), ref[i]);
+    BOOST_TEST(comp.composer() == ref[i]);
     ++i;
   }
 }
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(optTuple_t)
   enum composer_t { Mozart, Beethoven, Brahms, Mahler };
 
   std::array<Composer, 4> composers;
-  BOOST_CHECK(config().list4(composers));
+  BOOST_TEST(config().list4(composers));
 
   std::array<int, 4> const symphonyNumbers{{41, 3, 0, 8}};
   std::array<std::string, 4> const symphonyMonikers{
@@ -147,13 +147,13 @@ BOOST_AUTO_TEST_CASE(optTuple_t)
 
     std::tuple<int, std::string> moniker;
     if (i != static_cast<composer_t>(Brahms)) {
-      BOOST_CHECK(comp.aSymphonyMoniker(moniker));
+      BOOST_TEST(comp.aSymphonyMoniker(moniker));
     } else {
-      BOOST_CHECK(!comp.aSymphonyMoniker(moniker));
+      BOOST_TEST(!comp.aSymphonyMoniker(moniker));
     }
 
-    BOOST_CHECK_EQUAL(std::get<int>(moniker), symphonyNumbers[i]);
-    BOOST_CHECK_EQUAL(std::get<std::string>(moniker), symphonyMonikers[i]);
+    BOOST_TEST(std::get<int>(moniker) == symphonyNumbers[i]);
+    BOOST_TEST(std::get<std::string>(moniker) == symphonyMonikers[i]);
     ++i;
   }
 }

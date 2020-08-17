@@ -1,7 +1,7 @@
 #include "art/Framework/Core/EventSelector.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceRegistry.h"
-#include "art/Framework/Services/Registry/ServiceToken.h"
+#include "art/Framework/Services/Registry/ServicesManager.h"
 #include "art/Framework/Services/System/TriggerNamesService.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -15,11 +15,11 @@
 
 using namespace art;
 using namespace fhicl;
+using namespace std;
 
-const size_t numBits = 5;
-const int numPatterns = 11;
-const int numMasks = 9;
-const int numAns [[gnu::unused]] = numPatterns * numMasks;
+constexpr size_t numBits = 5;
+constexpr int numPatterns = 11;
+constexpr int numMasks = 9;
 
 typedef bool Answers[numPatterns][numMasks];
 typedef std::vector<std::string> Strings;
@@ -30,8 +30,8 @@ typedef std::vector<Bools> VBools;
 std::ostream&
 operator<<(std::ostream& ost, const Strings& s)
 {
-  for (Strings::const_iterator i(s.begin()), e(s.end()); i != e; ++i) {
-    ost << *i << " ";
+  for (auto const& str : s) {
+    ost << str << " ";
   }
   return ost;
 }
@@ -52,13 +52,8 @@ testone(const Strings& paths,
         bool answer,
         int jmask)
 {
-  ParameterSet pset; //, parent;
-  pset.put<Strings>("SelectEvents", pattern);
-  // parent.put<ParameterSet>("SelectEvents",pset);
-
-  // There are 3 different ways to build the EventSelector.  All
-  // should give the same result.  We exercise all 3 here.
-  EventSelector select(pset, paths);
+  // There are 2 different ways to build the EventSelector.  Both
+  // should give the same result.  We exercise both here.
   EventSelector select1(pattern, paths);
   EventSelector select2(pattern);
 
@@ -99,20 +94,14 @@ testone(const Strings& paths,
 
   TriggerResults results_id(bm, trigger_pset.id());
 
-  //      std:: cerr << "a11 \n";
-  bool a11 = select.acceptEvent(results_id);
-  //      std:: cerr << "a12 \n";
-  bool a12 = select1.acceptEvent(results_id);
-  //      std:: cerr << "a13 \n";
-  bool a13 = select2.acceptEvent(results_id);
-  //      std:: cerr << "a14 \n";
-  bool a14 = select2.acceptEvent(results_id);
+  bool const a12 = select1.acceptEvent(results_id);
+  bool const a13 = select2.acceptEvent(results_id);
+  bool const a14 = select2.acceptEvent(results_id);
 
-  if (a11 != answer || a12 != answer || a13 != answer || a14 != answer) {
+  if (a12 != answer || a13 != answer || a14 != answer) {
     std::cerr << "failed to compare pattern with mask using pset ID: "
               << "correct=" << answer << " "
-              << "results=" << a11 << "  " << a12 << "  " << a13 << "  " << a14
-              << "\n"
+              << "results=" << a12 << "  " << a13 << "  " << a14 << "\n"
               << "pattern=" << pattern << "\n"
               << "mask=" << mask << "\n"
               << "jmask = " << jmask << "\n";
@@ -141,8 +130,6 @@ main()
   // bits.
   std::array<char const*, numBits> cpaths = {{"a1", "a2", "a3", "a4", "a5"}};
   Strings paths(cpaths.begin(), cpaths.end());
-
-  //
 
   std::array<char const*, 2> cw1 = {{"a1", "a2"}};
   std::array<char const*, 2> cw2 = {{"!a1", "!a2"}};
@@ -228,35 +215,31 @@ main()
   ParameterSet physics_pset;
 
   std::string processName("HLT");
-  proc_pset.put<std::string>("process_name", processName);
+  proc_pset.put("process_name", processName);
 
   ParameterSet trigPaths;
-  trigPaths.put<Strings>("trigger_paths", paths);
-  proc_pset.put<ParameterSet>("trigger_paths", trigPaths);
+  trigPaths.put("trigger_paths", paths);
+  proc_pset.put("trigger_paths", trigPaths);
 
   Strings endPaths;
-  proc_pset.put<Strings>("end_paths", endPaths);
+  proc_pset.put("end_paths", endPaths);
 
   // We do not care what is in these parameters for the test, they
   // just need to exist.
   Strings dummy;
   for (size_t i = 0; i < numBits; ++i) {
-    physics_pset.put<Strings>(paths[i], dummy);
+    physics_pset.put(paths[i], dummy);
   }
   proc_pset.put("physics", physics_pset);
 
   // Now create and setup the service
-  typedef art::TriggerNamesService TNS;
-
   art::ActivityRegistry aReg;
 
-  ServiceToken serviceToken_ =
-    ServiceRegistry::createSet(ServiceRegistry::ParameterSets(), aReg);
+  auto servicesManager_ = make_unique<ServicesManager>(ParameterSet{}, aReg);
+  art::test::set_manager_for_tests(servicesManager_.get());
 
-  serviceToken_.add(std::unique_ptr<TNS>(new TNS(proc_pset, paths)));
-
-  // make the services available
-  ServiceRegistry::Operate operate(serviceToken_);
+  servicesManager_->put(std::make_unique<art::TriggerNamesService>(
+    paths, processName, trigPaths, physics_pset));
 
   // We are ready to run some tests
   testall(paths, patterns, testmasks, ans);

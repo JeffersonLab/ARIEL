@@ -22,7 +22,7 @@ namespace art {
                              "Unknown output file status."};
     }
   }
-}
+} // namespace art
 
 #endif /* art_Framework_Core_OutputFileStatus_h */
 

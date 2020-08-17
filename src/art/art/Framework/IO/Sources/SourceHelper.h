@@ -2,20 +2,23 @@
 #define art_Framework_IO_Sources_SourceHelper_h
 
 // -----------------------------------------------------------------
-//
 // SourceHelper provides the means for creation of EventPrincipals,
 // SubRunPrincipals, and RunPrincipals.
 //
+// Note that processing history can only be retained for event
+// principles, and only if a non-null History object is provided when
+// calling makeEventPrincipal.
 // -----------------------------------------------------------------
 
 #include "art/Framework/Principal/Principal.h"
 #include "art/Framework/Principal/fwd.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Provenance/BranchDescription.h"
 #include "canvas/Persistency/Provenance/EventAuxiliary.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/History.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "canvas/Persistency/Provenance/ProductList.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Persistency/Provenance/TypeLabel.h"
@@ -32,7 +35,7 @@ namespace art {
   class SubRunAuxiliary;
   class Timestamp;
   class SourceHelper;
-}
+} // namespace art
 
 class art::SourceHelper {
 public:
@@ -72,7 +75,7 @@ public:
                                        Timestamp const& startTime) const;
 
   EventPrincipal* makeEventPrincipal(EventAuxiliary const& eventAux,
-                                     std::shared_ptr<History>&& history) const;
+                                     std::unique_ptr<History>&& history) const;
 
   EventPrincipal* makeEventPrincipal(
     EventID const& e,
@@ -92,6 +95,10 @@ private:
   template <typename T>
   friend class Source;
   void throwIfProductsNotRegistered_() const;
+  ProcessHistoryID processHistoryID_(BranchType,
+                                     ProcessConfiguration const&) const;
+  std::unique_ptr<History> history_(ProcessConfiguration const&,
+                                    std::unique_ptr<History>&&) const;
   void setPresentProducts(cet::exempt_ptr<ProductTables const> presentProducts);
   cet::exempt_ptr<ProductTables const> presentProducts_{nullptr};
   ModuleDescription md_;
@@ -103,7 +110,11 @@ art::SourceHelper::makePtr(TypeLabel const& tl,
                            Principal const& p,
                            typename Ptr<T>::key_type key) const
 {
-  BranchDescription const pd{p.branchType(), tl, md_};
+  BranchDescription const pd{p.branchType(),
+                             tl,
+                             md_.moduleLabel(),
+                             md_.parameterSetID(),
+                             md_.processConfiguration()};
   ProductID const pid{pd.productID()};
   return Ptr<T>{pid, key, p.productGetter(pid)};
 }

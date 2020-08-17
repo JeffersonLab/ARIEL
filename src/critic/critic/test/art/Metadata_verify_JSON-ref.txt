@@ -1,0 +1,18 @@
+{
+  "out.root": {
+    "file_type": "unknown",
+    "art.process_name": "DEVEL",
+    "file_format": "artroot",
+    "start_time": "<date-time>",
+    "end_time": "<date-time>",
+    "event_count": 1,
+    "first_event": 1,
+    "last_event": 1,
+    "art.first_event": [ 1, 0, 1 ],
+    "art.last_event": [ 1, 0, 1 ],
+    "art.file_format_era": "ART_2011a",
+    "art.file_format_version": 13,
+    "key1": "value1",
+    "key2": "value2"
+  }
+}

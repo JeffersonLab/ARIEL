@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE (optionalDelegatedParameter test)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
+
 #include "fhiclcpp/test/types/FixtureBase.h"
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
 

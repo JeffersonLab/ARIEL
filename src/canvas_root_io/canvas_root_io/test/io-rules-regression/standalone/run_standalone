@@ -1,0 +1,58 @@
+#!/bin/bash -e
+
+function usage()
+{
+  cat <<EOF 
+usage: ${0##*/} [-c] [-j #]
+       ${0##*/} [-h]
+
+Options:
+  -c
+    Clean build directory prior to build and test.
+  -h
+    This help.
+  -j #
+    Parallelism level for make and ctest.
+
+EOF
+  exit ${1:-1}
+}
+
+while getopts :cj:h OPT; do
+  case $OPT in
+    c)
+      (( clean = 1 ))
+      ;;
+    j)
+      jarg=(-j "$OPTARG")
+      ;;
+    h)
+      usage
+      ;;
+    *)
+      usage 2
+  esac
+done
+
+shift $(( OPTIND - 1 ))
+OPTIND=1
+TOP_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
+. ${TOP_DIR}/setup.sh || { echo "Unable to source setup script." 1>&2; exit 1; }
+cd ${TOP_DIR}/build
+if (( ${clean:-0} )); then
+  rm -rf *
+fi
+set -x
+
+# CMake.
+cmake -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DROOT_FIXED_GENERAL_IO_RULES:BOOL=TRUE \
+      -DROOT_FIXED_DOUBLE32T:BOOL=TRUE \
+  ../io-rules-regression
+
+# Build.
+make "${jarg[@]}"
+
+# Test.
+ctest --output-on-failure "${jarg[@]}"

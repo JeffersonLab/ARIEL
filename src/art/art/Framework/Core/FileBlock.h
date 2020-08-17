@@ -1,5 +1,6 @@
 #ifndef art_Framework_Core_FileBlock_h
 #define art_Framework_Core_FileBlock_h
+// vim: set sw=2 expandtab :
 
 // =======================================================================
 // FileBlock: Properties of an input file.
@@ -19,29 +20,15 @@ namespace art {
     FileBlock() = default;
     virtual ~FileBlock() noexcept = default;
 
-    FileBlock(FileFormatVersion const& version, std::string const& fileName)
-      : fileFormatVersion_{version}, fileName_{fileName}
-    {}
-
+    FileBlock(FileFormatVersion const& version, std::string const& fileName);
     FileBlock(FileFormatVersion const& version,
               std::string const& fileName,
-              std::unique_ptr<ResultsPrincipal>&& resp)
-      : fileFormatVersion_{version}, fileName_{fileName}, resp_{std::move(resp)}
-    {}
+              std::unique_ptr<ResultsPrincipal>&& resp);
 
-    FileFormatVersion const&
-    fileFormatVersion() const
-    {
-      return fileFormatVersion_;
-    }
-    std::string const&
-    fileName() const
-    {
-      return fileName_;
-    }
+    FileFormatVersion const& fileFormatVersion() const;
+    std::string const& fileName() const;
 
   private:
-    // Friends only.
     friend class OutputModule;
     ResultsPrincipal const* resultsPrincipal() const;
 
@@ -49,13 +36,8 @@ namespace art {
     std::string fileName_{};
     std::unique_ptr<ResultsPrincipal> resp_{};
   };
-}
 
-inline art::ResultsPrincipal const*
-art::FileBlock::resultsPrincipal() const
-{
-  return resp_.get();
-}
+} // namespace art
 
 #endif /* art_Framework_Core_FileBlock_h */
 

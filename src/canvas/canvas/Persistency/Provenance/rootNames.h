@@ -68,7 +68,7 @@ namespace art {
     ART_ROOTNAME_SIMPLE(FileFormatVersion)
     ART_ROOTNAME_SIMPLE(FileIndex) // supporting backwards compatibility
     ART_ROOTNAME(FileIndex::Element, "Element")
-    ART_ROOTNAME(ProductRegistry, "ProductRegistry")
+    ART_ROOTNAME_SIMPLE(ProductRegistry)
     ART_ROOTNAME_SIMPLE(ParameterSetMap)
     ART_ROOTNAME_SIMPLE(ProcessHistoryMap)
     ART_ROOTNAME_SIMPLE(BranchIDLists)

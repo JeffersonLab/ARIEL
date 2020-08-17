@@ -1,8 +1,10 @@
 #ifndef canvas_Persistency_Provenance_BranchDescription_h
 #define canvas_Persistency_Provenance_BranchDescription_h
+// vim: set sw=2 expandtab :
 
-// ========================================================================
-// BranchDescription: The full description of a Branch.  Equivalently,
+// ================================================================================
+// BranchDescription: The full description of a data-product branch.
+// Equivalently,
 //                    the event-independent description of an EDProduct.
 // This description also applies to every product instance on the branch.
 //
@@ -13,11 +15,10 @@
 // The BranchDescription class is what retains information necessary for
 // interactions with ROOT.  The ProductDescription contains information
 // that is relevant for core framework processing.
-// ========================================================================
+// ================================================================================
 
-#include "canvas/Persistency/Provenance/BranchID.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
-#include "canvas/Persistency/Provenance/ProcessConfigurationID.h"
+#include "canvas/Persistency/Provenance/ProcessConfiguration.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Provenance/ProvenanceFwd.h"
 #include "canvas/Persistency/Provenance/Transient.h"
@@ -26,272 +27,263 @@
 #include "fhiclcpp/ParameterSetID.h"
 
 #include <iosfwd>
+#include <map>
 #include <set>
 #include <string>
 
-// ======================================================================
-
 namespace art {
-
-  class BranchDescription;
-
-  std::ostream& operator<<(std::ostream& os, BranchDescription const& p);
-
-  bool operator<(BranchDescription const& a, BranchDescription const& b);
-  bool operator==(BranchDescription const& a, BranchDescription const& b);
-
-  bool combinable(BranchDescription const& a, BranchDescription const& b);
 
   namespace detail {
     class BranchDescriptionStreamer;
   }
-}
 
-// ----------------------------------------------------------------------
+  class BranchDescription {
 
-class art::BranchDescription {
-public:
-  static int constexpr invalidSplitLevel{-1};
-  static int constexpr invalidBasketSize{0};
-  static int constexpr invalidCompression{-1};
+    friend bool combinable(BranchDescription const&, BranchDescription const&);
+    friend bool operator<(BranchDescription const&, BranchDescription const&);
+    friend bool operator==(BranchDescription const&, BranchDescription const&);
 
-  BranchDescription() = default;
+    friend class detail::BranchDescriptionStreamer;
 
-  BranchDescription(BranchType const bt,
-                    TypeLabel const& tl,
-                    ModuleDescription const& modDesc);
+  public: // TYPES
+    static int constexpr invalidSplitLevel{-1};
+    static int constexpr invalidBasketSize{0};
+    static int constexpr invalidCompression{-1};
 
-  // use compiler-generated copy c'tor, copy assignment, and d'tor
+    struct Transients {
 
-  void write(std::ostream& os) const;
+      Transients() = default;
 
-  std::string const&
-  moduleLabel() const
-  {
-    return moduleLabel_;
-  }
-  std::string const&
-  processName() const
-  {
-    return processName_;
-  }
-  std::string const&
-  producedClassName() const
-  {
-    return producedClassName_;
-  }
-  std::string const&
-  friendlyClassName() const
-  {
-    return friendlyClassName_;
-  }
-  std::string const&
-  productInstanceName() const
-  {
-    return productInstanceName_;
-  }
+      enum validity_state { Produced, PresentFromSource, Dropped, Invalid };
 
-  InputTag
-  inputTag() const
-  {
-    return InputTag{moduleLabel(), productInstanceName(), processName()};
-  }
+      // The branch name, which is currently derivable from the other
+      // attributes.
+      std::string branchName_{};
 
-  bool
-  produced() const
-  {
-    return guts().validity_ == Transients::Produced;
-  }
-  bool
-  present() const
-  {
-    return guts().validity_ == Transients::PresentFromSource;
-  }
-  bool
-  dropped() const
-  {
-    return guts().validity_ == Transients::Dropped;
-  }
-  bool
-  transient() const
-  {
-    return guts().transient_;
-  }
+      // The wrapped class name, which is currently derivable from the
+      // other attributes.
+      std::string wrappedName_{};
 
-  int
-  splitLevel() const
-  {
-    return guts().splitLevel_;
-  }
-  int
-  basketSize() const
-  {
-    return guts().basketSize_;
-  }
-  int
-  compression() const
-  {
-    return guts().compression_;
-  }
+      // Is the class of the branch marked as transient in the data
+      // dictionary
+      bool transient_{false};
 
-  std::set<fhicl::ParameterSetID> const&
-  psetIDs() const
-  {
-    return psetIDs_;
-  }
+      // Was this branch produced in this process rather than in a
+      // previous process
+      validity_state validity_{PresentFromSource};
 
-  ProductID
-  productID() const
-  {
-    return productID_;
-  }
-  BranchType
-  branchType() const
-  {
-    return branchType_;
-  }
-  bool
-  supportsView() const
-  {
-    return supportsView_;
-  }
-  std::string const&
-  branchName() const
-  {
-    return guts().branchName_;
-  }
-  std::string const&
-  wrappedName() const
-  {
-    return guts().wrappedName_;
-  }
+      // N.B. ROOT-specific transient information will be fluffed by the
+      //      BranchDescriptionStreamer::fluffRootTransients function.
 
-  void merge(BranchDescription const& other);
-  void swap(BranchDescription& other);
+      // The split level of the branch, as marked in the data
+      // dictionary.
+      int splitLevel_{};
 
-  friend bool combinable(BranchDescription const&, BranchDescription const&);
-  friend bool operator<(BranchDescription const&, BranchDescription const&);
-  friend bool operator==(BranchDescription const&, BranchDescription const&);
+      // The basket size of the branch, as marked in the data
+      // dictionary.
+      int basketSize_{};
 
-  struct Transients {
-    Transients() = default;
+      // The compression of the branch, as marked in the data
+      // dictionary.
+      int compression_{invalidCompression};
+    };
 
-    enum validity_state { Produced, PresentFromSource, Dropped, Invalid };
+    BranchDescription() = default;
 
-    // The branch name, which is currently derivable from the other
-    // attributes.
-    std::string branchName_{};
+    BranchDescription(BranchType const bt,
+                      TypeLabel const& tl,
+                      std::string const& moduleLabel,
+                      fhicl::ParameterSetID const& modulePSetID,
+                      ProcessConfiguration const& processConfig);
 
-    // The wrapped class name, which is currently derivable from the
-    // other attributes.
-    std::string wrappedName_{};
+    BranchDescription(BranchType bt,
+                      std::string const& moduleLabel,
+                      std::string const& processName,
+                      std::string const& producedClassName,
+                      std::string const& productInstanceName,
+                      fhicl::ParameterSetID const& psetID,
+                      ProcessConfigurationID const& processConfigurationID,
+                      Transients::validity_state validity,
+                      bool supportsView,
+                      bool transient);
 
-    // Was this branch produced in this process rather than in a
-    // previous process
-    validity_state validity_{PresentFromSource};
+    void write(std::ostream& os) const;
 
-    // Is the class of the branch marked as transient in the data
-    // dictionary
-    bool transient_{false};
+    std::string const&
+    moduleLabel() const noexcept
+    {
+      return moduleLabel_;
+    }
+    std::string const&
+    processName() const noexcept
+    {
+      return processName_;
+    }
+    std::string const&
+    producedClassName() const noexcept
+    {
+      return producedClassName_;
+    }
+    std::string const&
+    friendlyClassName() const noexcept
+    {
+      return friendlyClassName_;
+    }
+    std::string const&
+    productInstanceName() const noexcept
+    {
+      return productInstanceName_;
+    }
+    InputTag
+    inputTag() const
+    {
+      return InputTag{moduleLabel(), productInstanceName(), processName()};
+    }
 
-    // N.B. ROOT-specific transient information will be fluffed by the
-    //      BranchDescriptionStreamer::fluffRootTransients function.
+    bool
+    produced() const noexcept
+    {
+      return guts().validity_ == Transients::Produced;
+    }
+    bool
+    present() const noexcept
+    {
+      return guts().validity_ == Transients::PresentFromSource;
+    }
+    bool
+    dropped() const noexcept
+    {
+      return guts().validity_ == Transients::Dropped;
+    }
+    bool
+    transient() const noexcept
+    {
+      return guts().transient_;
+    }
 
-    // The split level of the branch, as marked in the data
-    // dictionary.
-    int splitLevel_{};
+    int
+    splitLevel() const noexcept
+    {
+      return guts().splitLevel_;
+    }
+    int
+    basketSize() const noexcept
+    {
+      return guts().basketSize_;
+    }
+    int
+    compression() const noexcept
+    {
+      return guts().compression_;
+    }
 
-    // The basket size of the branch, as marked in the data
-    // dictionary.
-    int basketSize_{};
+    std::set<fhicl::ParameterSetID> const&
+    psetIDs() const noexcept
+    {
+      return psetIDs_;
+    }
 
-    // The compression of the branch, as marked in the data
-    // dictionary.
-    int compression_{invalidCompression};
+    ProductID
+    productID() const noexcept
+    {
+      return productID_;
+    }
+    BranchType
+    branchType() const noexcept
+    {
+      return branchType_;
+    }
+    bool
+    supportsView() const noexcept
+    {
+      return supportsView_;
+    }
+    std::string const&
+    branchName() const noexcept
+    {
+      return guts().branchName_;
+    }
+    std::string const&
+    wrappedName() const noexcept
+    {
+      return guts().wrappedName_;
+    }
+
+    void merge(BranchDescription const& other);
+    void swap(BranchDescription& other);
+
+    void
+    setValidity(Transients::validity_state const state)
+    {
+      guts().validity_ = state;
+    }
+
+  private:
+    fhicl::ParameterSetID const& psetID() const;
+
+    void initProductID_();
+    void fluffTransients_() const;
+    bool transientsFluffed_() const noexcept;
+    bool isPsetIDUnique() const noexcept;
+
+    std::set<ProcessConfigurationID> const& processConfigurationIDs() const
+      noexcept;
+
+    Transients& guts() noexcept;
+    Transients const& guts() const noexcept;
+
+    void throwIfInvalid_() const;
+
+    // What tree is the branch in?
+    BranchType branchType_{InEvent};
+
+    // A human-friendly string that uniquely identifies the EDProducer
+    // and becomes part of the identity of a product that it produces
+    std::string moduleLabel_{};
+
+    // the physical process that this program was part of (e.g. production)
+    std::string processName_{};
+
+    // An ID uniquely identifying the product
+    ProductID productID_{};
+
+    // the full name of the type of product this is
+    std::string producedClassName_{};
+
+    // a readable name of the type of product this is
+    std::string friendlyClassName_{};
+
+    // a user-supplied name to distinguish multiple products of the same type
+    // that are produced by the same producer
+    std::string productInstanceName_{};
+
+    // Does this product support the concept of a view?
+    bool supportsView_{false};
+
+    // ID's of parameter set of the creators of products
+    // on this branch
+    std::set<fhicl::ParameterSetID> psetIDs_{};
+
+    // ID's of process configurations for products
+    // on this branch
+    std::set<ProcessConfigurationID> processConfigurationIDs_{};
+
+    // The things we do not want saved to disk.
+    mutable Transient<Transients> transients_{};
   };
 
-  void
-  setValidity(Transients::validity_state const state)
-  {
-    guts().validity_ = state;
-  }
+  std::ostream& operator<<(std::ostream&, BranchDescription const&);
 
-private:
-  friend class detail::BranchDescriptionStreamer;
+  bool operator<(BranchDescription const&, BranchDescription const&);
 
-  bool
-  transientsFluffed_() const
-  {
-    return !guts().branchName_.empty();
-  }
-  void initProductID_();
-  void fluffTransients_() const;
+  bool operator==(BranchDescription const&, BranchDescription const&);
 
-  fhicl::ParameterSetID const& psetID() const;
-  bool
-  isPsetIDUnique() const
-  {
-    return psetIDs().size() == 1;
-  }
-  std::set<ProcessConfigurationID> const&
-  processConfigurationIDs() const
-  {
-    return processConfigurationIDs_;
-  }
+  bool combinable(BranchDescription const&, BranchDescription const&);
 
-  Transients&
-  guts()
-  {
-    return transients_.get();
-  }
-  Transients const&
-  guts() const
-  {
-    return transients_.get();
-  }
-
-  void throwIfInvalid_() const;
-
-  // What tree is the branch in?
-  BranchType branchType_{InEvent};
-
-  // A human friendly string that uniquely identifies the EDProducer
-  // and becomes part of the identity of a product that it produces
-  std::string moduleLabel_{};
-
-  // the physical process that this program was part of (e.g. production)
-  std::string processName_{};
-
-  // An ID uniquely identifying the product
-  ProductID productID_{};
-
-  // the full name of the type of product this is
-  std::string producedClassName_{};
-
-  // a readable name of the type of product this is
-  std::string friendlyClassName_{};
-
-  // a user-supplied name to distinguish multiple products of the same type
-  // that are produced by the same producer
-  std::string productInstanceName_{};
-
-  // Does this product support the concept of a view?
-  bool supportsView_{false};
-
-  // ID's of parameter set of the creators of products
-  // on this branch
-  std::set<fhicl::ParameterSetID> psetIDs_{};
-
-  // ID's of process configurations for products
-  // on this branch
-  std::set<ProcessConfigurationID> processConfigurationIDs_{};
-
-  mutable Transient<Transients> transients_{};
-}; // BranchDescription
-
-namespace art {
   using ProductDescriptions = std::vector<BranchDescription>;
-}
+  using ProductDescriptionsByID = std::map<ProductID, BranchDescription>;
+
+} // namespace art
 
 #endif /* canvas_Persistency_Provenance_BranchDescription_h */
 

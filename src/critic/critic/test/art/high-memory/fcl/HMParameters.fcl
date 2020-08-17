@@ -1,0 +1,6 @@
+BEGIN_PROLOG
+hm: {
+  zero: 0
+  twenty_five_MiB: 26214400 // 25 MiB
+}
+END_PROLOG

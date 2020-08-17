@@ -7,8 +7,12 @@
 #include "fhiclcpp/ParameterSetID.h"
 #include "fhiclcpp/exception.h"
 #include "fhiclcpp/make_ParameterSet.h"
+#include "hep_concurrency/RecursiveMutex.h"
 
 using fhicl::detail::throwOnSQLiteFailure;
+
+hep::concurrency::RecursiveMutex fhicl::ParameterSetRegistry::mutex_{
+  "fhicl::psr::mutex_"};
 
 namespace {
   sqlite3*
@@ -29,22 +33,28 @@ namespace {
 }
 
 void
-fhicl::detail::throwOnSQLiteFailure(sqlite3* db, char* msg)
+fhicl::detail::throwOnSQLiteFailure(int const errcode, char* msg)
 {
   std::string const msgString{msg ? msg : ""};
   sqlite3_free(msg);
-  if (db == nullptr) {
-    throw fhicl::exception(fhicl::error::cant_open_db) << "Can't open DB.";
-  }
-  auto errcode = sqlite3_errcode(db);
   if (errcode != SQLITE_OK) {
     // Caller's responsibility to make sure this really is an error
     // and not (say) SQLITE_ROW or SQLITE_DONE,
     throw exception(error::sql_error, "SQLite error:")
-      << sqlite3_errstr(errcode) << " (" << errcode
-      << "): " << sqlite3_errmsg(db)
-      << (msgString.empty() ? "" : (std::string(". ") + msgString));
+      << sqlite3_errstr(errcode) << " (" << errcode << ')'
+      << (msgString.empty() ? "" : (std::string(": ") + msgString));
   }
+}
+
+void
+fhicl::detail::throwOnSQLiteFailure(sqlite3* db, char* msg)
+{
+  if (db == nullptr) {
+    sqlite3_free(msg);
+    throw fhicl::exception(fhicl::error::cant_open_db) << "Can't open DB.";
+  }
+  auto const errcode = sqlite3_errcode(db);
+  throwOnSQLiteFailure(errcode, msg);
 }
 
 fhicl::ParameterSetRegistry::~ParameterSetRegistry()
@@ -68,7 +78,7 @@ void
 fhicl::ParameterSetRegistry::importFrom(sqlite3* db)
 {
   assert(db);
-  std::lock_guard<decltype(mutex_)> lock{mutex_};
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
 
   // This does *not* cause anything new to be imported into the
   // registry itself, just its backing DB.
@@ -88,11 +98,7 @@ fhicl::ParameterSetRegistry::importFrom(sqlite3* db)
   query_result<std::string, std::string> inputPSes;
   inputPSes << select("*").from(db, "ParameterSets");
 
-  for (auto const& row : inputPSes) {
-    std::string idString;
-    std::string psBlob;
-    std::tie(idString, psBlob) = row;
-
+  for (auto const& [idString, psBlob] : inputPSes) {
     sqlite3_bind_text(
       oStmt, 1, idString.c_str(), idString.size() + 1, SQLITE_STATIC);
     throwOnSQLiteFailure(primaryDB);
@@ -116,7 +122,7 @@ void
 fhicl::ParameterSetRegistry::exportTo(sqlite3* db)
 {
   assert(db);
-  std::lock_guard<decltype(mutex_)> lock{mutex_};
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
 
   cet::sqlite::Transaction txn{db};
   cet::sqlite::exec(db,
@@ -155,10 +161,7 @@ fhicl::ParameterSetRegistry::exportTo(sqlite3* db)
   query_result<std::string, std::string> regPSes;
   regPSes << select("*").from(primaryDB, "ParameterSets");
 
-  for (auto const& row : regPSes) {
-    std::string idString;
-    std::string psBlob;
-    std::tie(idString, psBlob) = row;
+  for (auto const& [idString, psBlob] : regPSes) {
     sqlite3_bind_text(
       oStmt, 1, idString.c_str(), idString.size() + 1, SQLITE_STATIC);
     throwOnSQLiteFailure(db);
@@ -181,7 +184,7 @@ fhicl::ParameterSetRegistry::exportTo(sqlite3* db)
 void
 fhicl::ParameterSetRegistry::stageIn()
 {
-  std::lock_guard<decltype(mutex_)> lock{mutex_};
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
 
   sqlite3* primaryDB = instance_().primaryDB_;
   auto& registry = instance_().registry_;
@@ -192,9 +195,7 @@ fhicl::ParameterSetRegistry::stageIn()
   cet::transform_all(entriesToStageIn,
                      std::inserter(registry, std::begin(registry)),
                      [](auto const& row) {
-                       std::string idString;
-                       std::string psBlob;
-                       std::tie(idString, psBlob) = row;
+                       auto const& [idString, psBlob] = row;
                        ParameterSet pset;
                        fhicl::make_ParameterSet(psBlob, pset);
                        return std::make_pair(ParameterSetID{idString}, pset);
@@ -204,8 +205,6 @@ fhicl::ParameterSetRegistry::stageIn()
 fhicl::ParameterSetRegistry::ParameterSetRegistry()
   : primaryDB_{openPrimaryDB()}
 {}
-
-std::recursive_mutex fhicl::ParameterSetRegistry::mutex_{};
 
 auto
 fhicl::ParameterSetRegistry::find_(ParameterSetID const& id) -> const_iterator

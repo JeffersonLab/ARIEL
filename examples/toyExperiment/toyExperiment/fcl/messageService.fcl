@@ -72,7 +72,7 @@ mf_interactive: {
                              # INFO severity, but not DEBUG severity
                              # (INFO severity is LogInfo or
                              # LogVerbatim).
-    statistics: @local::mf_coutInfoStats
+    statistics: { stats: @local::mf_coutInfoStats }
   }
 }
 

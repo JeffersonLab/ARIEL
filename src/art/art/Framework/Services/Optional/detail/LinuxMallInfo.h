@@ -63,8 +63,10 @@ namespace art {
          << minfo.fordblks;
       return os;
     }
-  }
-}
+
+  } // namespace detail
+
+} // namespace art
 #endif /* art_Framework_Services_Optional_detail_LinuxMallInfo_h */
 
 // Local variables:

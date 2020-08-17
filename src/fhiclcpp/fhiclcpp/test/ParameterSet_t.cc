@@ -4,6 +4,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/make_ParameterSet.h"
+#include "fhiclcpp/test/boost_test_print_pset.h"
+
 #include <cstddef>
 #include <cstdlib>
 #include <string>
@@ -34,12 +36,12 @@ BOOST_AUTO_TEST_CASE(Local)
   fhicl::ParameterSet j;
   j.put("y", -1);
   fhicl::ParameterSet orig(pset.get<fhicl::ParameterSet>("j"));
-  BOOST_CHECK(j == orig);
-  BOOST_CHECK_EQUAL(orig.get<int>("y"), -1);
-  BOOST_CHECK_EQUAL(pset.get<std::vector<int>>("m")[0], -1);
+  BOOST_TEST(j == orig);
+  BOOST_TEST(orig.get<int>("y") == -1);
+  BOOST_TEST(pset.get<std::vector<int>>("m")[0] == -1);
 
   for (auto n : pset.get_names())
-    BOOST_CHECK("x" != n);
+    BOOST_TEST("x" != n);
 }
 
 BOOST_AUTO_TEST_CASE(DeepInjection)
@@ -49,23 +51,23 @@ BOOST_AUTO_TEST_CASE(DeepInjection)
   fhicl::ParameterSet k;
   k.put("l", l);
   fhicl::ParameterSet orig(pset.get<fhicl::ParameterSet>("k"));
-  BOOST_CHECK(k == orig);
-  BOOST_CHECK_EQUAL(orig.get<fhicl::ParameterSet>("l").get<int>("zz"), -2);
-  BOOST_CHECK_EQUAL(orig.get<int>("l.zz"), -2);
+  BOOST_TEST(k == orig);
+  BOOST_TEST(orig.get<fhicl::ParameterSet>("l").get<int>("zz") == -2);
+  BOOST_TEST(orig.get<int>("l.zz") == -2);
 }
 
 BOOST_AUTO_TEST_CASE(DoubleStringMismatchDefaulted)
 {
   std::string s;
   BOOST_CHECK_MESSAGE(pset.get_if_present("e", s), "Failed to get string");
-  BOOST_CHECK_EQUAL(s, "rain");
+  BOOST_TEST(s == "rain");
 
   try {
     pset.get<double>("e", 2.0);
     BOOST_FAIL("Failed to throw an exception as expected");
   }
   catch (fhicl::exception& e) {
-    BOOST_CHECK_EQUAL(e.categoryCode(), type_mismatch);
+    BOOST_TEST(e.categoryCode() == type_mismatch);
   }
   catch (...) {
     BOOST_FAIL("Wrong exception type thrown");
@@ -79,7 +81,7 @@ BOOST_AUTO_TEST_CASE(DoubleStringMismatchNoDefault)
     BOOST_FAIL("Failed to throw an exception as expected");
   }
   catch (fhicl::exception& e) {
-    BOOST_CHECK_EQUAL(e.categoryCode(), type_mismatch);
+    BOOST_TEST(e.categoryCode() == type_mismatch);
   }
   catch (...) {
     BOOST_FAIL("Wrong exception type thrown");
@@ -88,7 +90,7 @@ BOOST_AUTO_TEST_CASE(DoubleStringMismatchNoDefault)
 
 BOOST_AUTO_TEST_CASE(StringSuccess)
 {
-  BOOST_CHECK_EQUAL("rain", pset.get<std::string>("e"));
+  BOOST_TEST("rain" == pset.get<std::string>("e"));
 }
 
 BOOST_AUTO_TEST_CASE(NotFound)
@@ -98,7 +100,7 @@ BOOST_AUTO_TEST_CASE(NotFound)
     BOOST_FAIL("Failed to throw an exception as expected");
   }
   catch (fhicl::exception& e) {
-    BOOST_CHECK_EQUAL(e.categoryCode(), cant_find);
+    BOOST_TEST(e.categoryCode() == cant_find);
   }
   catch (...) {
     BOOST_FAIL("Wrong exception type thrown");
@@ -110,9 +112,9 @@ BOOST_AUTO_TEST_CASE(DeepVector)
   using vv_t = std::vector<std::vector<uint32_t>>;
   vv_t vv;
   BOOST_CHECK_NO_THROW(vv = pset.get<vv_t>("vv"));
-  BOOST_CHECK_EQUAL(vv.front().back(), 3u);
-  BOOST_CHECK_EQUAL(vv.back().front(), 2u);
-  BOOST_CHECK_EQUAL(vv.back().back(), 4u);
+  BOOST_TEST(vv.front().back() == 3u);
+  BOOST_TEST(vv.back().front() == 2u);
+  BOOST_TEST(vv.back().back() == 4u);
 }
 
 BOOST_AUTO_TEST_CASE(is_key_to)
@@ -135,10 +137,10 @@ BOOST_AUTO_TEST_CASE(is_key_to)
   fhicl::ParameterSet ps;
   ps.put("p", p);
 
-  BOOST_CHECK(ps.is_key_to_atom("p.i"));
-  BOOST_CHECK(ps.is_key_to_sequence("p.js"));
-  BOOST_CHECK(ps.is_key_to_atom("p.js[2]"));
-  BOOST_CHECK(ps.is_key_to_table("p.t"));
+  BOOST_TEST(ps.is_key_to_atom("p.i"));
+  BOOST_TEST(ps.is_key_to_sequence("p.js"));
+  BOOST_TEST(ps.is_key_to_atom("p.js[2]"));
+  BOOST_TEST(ps.is_key_to_table("p.t"));
 }
 
 BOOST_AUTO_TEST_CASE(put)
@@ -146,7 +148,7 @@ BOOST_AUTO_TEST_CASE(put)
   std::string const sval = "friendly";
   std::string const sval2 = "unfriendly";
   BOOST_CHECK_NO_THROW(pset.put("putTest", sval));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putTest"), sval);
+  BOOST_TEST(pset.get<std::string>("putTest") == sval);
   BOOST_CHECK_EXCEPTION(
     pset.put("putTest", sval2), fhicl::exception, [](auto const& e) {
       return e.categoryCode() == fhicl::error::cant_insert;
@@ -158,9 +160,9 @@ BOOST_AUTO_TEST_CASE(put_or_replace)
   std::string const sval = "friendly";
   std::string const sval2 = "superfriendly";
   BOOST_CHECK_NO_THROW(pset.put_or_replace("putOrReplaceTest", sval));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putOrReplaceTest"), sval);
+  BOOST_TEST(pset.get<std::string>("putOrReplaceTest") == sval);
   BOOST_CHECK_NO_THROW(pset.put_or_replace("putOrReplaceTest", sval2));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putOrReplaceTest"), sval2);
+  BOOST_TEST(pset.get<std::string>("putOrReplaceTest") == sval2);
 }
 
 BOOST_AUTO_TEST_CASE(put_or_replace_compatible_nil)
@@ -173,22 +175,22 @@ BOOST_AUTO_TEST_CASE(put_or_replace_compatible_nil)
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", sval));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putOrReplaceCompatibleTest"), sval);
+  BOOST_TEST(pset.get<std::string>("putOrReplaceCompatibleTest") == sval);
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval.front()));
-  BOOST_CHECK_EQUAL(pset.get<int>("putOrReplaceCompatibleTest"), vval.front());
+  BOOST_TEST(pset.get<int>("putOrReplaceCompatibleTest") == vval.front());
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval));
-  BOOST_CHECK(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval);
+  BOOST_TEST(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval);
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", psval));
-  BOOST_CHECK(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") == psval);
+  BOOST_TEST(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") == psval);
 }
 
 BOOST_AUTO_TEST_CASE(put_or_replace_compatible_atom)
@@ -201,10 +203,10 @@ BOOST_AUTO_TEST_CASE(put_or_replace_compatible_atom)
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", sval));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putOrReplaceCompatibleTest"), sval);
+  BOOST_TEST(pset.get<std::string>("putOrReplaceCompatibleTest") == sval);
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", sval2));
-  BOOST_CHECK_EQUAL(pset.get<std::string>("putOrReplaceCompatibleTest"), sval2);
+  BOOST_TEST(pset.get<std::string>("putOrReplaceCompatibleTest") == sval2);
   BOOST_CHECK_EXCEPTION(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval),
     fhicl::exception,
@@ -219,7 +221,7 @@ BOOST_AUTO_TEST_CASE(put_or_replace_compatible_atom)
     });
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval.front()));
-  BOOST_CHECK_EQUAL(pset.get<int>("putOrReplaceCompatibleTest"), vval.front());
+  BOOST_TEST(pset.get<int>("putOrReplaceCompatibleTest") == vval.front());
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
 }
@@ -234,10 +236,10 @@ BOOST_AUTO_TEST_CASE(put_or_replace_compatible_sequence)
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval));
-  BOOST_CHECK(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval);
+  BOOST_TEST(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval);
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", vval2));
-  BOOST_CHECK(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval2);
+  BOOST_TEST(pset.get<decltype(vval)>("putOrReplaceCompatibleTest") == vval2);
   BOOST_CHECK_EXCEPTION(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", sval),
     fhicl::exception,
@@ -265,11 +267,10 @@ BOOST_AUTO_TEST_CASE(put_or_replace_compatible_table)
     pset.put_or_replace("putOrReplaceCompatibleTest")); // Nil.
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", psval));
-  BOOST_CHECK(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") == psval);
+  BOOST_TEST(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") == psval);
   BOOST_CHECK_NO_THROW(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", psval2));
-  BOOST_CHECK(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") ==
-              psval2);
+  BOOST_TEST(pset.get<decltype(psval)>("putOrReplaceCompatibleTest") == psval2);
   BOOST_CHECK_EXCEPTION(
     pset.put_or_replace_compatible("putOrReplaceCompatibleTest", sval),
     fhicl::exception,
@@ -336,12 +337,11 @@ hex(std::string const& from)
 
 BOOST_AUTO_TEST_CASE(Custom)
 {
-  BOOST_CHECK_EQUAL(pset.get<std::string>("n"), "0x123");
+  BOOST_TEST(pset.get<std::string>("n") == "0x123");
   unsigned u;
-  BOOST_CHECK(pset.get_if_present("n", u, hex));
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("n", hex), u);
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("n", hex),
-                    (((1u) * 16u + 2u) * 16u + 3u));
+  BOOST_TEST(pset.get_if_present("n", u, hex));
+  BOOST_TEST(pset.get<unsigned>("n", hex) == u);
+  BOOST_TEST(pset.get<unsigned>("n", hex), (((1u) * 16u + 2u) * 16u + 3u));
   BOOST_CHECK_THROW(pset.get_if_present("e", u, hex), std::string);
 }
 

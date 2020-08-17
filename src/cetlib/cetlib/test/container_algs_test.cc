@@ -2,7 +2,7 @@
 #include "cetlib/quiet_unit_test.hpp"
 
 #include "cetlib/container_algorithms.h"
-#include "cetlib/test_macros.h"
+
 #include <map>
 #include <utility>
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(copy_all)
   std::vector<int> a{1, 2, 3, 4};
   std::vector<int> b;
   cet::copy_all(a, std::back_inserter(b));
-  CET_CHECK_EQUAL_COLLECTIONS(a, b);
+  BOOST_TEST(a == b);
 }
 
 BOOST_AUTO_TEST_CASE(transform_all)
@@ -92,16 +92,16 @@ BOOST_AUTO_TEST_CASE(transform_all)
   cet::transform_all(v2, back_inserter(cs2), MakeA<char>());
   cet::transform_all(v1, v2, inserter(p2, begin(p2)), MakeAPair<int, char>());
 
-  CET_CHECK_EQUAL_COLLECTIONS(is1, is2);
-  CET_CHECK_EQUAL_COLLECTIONS(cs1, cs2);
+  BOOST_TEST(is1 == is2);
+  BOOST_TEST(cs1 == cs2);
 
-  BOOST_CHECK_EQUAL(p1.size(), p2.size());
+  BOOST_TEST(p1.size() == p2.size());
 
   auto p1_it = cbegin(p1);
   auto p2_it = cbegin(p1);
   for (; p1_it != cend(p1); ++p1_it, ++p2_it) {
-    BOOST_CHECK_EQUAL(p1_it->first.t_, p2_it->first.t_);
-    BOOST_CHECK_EQUAL(p1_it->second.t_, p2_it->second.t_);
+    BOOST_TEST(p1_it->first.t_ == p2_it->first.t_);
+    BOOST_TEST(p1_it->second.t_ == p2_it->second.t_);
   }
 }
 
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(for_all_with_index)
   cet::for_all_with_index(
     refNames, [&firstNames](unsigned const i, auto const& refName) {
       auto const assembledName = firstNames[i] + std::to_string(i);
-      BOOST_CHECK_EQUAL(refName, assembledName);
+      BOOST_TEST(refName == assembledName);
     });
 }
 

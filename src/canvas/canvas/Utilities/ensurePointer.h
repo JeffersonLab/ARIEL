@@ -25,8 +25,8 @@ namespace art {
     struct are_cv_compatible {
       using T1P = std::remove_cv_t<std::remove_pointer_t<T1>>;
       using T2P = std::remove_cv_t<std::remove_pointer_t<T2>>;
-      static constexpr bool value{std::is_base_of<T1P, T2P>::value ||
-                                  std::is_same<T1P, T2P>::value};
+      static constexpr bool value{std::is_base_of_v<T1P, T2P> ||
+                                  std::is_same_v<T1P, T2P>};
     };
 
     template <typename TO, typename FROM>
@@ -75,7 +75,7 @@ namespace art {
 template <typename WANTED_POINTER, typename InputIterator>
 inline WANTED_POINTER
 art::ensurePointer(InputIterator it) try {
-  static_assert(std::is_pointer<WANTED_POINTER>::value,
+  static_assert(std::is_pointer_v<WANTED_POINTER>,
                 "Supplied template argument is not a pointer.");
   return detail::EnsurePointer<
     WANTED_POINTER,

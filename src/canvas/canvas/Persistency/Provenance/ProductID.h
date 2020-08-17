@@ -17,53 +17,61 @@ namespace art {
   public:
     using value_type = unsigned int;
 
-    ProductID() = default;
+    constexpr ProductID() = default;
     explicit ProductID(std::string const& canonicalProductName);
-    explicit ProductID(value_type const value);
+    constexpr explicit ProductID(value_type const value) noexcept
+      : value_{value}
+    {}
 
-    static ProductID
-    invalid()
+    static constexpr ProductID
+    invalid() noexcept
     {
       return ProductID{};
     }
 
     void setID(std::string const& canonicalProductName);
 
-    bool
-    isValid() const
+    constexpr bool
+    isValid() const noexcept
     {
       return value_ != 0u;
     }
-    auto
-    value() const
+
+    constexpr auto
+    value() const noexcept
     {
       return value_;
     }
 
-    bool
-    operator<(ProductID const rh) const
+    constexpr operator std::size_t() const noexcept
+    {
+      return static_cast<std::size_t>(value_);
+    }
+
+    constexpr bool
+    operator<(ProductID const rh) const noexcept
     {
       return value_ < rh.value_;
     }
-    bool
-    operator>(ProductID const rh) const
+    constexpr bool
+    operator>(ProductID const rh) const noexcept
     {
       return rh < *this;
     }
-    bool
-    operator==(ProductID const rh) const
+    constexpr bool
+    operator==(ProductID const rh) const noexcept
     {
       return value_ == rh.value_;
     }
-    bool
-    operator!=(ProductID const rh) const
+    constexpr bool
+    operator!=(ProductID const rh) const noexcept
     {
       return !(*this == rh);
     }
 
     struct Hash {
-      std::size_t
-      operator()(ProductID const pid) const
+      constexpr std::size_t
+      operator()(ProductID const pid) const noexcept
       {
         return pid.value(); // since the ID is already a checksum, don't
                             // worry about further hashing
@@ -85,8 +93,8 @@ namespace art {
 namespace std {
   template <>
   struct hash<art::ProductID> {
-    std::size_t
-    operator()(art::ProductID id) const
+    constexpr std::size_t
+    operator()(art::ProductID const id) const noexcept
     {
       return id.value();
     }

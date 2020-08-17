@@ -1,4 +1,5 @@
 #include "art/Framework/Core/OutputWorker.h"
+// vim: set sw=2 expandtab :
 
 #include "art/Framework/Core/FileBlock.h"
 #include "art/Framework/Core/OutputModule.h"
@@ -6,17 +7,20 @@
 #include "fhiclcpp/ParameterSetRegistry.h"
 
 namespace art {
-  OutputWorker::OutputWorker(std::unique_ptr<OutputModule>&& mod,
+
+  OutputWorker::~OutputWorker() = default;
+
+  // This is called directly by the make_worker function created
+  // by the DEFINE_ART_MODULE macro.
+  OutputWorker::OutputWorker(std::shared_ptr<OutputModule> mod,
                              ModuleDescription const& md,
                              WorkerParams const& wp)
-    : WorkerT<OutputModule>(std::move(mod), md, wp), ci_()
+    : WorkerT<OutputModule>{mod, md, wp}
   {
     ci_->outputModuleInitiated(
       label(),
       fhicl::ParameterSetRegistry::get(description().parameterSetID()));
   }
-
-  OutputWorker::~OutputWorker() {}
 
   std::string const&
   OutputWorker::lastClosedFileName() const
@@ -24,12 +28,14 @@ namespace art {
     return module().lastClosedFileName();
   }
 
-  void
+  bool
   OutputWorker::closeFile()
   {
-    module().doCloseFile();
-    ci_->outputFileClosed(description().moduleLabel(),
-                          module().lastClosedFileName());
+    bool const didCloseFile{module().doCloseFile()};
+    if (didCloseFile) {
+      ci_->outputFileClosed(description().moduleLabel(), lastClosedFileName());
+    }
+    return didCloseFile;
   }
 
   void
@@ -44,11 +50,14 @@ namespace art {
     return module().requestsToCloseFile();
   }
 
-  void
+  bool
   OutputWorker::openFile(FileBlock const& fb)
   {
-    module().doOpenFile(fb);
-    ci_->outputFileOpened(description().moduleLabel());
+    bool const didOpenFile{module().doOpenFile(fb)};
+    if (didOpenFile) {
+      ci_->outputFileOpened(description().moduleLabel());
+    }
+    return didOpenFile;
   }
 
   void
@@ -112,9 +121,9 @@ namespace art {
   }
 
   void
-  OutputWorker::selectProducts(ProductList const& productList)
+  OutputWorker::selectProducts(ProductTables const& tables)
   {
-    module().selectProducts(productList);
+    module().selectProducts(tables);
   }
 
   Granularity
@@ -122,4 +131,5 @@ namespace art {
   {
     return module().fileGranularity();
   }
-}
+
+} // namespace art

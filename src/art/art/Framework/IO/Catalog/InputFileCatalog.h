@@ -38,10 +38,10 @@ namespace art {
 
     explicit InputFileCatalog(fhicl::TableFragment<Config> const& config);
     virtual ~InputFileCatalog() = default;
-    std::vector<FileCatalogItem> const&
-    fileCatalogItems() const
+    std::size_t
+    size() const
     {
-      return fileCatalogItems_;
+      return fileCatalogItems_.size();
     }
     FileCatalogItem const& currentFile() const;
     size_t currentIndex() const;
@@ -88,7 +88,7 @@ namespace art {
     ServiceHandle<FileTransfer> ft_;
   }; // InputFileCatalog
 
-} // art
+} // namespace art
 
 // ======================================================================
 

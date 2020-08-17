@@ -3,14 +3,16 @@
 
 #include <limits>
 
-namespace art {
-  namespace detail {
-    constexpr int
-    info_success()
-    {
-      return std::numeric_limits<int>::max();
-    }
+namespace art::detail {
+  constexpr int
+  info_success()
+  {
+    return std::numeric_limits<int>::max();
   }
 }
 
-#endif
+#endif /* art_Framework_Art_detail_info_success_h */
+
+// Local Variables:
+// mode: c++
+// End:

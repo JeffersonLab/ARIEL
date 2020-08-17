@@ -13,26 +13,8 @@
 namespace gallery {
 
   EventNavigator::EventNavigator(std::vector<std::string> const& iFileNames)
-    : fileNames_(iFileNames)
-    , numberOfFiles_(fileNames_.size())
-    , fileEntry_(-1)
-    , firstFileWithEvent_(0)
-    , entriesInCurrentFile_(0)
-    , eventEntry_(0)
-    , file_()
-    , eventsTree_(nullptr)
-    , eventAuxiliaryBranch_(nullptr)
-    , eventAuxiliary_()
-    , pEventAuxiliary_(&eventAuxiliary_)
-    , previousEventAuxiliaryEntry_(-1)
-    , eventHistoryTree_(nullptr)
-    , eventHistoryBranch_(nullptr)
-    , eventHistory_()
-    , pEventHistory_(&eventHistory_)
-    , previousEventHistoryEntry_(-1)
-    , historyMap_()
+    : fileNames_{iFileNames}, numberOfFiles_(fileNames_.size())
   {
-
     if (fileNames_.empty()) {
       fileEntry_ = 0;
     } else {
@@ -107,13 +89,10 @@ namespace gallery {
   void
   EventNavigator::nextFile()
   {
-
-    // Be careful with this function. If the next file
-    // is empty this will leave it not pointing at a
-    // valid event.
-
+    // Be careful with this function. If the next file is empty this
+    // will leave it not pointing at a valid event.
     if (atEnd()) {
-      throw art::Exception(art::errors::LogicError)
+      throw art::Exception{art::errors::LogicError}
         << "Illegal call to EventNavigator::nextFile() when atEnd() is true";
     }
 
@@ -189,8 +168,8 @@ namespace gallery {
 
     if (historyMap_.empty()) {
 
-      auto metaDataTree = dynamic_cast<TTree*>(
-        file_->Get(art::rootNames::metaDataTreeName().c_str()));
+      std::unique_ptr<TTree> metaDataTree{
+        file_->Get<TTree>(art::rootNames::metaDataTreeName().c_str())};
 
       if (!metaDataTree) {
         throwTreeNotFound(art::rootNames::metaDataTreeName());
@@ -225,8 +204,7 @@ namespace gallery {
   void
   EventNavigator::initializeTTreePointers()
   {
-    eventsTree_ =
-      dynamic_cast<TTree*>(file_->Get(art::rootNames::eventTreeName().c_str()));
+    eventsTree_ = file_->Get<TTree>(art::rootNames::eventTreeName().c_str());
     if (eventsTree_ == nullptr) {
       throwTreeNotFound(art::rootNames::eventTreeName());
     }
@@ -235,8 +213,8 @@ namespace gallery {
         << "Unable to get the number of entries in events TTree.\n"
            "This might be a corrupted file.\n";
     }
-    eventHistoryTree_ = dynamic_cast<TTree*>(
-      file_->Get(art::rootNames::eventHistoryTreeName().c_str()));
+    eventHistoryTree_ =
+      file_->Get<TTree>(art::rootNames::eventHistoryTreeName().c_str());
     if (eventHistoryTree_ == nullptr) {
       throwTreeNotFound(art::rootNames::eventHistoryTreeName());
     }

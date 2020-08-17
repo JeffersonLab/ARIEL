@@ -68,7 +68,7 @@ namespace art {
       return &fullConfig_;
     }
   };
-}
+} // namespace art
 
 #endif /* art_Utilities_ToolConfigTable_h */
 

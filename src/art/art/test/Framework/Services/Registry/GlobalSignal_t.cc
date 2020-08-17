@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE (GlobalSignal_t)
-#include "boost/test/output_test_stream.hpp"
+#include "boost/test/tools/output_test_stream.hpp"
 #include "cetlib/quiet_unit_test.hpp"
 
 #include "art/Framework/Services/Registry/GlobalSignal.h"
@@ -41,7 +41,7 @@ namespace {
       os << text;
     }
   };
-}
+} // namespace
 
 BOOST_AUTO_TEST_SUITE(GlobalSignal_t)
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(TestSignal2_t)
   std::string const cmp_text{std::string("1: ") + test_text +
                              "2: " + test_text + "3: " + test_text};
   BOOST_CHECK_NO_THROW(s.invoke(os, test_text));
-  BOOST_CHECK(os.is_equal(cmp_text));
+  BOOST_TEST(os.is_equal(cmp_text));
 }
 
 BOOST_AUTO_TEST_CASE(TestSignal2a_t)
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(TestSignal2a_t)
   std::string const cmp_text{std::string("3: ") + test_text +
                              "2: " + test_text + "1: " + test_text};
   BOOST_CHECK_NO_THROW(s.invoke(os, test_text));
-  BOOST_CHECK(os.is_equal(cmp_text));
+  BOOST_TEST(os.is_equal(cmp_text));
 }
 
 BOOST_AUTO_TEST_CASE(TestSignal2_func_t)
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(TestSignal2_func_t)
   CallBackClass cbc;
   s.watch(&CallBackClass::func, cbc);
   BOOST_CHECK_NO_THROW(s.invoke(os, test_text));
-  BOOST_CHECK(os.is_equal(test_text));
+  BOOST_TEST(os.is_equal(test_text));
 }
 
 BOOST_AUTO_TEST_CASE(TestSignal2_cfunc_t)
@@ -92,18 +92,7 @@ BOOST_AUTO_TEST_CASE(TestSignal2_cfunc_t)
   CallBackClass const cbc;
   s.watch(&CallBackClass::cfunc, cbc);
   BOOST_CHECK_NO_THROW(s.invoke(os, test_text));
-  BOOST_CHECK(os.is_equal(test_text));
-}
-
-BOOST_AUTO_TEST_CASE(TestSignal2_clear_t)
-{
-  TestSignal2 s;
-  std::string const test_text{"Test text"};
-  boost::test_tools::output_test_stream os;
-  s.watch(testCallback<0>);
-  s.clear();
-  BOOST_CHECK_NO_THROW(s.invoke(os, test_text));
-  BOOST_CHECK(os.is_empty());
+  BOOST_TEST(os.is_equal(test_text));
 }
 
 BOOST_AUTO_TEST_CASE(TestSignal1_t)
@@ -113,7 +102,7 @@ BOOST_AUTO_TEST_CASE(TestSignal1_t)
   boost::test_tools::output_test_stream os;
   s.watch([&test_text](auto& x) { testCallback<0>(x, test_text); });
   BOOST_CHECK_NO_THROW(s.invoke(os));
-  BOOST_CHECK(os.is_equal(test_text));
+  BOOST_TEST(os.is_equal(test_text));
 }
 
 BOOST_AUTO_TEST_CASE(TestSignal0_t)
@@ -126,10 +115,10 @@ BOOST_AUTO_TEST_CASE(TestSignal0_t)
   // output_test_stream::result_type (in Boost <=1.53.0 at least)
   // screwing up std::ref's attempt to determine whether
   // output_test_stream is a callable entity.
-  std::ostringstream& osr __attribute__((unused)) (os);
-  s.watch([&osr, &test_text]() { testCallback<0>(osr, test_text); });
+  std::ostringstream& osr [[maybe_unused]]{os};
+  s.watch([&osr, &test_text] { testCallback<0>(osr, test_text); });
   BOOST_CHECK_NO_THROW(s.invoke());
-  BOOST_CHECK(os.is_equal(test_text));
+  BOOST_TEST(os.is_equal(test_text));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

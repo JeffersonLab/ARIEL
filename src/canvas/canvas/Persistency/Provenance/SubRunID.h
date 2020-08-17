@@ -16,7 +16,7 @@ namespace art {
 
 class art::SubRunID {
 public:
-  constexpr SubRunID();
+  constexpr SubRunID() noexcept;
   SubRunID(RunID rID, SubRunNumber_t srID);
   SubRunID(RunNumber_t rID, SubRunNumber_t srID);
 
@@ -36,7 +36,7 @@ public:
   static SubRunID firstSubRun();
   static SubRunID firstSubRun(RunID const& rID);
   static SubRunID invalidSubRun(RunID const& rID);
-  static constexpr SubRunID flushSubRun();
+  static constexpr SubRunID flushSubRun() noexcept;
   static SubRunID flushSubRun(RunID const& rID);
 
   // Comparison operators.
@@ -50,10 +50,9 @@ public:
   friend std::ostream& operator<<(std::ostream& os, SubRunID const& iID);
 
 private:
-  struct FlushFlag {
-  };
+  struct FlushFlag {};
 
-  explicit constexpr SubRunID(FlushFlag);
+  explicit constexpr SubRunID(FlushFlag) noexcept;
   SubRunID(RunID rID, FlushFlag);
 
   SubRunNumber_t inRangeOrInvalid(SubRunNumber_t sr);
@@ -64,7 +63,7 @@ private:
   SubRunNumber_t subRun_;
 };
 
-inline constexpr art::SubRunID::SubRunID()
+inline constexpr art::SubRunID::SubRunID() noexcept
   : run_(), subRun_(IDNumber<Level::SubRun>::invalid())
 {}
 
@@ -101,7 +100,7 @@ art::SubRunID::isValid() const
 inline bool
 art::SubRunID::isFlush() const
 {
-  return (subRun_ == IDNumber<Level::SubRun>::flush_value());
+  return subRun_ == IDNumber<Level::SubRun>::flush_value();
 }
 
 #include "canvas/Utilities/Exception.h"
@@ -121,7 +120,7 @@ art::SubRunID::next() const
 inline art::SubRunID
 art::SubRunID::nextRun() const
 {
-  return SubRunID(run_.next(), IDNumber<Level::SubRun>::first());
+  return SubRunID{run_.next(), IDNumber<Level::SubRun>::first()};
 }
 
 inline art::SubRunID
@@ -139,43 +138,43 @@ art::SubRunID::previous() const
 inline art::SubRunID
 art::SubRunID::previousRun() const
 {
-  return SubRunID(run_.previous(), IDNumber<Level::SubRun>::max_natural());
+  return SubRunID{run_.previous(), IDNumber<Level::SubRun>::max_natural()};
 }
 
 inline art::SubRunID
 art::SubRunID::maxSubRun()
 {
-  return SubRunID(RunID::maxRun(), IDNumber<Level::SubRun>::max_natural());
+  return SubRunID{RunID::maxRun(), IDNumber<Level::SubRun>::max_natural()};
 }
 
 inline art::SubRunID
 art::SubRunID::firstSubRun()
 {
-  return SubRunID(RunID::firstRun(), IDNumber<Level::SubRun>::first());
+  return SubRunID{RunID::firstRun(), IDNumber<Level::SubRun>::first()};
 }
 
 inline art::SubRunID
 art::SubRunID::firstSubRun(RunID const& rID)
 {
-  return SubRunID(rID, IDNumber<Level::SubRun>::first());
+  return SubRunID{rID, IDNumber<Level::SubRun>::first()};
 }
 
 inline art::SubRunID
 art::SubRunID::invalidSubRun(RunID const& rID)
 {
-  return SubRunID(rID, IDNumber<Level::SubRun>::invalid());
+  return SubRunID{rID, IDNumber<Level::SubRun>::invalid()};
 }
 
 inline constexpr art::SubRunID
-art::SubRunID::flushSubRun()
+art::SubRunID::flushSubRun() noexcept
 {
-  return SubRunID(FlushFlag());
+  return SubRunID{FlushFlag()};
 }
 
 inline art::SubRunID
 art::SubRunID::flushSubRun(RunID const& rID)
 {
-  return SubRunID(rID, FlushFlag());
+  return SubRunID{rID, FlushFlag()};
 }
 
 // Comparison operators.
@@ -196,8 +195,8 @@ art::SubRunID::operator!=(SubRunID const& other) const
 inline bool
 art::SubRunID::operator<(SubRunID const& other) const
 {
-  static SortInvalidFirst<SubRunNumber_t> op(
-    IDNumber<Level::SubRun>::invalid());
+  constexpr SortInvalidFirst<SubRunNumber_t> op{
+    IDNumber<Level::SubRun>::invalid()};
   if (run_ == other.run_) {
     return op(subRun_, other.subRun_);
   } else {
@@ -223,7 +222,7 @@ art::SubRunID::operator>=(SubRunID const& other) const
   return !(*this < other);
 }
 
-inline constexpr art::SubRunID::SubRunID(FlushFlag)
+inline constexpr art::SubRunID::SubRunID(FlushFlag) noexcept
   : run_(RunID::flushRun()), subRun_(IDNumber<Level::SubRun>::flush_value())
 {}
 

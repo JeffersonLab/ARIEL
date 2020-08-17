@@ -72,36 +72,28 @@ namespace boost {
   namespace spirit {
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::real> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::real> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::uint> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::uint> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::hex> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::hex> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::dbid> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::dbid> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::bin> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::bin> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::ass> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::ass> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::dss> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::dss> : mpl::true_ {};
 
     template <>
-    struct use_terminal<qi::domain, fhicl::tag::binding> : mpl::true_ {
-    };
+    struct use_terminal<qi::domain, fhicl::tag::binding> : mpl::true_ {};
   }
 } // boost::spirit
 
@@ -638,7 +630,7 @@ namespace boost {
   }
 } // boost::spirit::qi
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* fhiclcpp_tokens_h */
 

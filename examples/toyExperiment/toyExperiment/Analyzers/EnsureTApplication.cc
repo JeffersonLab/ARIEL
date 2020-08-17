@@ -13,10 +13,10 @@
 
 #include "TApplication.h"
 
-tex::EnsureTApplication::EnsureTApplication( int argc, char **argv){
+tex::EnsureTApplication::EnsureTApplication(int argc, char** argv)
+{
 
-  if ( !gApplication ){
-    new TApplication( "noapplication", &argc, argv );
+  if (!gApplication) {
+    new TApplication("noapplication", &argc, argv);
   }
-
 }

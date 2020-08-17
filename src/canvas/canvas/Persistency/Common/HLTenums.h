@@ -1,27 +1,20 @@
 #ifndef canvas_Persistency_Common_HLTenums_h
 #define canvas_Persistency_Common_HLTenums_h
+// vim: set sw=2 expandtab :
 
-/** \brief HLT enums
- *
- *  Definition of common HLT enums
- *
- */
-
-namespace art {
-  namespace hlt {
-
-    /// status of a trigger path
-    enum HLTState {
-      Ready = 0,     ///< not [yet] run
-      Pass = 1,      ///< accept
-      Fail = 2,      ///< reject
-      Exception = 3, ///< error
-      UNKNOWN
-    };
-  }
-}
-
-  // ======================================================================
+namespace art::hlt {
+  enum HLTState {
+    Ready = 0 // not yet run
+    ,
+    Pass = 1 // accepted
+    ,
+    Fail = 2 // rejected
+    ,
+    Exception = 3 // threw an exception
+    ,
+    N_STATES = 4
+  };
+} // namespace art::hlt
 
 #endif /* canvas_Persistency_Common_HLTenums_h */
 

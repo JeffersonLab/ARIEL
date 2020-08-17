@@ -1,6 +1,4 @@
-physics: {
-   end_paths: []
-}
+physics: {}
 process_name: "OptSimpleOut"
 services: {
    CatalogInterface: {
@@ -31,14 +29,17 @@ services: {
       }
    }
    scheduler: {
-      debugConfig: {
+      debug: {
          fileName: "config.out"
+         option: "debug-config"
          printMode: "raw"
       }
-      errorOnFailureToPut: true
       errorOnMissingConsumes: false
       errorOnSIGINT: true
+      num_schedules: 1
       num_threads: 1
+      pruneConfig: true
+      reportUnused: true
    }
 }
 source: {

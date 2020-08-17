@@ -13,24 +13,22 @@ namespace hep {
   namespace concurrency {
 
     class WaitingTaskList {
-      // Data Members
-    private:
-      // Protects taskQueue_;
+    private: // Data Members
       hep::concurrency::RecursiveMutex mutex_{"WaitingTaskList::mutex_"};
-      std::atomic<std::queue<tbb::task*>*> taskQueue_;
-      std::atomic<bool> m_waiting;
-      std::atomic<std::exception_ptr*> m_exceptionPtr;
-      // Implementation details
-    private:
+      std::queue<tbb::task*>* taskQueue_;
+      bool waiting_;
+      std::exception_ptr* exceptionPtr_;
+
+    private: // Implementation details
       void runAllTasks();
-      // Special Member Functions
-    public:
+
+    public: // Special Member Functions
       ~WaitingTaskList();
       WaitingTaskList();
       WaitingTaskList(WaitingTaskList const&) = delete;
       const WaitingTaskList& operator=(WaitingTaskList const&) = delete;
-      // API
-    public:
+
+    public: // API
       void add(tbb::task*);
       void doneWaiting(std::exception_ptr);
       void reset();
@@ -40,3 +38,7 @@ namespace hep {
 } // namespace hep
 
 #endif /* hep_concurrency_WaitingTaskList_h */
+
+// Local Variables:
+// mode: c++
+// End:

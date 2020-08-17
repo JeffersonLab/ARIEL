@@ -1,9 +1,0 @@
-#include "ProductMix_r1.fcl"
-
-physics.filters.mixFilter.fileNames[1]: " ../ProductMix_w.d/mix.root"
-physics.filters.mixFilter.expectedRespondFunctionCalls: 2
-physics.analyzers: @erase
-outputs: @erase
-physics.e1: @erase
-physics.end_paths: @erase
-source.maxEvents: 210

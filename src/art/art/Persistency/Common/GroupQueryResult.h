@@ -20,7 +20,7 @@ namespace art {
 
   // forward declaration:
   class Group;
-}
+} // namespace art
 
 // ======================================================================
 

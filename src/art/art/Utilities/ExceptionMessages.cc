@@ -26,9 +26,10 @@ namespace art {
     std::string programName(prog ? prog : "program");
     std::string shortDesc("std::bad_allocException");
     std::ostringstream longDesc;
-    longDesc << "std::bad_alloc exception caught in " << programName << "\n"
-             << "The job has probably exhausted the virtual memory available "
-                "to the process.";
+    longDesc
+      << "std::bad_alloc exception caught in " << programName << "\n"
+      << "The job has probably exhausted the virtual memory available to "
+         "the process.";
     LogSystem(shortDesc) << longDesc.str();
   }
   catch (...) {
@@ -57,4 +58,4 @@ namespace art {
   catch (...) {
   }
 
-} // art
+} // namespace art

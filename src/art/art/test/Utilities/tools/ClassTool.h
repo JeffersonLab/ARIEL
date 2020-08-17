@@ -14,7 +14,7 @@ namespace arttest {
       return i + 1;
     }
   };
-}
+} // namespace arttest
 
 #endif /* art_test_Utilities_tools_ClassTool_h */
 

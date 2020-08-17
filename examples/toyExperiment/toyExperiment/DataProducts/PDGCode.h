@@ -10,16 +10,15 @@ namespace tex {
   class PDGCode {
 
   public:
-    enum type
-      {
-        invalid  =    0 ,
-        pi_plus  =  211 ,
-        pi_minus = -211 ,
-        K_plus   =  321 ,
-        K_minus  = -321 ,
-        phi      =  333
+    enum type {
+      invalid = 0,
+      pi_plus = 211,
+      pi_minus = -211,
+      K_plus = 321,
+      K_minus = -321,
+      phi = 333
 
-      };
+    };
   };
 
 }

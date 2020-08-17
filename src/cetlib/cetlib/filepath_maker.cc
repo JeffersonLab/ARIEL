@@ -7,8 +7,11 @@
 
 #include "cetlib/filepath_maker.h"
 #include "cetlib/filesystem.h"
+#include "cetlib_except/exception.h"
 
 #include <iostream>
+#include <map>
+#include <vector>
 
 using cet::filepath_first_absolute_or_lookup_with_dot;
 using cet::filepath_lookup;
@@ -100,3 +103,74 @@ filepath_first_absolute_or_lookup_with_dot::reset()
 }
 
 // ======================================================================
+
+//
+std::unique_ptr<filepath_maker>
+cet::lookup_policy_selector::select(std::string const& policy,
+                                    std::string paths) const
+{
+  if (policy == none()) {
+    return std::make_unique<filepath_maker>();
+  }
+
+  if (policy == all()) {
+    return std::make_unique<filepath_lookup>(move(paths));
+  }
+
+  if (policy == nonabsolute()) {
+    return std::make_unique<filepath_lookup_nonabsolute>(move(paths));
+  }
+
+  if (policy == after1()) {
+    return std::make_unique<filepath_lookup_after1>(move(paths));
+  }
+
+  if (policy == permissive()) {
+    return std::make_unique<filepath_first_absolute_or_lookup_with_dot>(
+      move(paths));
+  }
+
+  throw cet::exception("Configuration")
+    << "An unsupported file-lookup policy was selected.";
+}
+
+std::string
+cet::lookup_policy_selector::help_message() const
+{
+  using namespace std::string_literals;
+  std::map<std::string, std::vector<std::string>> policies;
+  policies.emplace(none(), std::vector{"No lookup is done for any files."s});
+  policies.emplace(
+    all(),
+    std::vector{"Lookup is performed for all files presented to the filepath-"s,
+                "making object."s});
+  policies.emplace(
+    nonabsolute(),
+    std::vector{"Lookup is performed only for files that are not absolute--"s,
+                "i.e. file names not beginning with the '/' character."s});
+  policies.emplace(
+    after1(),
+    std::vector{"No lookup for the first file, and only lookup is performed"s,
+                "for all subsequent files."s});
+  policies.emplace(
+    permissive(),
+    std::vector{
+      "The first file can be an absolute path, a path relative to '.',"s,
+      "or a path that can be looked up; all subsequent files must be"s,
+      "looked up.  This is the policy used by the art framework; it is"s,
+      "sometimes referred to as the first-absolute-or-lookup-with-dot"s,
+      "policy."s});
+  std::string result{"\nThe following file-lookup policies are supported:\n"};
+  for (auto const& [name, description] : policies) {
+    result += "\n  '";
+    result += name;
+    result += "'\n";
+    for (auto const& line : description) {
+      result += "     ";
+      result += line;
+      result += '\n';
+    }
+  }
+  result += '\n';
+  return result;
+}

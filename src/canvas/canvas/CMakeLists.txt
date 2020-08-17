@@ -5,14 +5,6 @@ add_subdirectory(Version)
 add_subdirectory(Utilities)
 add_subdirectory(Persistency)
 
-find_package(Threads)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-
-cet_have_qual(c2 NEED_ROOT_INTROSPECTION)
-if (NEED_ROOT_INTROSPECTION)
-  find_ups_root()
-  set (INTROSPECTION_LIBS ${ROOT_CORE})
-endif()
 
 cet_make(LIBRARY_NAME canvas
   SUBDIRS Version ${CMAKE_CURRENT_BINARY_DIR}/Version
@@ -25,16 +17,15 @@ cet_make(LIBRARY_NAME canvas
   Persistency/Common/detail
   LIBRARIES
   MF_MessageLogger
-  ${INTROSPECTION_LIBS}
-  ${TBB}
+  $<$<PLATFORM_ID:Darwin>:c++abi>
   fhiclcpp
   cetlib
   cetlib_except
+  hep_concurrency
+  Boost::date_time
   ${CLHEP}
-  ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
-  NO_DICTIONARY
-  )
+  NO_DICTIONARY)
 
 # Testing
 add_subdirectory(test)

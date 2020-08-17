@@ -111,7 +111,7 @@ namespace art {
     return false;
   }
 
-} // art
+} // namespace art
 
 #endif /* art_Persistency_Common_debugging_allocator_h */
 

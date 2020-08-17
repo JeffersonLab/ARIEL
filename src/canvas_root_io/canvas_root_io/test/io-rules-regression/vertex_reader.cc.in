@@ -1,0 +1,61 @@
+#cmakedefine WANT_WRAPPER
+#cmakedefine WANT_TCLASS_READRULES
+
+#include "TBranch.h"
+#include "TFile.h"
+#include "TTree.h"
+
+#include "Vertex.h"
+#ifdef WANT_WRAPPER
+#include "Wrapper.h"
+#endif
+#include "setupRoot.h"
+
+#include <cstdlib>
+#include <memory>
+#include <string>
+
+int
+main(int argc, char** argv) try {
+  arttest::setupRoot();
+  std::string fileName;
+  if (argc == 2) {
+    fileName = argv[1];
+  } else {
+    std::cerr << "Usage: vertexWriter <output-file>\n";
+    exit(1);
+  }
+#ifdef WANT_TCLASS_READRULES
+  TClass::AddRule("sourceClass=\"ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::GlobalCoordinateSystemTag>\" "
+                  "targetClass=\"ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<Double32_t>,ROOT::Math::GlobalCoordinateSystemTag>\"");
+  TClass::AddRule("sourceClass=\"ROOT::Math::SMatrix<double,3,3,ROOT::Math::MatRepSym<double,3> >\" "
+                  "targetClass=\"ROOT::Math::SMatrix<Double32_t,3,3,ROOT::Math::MatRepSym<Double32_t,3> >\" ");
+#endif
+  TFile hfile(fileName.c_str());
+  TTree* vtree = nullptr;
+  hfile.GetObject("VertexTree", vtree);
+  auto branch = vtree->GetBranch("vertex");
+#ifdef WANT_WRAPPER
+  arttest::Wrapper<std::vector<arttest::Vertex>> w_vtx;
+  auto pw_vtx = &w_vtx;
+  branch->SetAddress(&pw_vtx);
+#else
+  std::vector<arttest::Vertex> vtx;
+  auto p_vtx = &vtx;
+  branch->SetAddress(&p_vtx);
+#endif
+  vtree->GetEvent(0);
+#ifdef WANT_WRAPPER
+  auto const& vtx = *w_vtx.product();
+#endif
+  for (std::size_t i = 0ull; i < 3; ++i) {
+    std::cout << "i = " << i << "; id = " << vtx[i].id << std::endl;
+    std::cout << "pos = " << vtx[i].pos << std::endl;
+    std::cout << "cov = \n" << vtx[i].cov << std::endl;
+  }
+  hfile.Close();
+  return 0;
+}
+catch (...) {
+  return 1;
+}

@@ -8,8 +8,8 @@ namespace art {
 
   struct FileFormatVersion {
     FileFormatVersion() = default;
-    explicit FileFormatVersion(int vers) : FileFormatVersion{vers, {}} {}
-    FileFormatVersion(int vers, std::string const& era)
+    explicit FileFormatVersion(int const vers) : FileFormatVersion{vers, {}} {}
+    FileFormatVersion(int const vers, std::string const& era)
       : value_{vers}, era_{era}
     {}
     bool

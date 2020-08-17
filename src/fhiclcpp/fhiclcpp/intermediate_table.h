@@ -21,22 +21,22 @@
 // Supplemental expert notes on intermediate_table vs ParameterSet.
 //
 // 1. Intermediate tables contain only extended values; ParameterSets
-//    contain only boost::any.
+//    contain only std::any.
 //
-// 2. The boost::any in a ParameterSet may not be the same type as the
-//    boost::any in the corresponding extended_value in the intermediate
+// 2. The std::any in a ParameterSet may not be the same type as the
+//    std::any in the corresponding extended_value in the intermediate
 //    table whence it came.
 //
 // 3. An extended_value::sequence_t is std::vector<extended_value>; a
-//    ParameterSet::ps_sequence_t is std::vector<boost::any>.
+//    ParameterSet::ps_sequence_t is std::vector<std::any>.
 //
 // 4. An extended_value::table_t is std::map<std::string,
 //    extended_value>; the equivalent concept in ParameterSet is
-//    ParameterSet (stored as boost::any).
+//    ParameterSet (stored as std::any).
 //
 // 5. An extended_value::complex_t is std::pair<std::string,
 //    std::string>; the equivalent concept in ParameterSet is
-//    std::string (stored as boost::any).
+//    std::string (stored as std::any).
 //
 // 6. Numbers, boolean values and strings are to be stored in
 //    intermediate_tables at all times in their canonical string form
@@ -48,12 +48,12 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "boost/any.hpp"
 #include "fhiclcpp/coding.h"
 #include "fhiclcpp/extended_value.h"
 #include "fhiclcpp/fwd.h"
 #include "fhiclcpp/type_traits.h"
 
+#include <any>
 #include <complex>
 #include <map>
 #include <string>
@@ -110,12 +110,12 @@ public:
   ////////////////////
   // Expert interface.
   // Typedefs.
-  typedef extended_value::atom_t atom_t;
-  typedef extended_value::complex_t complex_t;
-  typedef extended_value::sequence_t sequence_t;
-  typedef extended_value::table_t table_t;
-  typedef table_t::iterator iterator;
-  typedef table_t::const_iterator const_iterator;
+  using atom_t = extended_value::atom_t;
+  using complex_t = extended_value::complex_t;
+  using sequence_t = extended_value::sequence_t;
+  using table_t = extended_value::table_t;
+  using iterator = table_t::iterator;
+  using const_iterator = table_t::const_iterator;
 
   const_iterator begin() const;
   const_iterator end() const;
@@ -124,7 +124,7 @@ public:
   bool insert(std::string const& name,
               bool in_prolog,
               value_tag tag,
-              boost::any const& value);
+              std::any const& value);
   bool insert(std::string const& name, extended_value const& value);
   bool insert(std::string const& name, extended_value&& value);
 
@@ -144,7 +144,8 @@ private:
                               extended_value const& value);
 
   // Return an item with a bool indicating whether it may be updated.
-  std::pair<extended_value*, bool> locate_(std::string const& name, bool in_prolog = false);
+  std::pair<extended_value*, bool> locate_(std::string const& name,
+                                           bool in_prolog = false);
 
   std::vector<std::string> split(std::string const& name) const;
 
@@ -200,7 +201,7 @@ namespace fhicl {
       intermediate_table::sequence_t
       operator()(intermediate_table& table, std::string const& name)
       {
-        return boost::any_cast<intermediate_table::sequence_t>(
+        return std::any_cast<intermediate_table::sequence_t>(
           table.find(name).value);
       }
     };
@@ -214,7 +215,7 @@ namespace fhicl {
       {
         auto item = sequence.locate(name);
         if (item != nullptr) {
-          return boost::any_cast<intermediate_table::sequence_t&>(item->value);
+          return std::any_cast<intermediate_table::sequence_t&>(item->value);
         } else {
           throw fhicl::exception(protection_violation)
             << "Requested non-updatable parameter \"" << name
@@ -230,7 +231,7 @@ namespace fhicl {
       intermediate_table::sequence_t const&
       operator()(intermediate_table const& table, std::string const& name)
       {
-        return boost::any_cast<intermediate_table::sequence_t const&>(
+        return std::any_cast<intermediate_table::sequence_t const&>(
           table.find(name).value);
       }
     };
@@ -242,7 +243,7 @@ namespace fhicl {
       intermediate_table::table_t
       operator()(intermediate_table& table, std::string const& name)
       {
-        return boost::any_cast<intermediate_table::table_t>(
+        return std::any_cast<intermediate_table::table_t>(
           table.find(name).value);
       }
     };
@@ -256,7 +257,7 @@ namespace fhicl {
       {
         auto item = table.locate(name);
         if (item != nullptr) {
-          return boost::any_cast<intermediate_table::table_t&>(item->value);
+          return std::any_cast<intermediate_table::table_t&>(item->value);
         } else {
           throw fhicl::exception(protection_violation)
             << "Requested non-updatable parameter " << name << " for update.\n";
@@ -271,7 +272,7 @@ namespace fhicl {
       intermediate_table::table_t const&
       operator()(intermediate_table const& table, std::string const& name)
       {
-        return boost::any_cast<intermediate_table::table_t const&>(
+        return std::any_cast<intermediate_table::table_t const&>(
           table.find(name).value);
       }
     };
@@ -297,15 +298,15 @@ fhicl::intermediate_table::put(std::string const& name,
 inline bool
 fhicl::intermediate_table::put(std::string const& name,
                                char const* value, // String.
-                               bool in_prolog)
+                               bool const in_prolog)
 {
   return insert(name, in_prolog, STRING, detail::encode(value));
 }
 
 inline bool
 fhicl::intermediate_table::put(std::string const& name,
-                               bool value, // Boolean.
-                               bool in_prolog)
+                               bool const value, // Boolean.
+                               bool const in_prolog)
 {
   return insert(name, in_prolog, BOOL, detail::encode(value));
 }
@@ -314,7 +315,7 @@ template <typename T>
 bool
 fhicl::intermediate_table::put(std::string const& name,
                                std::complex<T> const& value, // Complex.
-                               bool in_prolog)
+                               bool const in_prolog)
 {
   return insert(
     name,
@@ -327,7 +328,7 @@ template <typename T>
 inline bool
 fhicl::intermediate_table::put(std::string const& name,
                                std::vector<T> const& value, // Sequence.
-                               bool in_prolog)
+                               bool const in_prolog)
 {
   bool result = putEmptySequence(name, in_prolog);
   if (!result) {
@@ -344,27 +345,28 @@ fhicl::intermediate_table::put(std::string const& name,
 template <typename T>
 inline typename std::enable_if<tt::is_numeric<T>::value, bool>::type
 fhicl::intermediate_table::put(std::string const& name,
-                               T value, // Number
-                               bool in_prolog)
+                               T const value, // Number
+                               bool const in_prolog)
 {
   return insert(name, in_prolog, NUMBER, detail::encode(value));
 }
 
 inline bool fhicl::intermediate_table::putEmptySequence(
   std::string const& name,
-  bool in_prolog) // Sequence.
+  bool const in_prolog) // Sequence.
 {
-  return insert(name, in_prolog, SEQUENCE, sequence_t());
+  return insert(name, in_prolog, SEQUENCE, sequence_t{});
 }
 
-inline bool fhicl::intermediate_table::putEmptyTable(std::string const& name,
-                                                     bool in_prolog) // Table.
+inline bool fhicl::intermediate_table::putEmptyTable(
+  std::string const& name,
+  bool const in_prolog) // Table.
 {
-  return insert(name, in_prolog, TABLE, table_t());
+  return insert(name, in_prolog, TABLE, table_t{});
 }
 
 inline bool fhicl::intermediate_table::putNil(std::string const& name,
-                                              bool in_prolog) // Nil.
+                                              bool const in_prolog) // Nil.
 {
   return insert(name, in_prolog, NIL, detail::encode((void*)0));
 }

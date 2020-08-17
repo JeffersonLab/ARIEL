@@ -9,7 +9,7 @@
 namespace {
   class set_to_null_when_done {
   public:
-    explicit set_to_null_when_done(sqlite3*& db) : db_{db} {}
+    explicit set_to_null_when_done(sqlite3*& db) noexcept : db_{db} {}
     ~set_to_null_when_done() noexcept { db_ = nullptr; }
 
   private:
@@ -17,13 +17,14 @@ namespace {
   };
 }
 
-cet::sqlite::Transaction::Transaction(sqlite3* db) : db_{db}
+cet::sqlite::Transaction::Transaction(sqlite3* db) noexcept(false) : db_{db}
 {
   assert(db_);
   int const rc{sqlite3_exec(db_, "BEGIN;", nullptr, nullptr, nullptr)};
   if (rc != SQLITE_OK) {
-    throw sqlite::Exception{sqlite::errors::SQLExecutionError}
-      << "Failed to start SQLite transaction";
+    throw Exception{errors::SQLExecutionError}
+      << "Failed to start SQLite transaction due to status code " << rc << ":\n"
+      << sqlite3_errmsg(db_) << '\n';
   }
 }
 
@@ -38,13 +39,15 @@ cet::sqlite::Transaction::~Transaction() noexcept
 }
 
 void
-cet::sqlite::Transaction::commit()
+cet::sqlite::Transaction::commit() noexcept(false)
 {
   assert(db_);
   set_to_null_when_done sentry{db_};
   int const rc{sqlite3_exec(db_, "COMMIT;", nullptr, nullptr, nullptr)};
   if (rc != SQLITE_OK) {
-    throw sqlite::Exception{sqlite::errors::SQLExecutionError}
-      << "Failed to commit SQLite transaction.";
+    throw Exception{errors::SQLExecutionError}
+      << "Failed to commit SQLite transaction due to status code " << rc
+      << ":\n"
+      << sqlite3_errmsg(db_) << '\n';
   }
 }

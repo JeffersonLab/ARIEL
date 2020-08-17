@@ -1,0 +1,19 @@
+
+File catalog metadata from file ../SAM_metadataFromInput_01.d/out.root:
+
+ 1: art.process_name     "SAMMetadataPassthrough1"
+ 2: file_type            "MC"
+ 3: data_tier            "Chummy"
+ 4: data_stream          "o1"
+ 5: file_format          "artroot"
+ 6: start_time           "<date-time>"
+ 7: end_time             "<date-time>"
+ 8: event_count          1
+ 9: first_event          1
+10: last_event           1
+11: parents              [ "out.root" ]
+12: art.first_event      [ 1, 0, 1 ]
+13: art.last_event       [ 1, 0, 1 ]
+14: art.file_format_era  "ART_2011a"
+15: art.file_format_version 13
+<separator (-)>

@@ -31,3 +31,7 @@
 #endif
 
 #endif /* hep_concurrency_hardware_pause_h */
+
+// Local Variables:
+// mode: c++
+// End:

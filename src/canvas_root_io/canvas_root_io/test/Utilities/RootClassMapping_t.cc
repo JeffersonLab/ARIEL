@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE(RootClassMapping_t)
-#include "boost/test/output_test_stream.hpp"
+#include "boost/test/tools/output_test_stream.hpp"
 #include "cetlib/quiet_unit_test.hpp"
 
 using boost::test_tools::output_test_stream;
@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(read)
   // longer agrees with the type of the branch corresponding to "T",
   // ROOT6 logs an error message and **DOES NOT** set the branch
   // address, and the "data" data member of tpIn should be empty.
-  BOOST_CHECK(tpIn.data.empty());
+  BOOST_TEST(tpIn.data.empty());
   std::cerr << os.str();
-  BOOST_CHECK(os.is_equal(
+  BOOST_TEST(os.is_equal(
     "Attempting to read stored object as a TestProd<unsigned long,string>.\n"));
 }
 

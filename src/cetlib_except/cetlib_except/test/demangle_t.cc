@@ -1,6 +1,5 @@
 #include "cetlib_except/demangle.h"
 
-#include <iostream>
 #include <stdexcept>
 #include <string>
 

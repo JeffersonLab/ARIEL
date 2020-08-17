@@ -1,4 +1,6 @@
 #include "canvas/Persistency/Provenance/ResultsAuxiliary.h"
+// vim: set sw=2 expandtab :
+
 #include <ostream>
 
 void

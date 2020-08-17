@@ -9,5 +9,7 @@
 #include "canvas/Persistency/Common/PtrVectorBase.h"
 #include "canvas/Persistency/Common/RNGsnapshot.h"
 #include "canvas/Persistency/Common/RefCore.h"
+#include "canvas/Persistency/Common/Sampled.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Provenance/SampledInfo.h"

@@ -8,7 +8,8 @@ namespace art {
 
   // Translate enum to string;
   std::string translateFileDisposition(FileDisposition fd);
-}
+
+} // namespace art
 
 enum class art::FileDisposition {
   PENDING = -1,

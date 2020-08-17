@@ -1,0 +1,22 @@
+process_name: SamplingInputTest
+
+source: {
+  module_type: SamplingInput
+  summary: true
+  dataSets: {
+    signal: {
+      weight: 1
+      fileNames: ["../SamplingInput_w_signal.d/out.root"]
+    }
+  }
+}
+
+physics: {
+  ep: [o1]
+}
+
+outputs.o1: {
+  module_type: RootOutput
+  fileName: "/dev/null"
+  outputCommands: ["keep *", "drop *_makeEventInt_*_*"]
+}

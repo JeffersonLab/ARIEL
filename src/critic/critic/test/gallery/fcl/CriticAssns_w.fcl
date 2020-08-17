@@ -1,0 +1,40 @@
+process_name: ASSNS
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents: 2
+}
+
+physics:
+{
+  producers:
+  {
+    ap1:
+    {
+      module_type: GalleryAssnsProducer
+    }
+  }
+
+  p1: [ ap1 ]
+  trigger_paths: [ p1 ]
+
+  e1: [ o1, o2 ]
+  end_paths: [ e1 ]
+}
+
+outputs:
+{
+  o1:
+  {
+    module_type: RootOutput
+    fileName: "out1.root"
+  }
+  o2:
+  {
+    module_type: RootOutput
+    fileName: "out2.root"
+    outputCommands: [ "keep *",
+                      "drop arttest::StringProducts_*_*_*" ]
+  }
+}

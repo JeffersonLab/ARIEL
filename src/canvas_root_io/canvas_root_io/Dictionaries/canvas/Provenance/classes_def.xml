@@ -2,7 +2,8 @@
   <class pattern="art::Transient<*>">
     <field name="value_" transient="true"/>
   </class>
-  <class name="art::History" ClassVersion="10">
+  <class name="art::History" ClassVersion="11">
+    <version ClassVersion="11" checksum="3533235054"/>
     <version ClassVersion="10" checksum="1835436919"/>
   </class>
   <class name="art::EventSelectionIDVector"/>
@@ -16,7 +17,7 @@
           targetClass="art::ProductProvenance"
           source="art::BranchID branchID_"
           target="productID_"
-          include="canvas/Persistency/Provenance/BranchID.h">
+          include="canvas/Persistency/Provenance/Compatibility/BranchID.h">
     <![CDATA[ productID_ = art::ProductID{onfile.branchID_.id()}; ]]>
   </ioread>
   <class name="art::ProductProvenance::Transients"/>
@@ -55,7 +56,7 @@
           targetClass="art::BranchChildren"
           source="std::map<art::BranchID, std::set<art::BranchID>> childLookup_;"
           target="childLookup_"
-          include="canvas/Persistency/Provenance/BranchID.h">
+          include="canvas/Persistency/Provenance/Compatibility/BranchID.h">
     <![CDATA[
         childLookup_.clear();
         for (auto const& lookup : onfile.childLookup_) {
@@ -148,7 +149,7 @@
           targetClass="art::Parentage"
           source="std::vector<art::BranchID> parents_;"
           target="parents_"
-          include="canvas/Persistency/Provenance/BranchID.h">
+          include="canvas/Persistency/Provenance/Compatibility/BranchID.h">
     <![CDATA[
         parents_.resize(onfile.parents_.size());
         for (std::size_t i = 0; i < parents_.size(); ++i) {
@@ -197,4 +198,13 @@
   <class name="art::ProductID" ClassVersion="10">
     <version ClassVersion="10" checksum="2026026665"/>
   </class>
+  <class name="art::SampledEventInfo" ClassVersion="10">
+   <version ClassVersion="10" checksum="3723908890"/>
+  </class>
+  <class name="std::vector<art::SubRunID>"/>
+  <class name="std::vector<art::RunID>"/>
+  <class name="art::SampledInfo<art::SubRunID>"/>
+  <class name="art::SampledInfo<art::RunID>"/>
+  <class name="std::map<std::string, art::SampledInfo<art::SubRunID>>"/>
+  <class name="std::map<std::string, art::SampledInfo<art::RunID>>"/>
 </lcgdict>

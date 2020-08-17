@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(no_delete_t)
     std::shared_ptr<std::ostream>{&oss1, cet::no_delete()};
     std::unique_ptr<std::ostream, cet::no_delete>{&oss2};
   }
-  BOOST_CHECK_EQUAL(ossp1, &oss1);
-  BOOST_CHECK_EQUAL(ossp2, &oss2);
+  BOOST_TEST(ossp1 == &oss1);
+  BOOST_TEST(ossp2 == &oss2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

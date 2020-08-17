@@ -6,9 +6,18 @@
 
 #define BOOST_TEST_MODULE (value_ptr test)
 #include "cetlib/quiet_unit_test.hpp"
+#include <ostream>
 #include <string>
 
 #include "cetlib/value_ptr.h"
+
+namespace cet {
+  std::ostream&
+  boost_test_print_type(std::ostream& os, value_ptr<int> const p)
+  {
+    return os << p.get();
+  }
+}
 
 using cet::default_clone;
 using cet::default_copy;
@@ -36,28 +45,26 @@ BOOST_AUTO_TEST_SUITE(value_ptr_test)
 BOOST_AUTO_TEST_CASE(nullptr_test)
 {
   value_ptr<int> p;
-  BOOST_CHECK(!p);
-  BOOST_CHECK(p == nullptr);
-  BOOST_CHECK(nullptr == p);
-  BOOST_CHECK(p == 0);
-  BOOST_CHECK(0 == p);
+  BOOST_TEST(!p);
+  BOOST_TEST(p == nullptr);
+  BOOST_TEST(nullptr == p);
 }
 
 BOOST_AUTO_TEST_CASE(basic_test)
 {
   value_ptr<int> p(new int(16));
-  BOOST_CHECK(bool(p));
-  BOOST_CHECK_EQUAL(*p, 16);
+  BOOST_TEST(static_cast<bool>(p));
+  BOOST_TEST(*p == 16);
 
   int* p_addr = p.get();
   value_ptr<int> q(p);
-  BOOST_CHECK_EQUAL(*p, *q);
-  BOOST_CHECK(p != q);
-  BOOST_CHECK(p_addr != q.get());
+  BOOST_TEST(*p == *q);
+  BOOST_TEST(p != q);
+  BOOST_TEST(p_addr != q.get());
 
   p.reset(new int(0));
-  BOOST_CHECK_EQUAL(*p, 0);
-  BOOST_CHECK(p_addr != p.get());
+  BOOST_TEST(*p == 0);
+  BOOST_TEST(p_addr != p.get());
 }
 
 BOOST_AUTO_TEST_CASE(compile_failure_test)
@@ -72,14 +79,14 @@ BOOST_AUTO_TEST_CASE(compile_failure_test)
 BOOST_AUTO_TEST_CASE(polymorphism_test)
 {
   value_ptr<Base, default_copy<Base>> b(new Base);
-  BOOST_CHECK(bool(b));
-  BOOST_CHECK_EQUAL(b->who(), std::string("Base"));
+  BOOST_TEST(bool(b));
+  BOOST_TEST(b->who() == std::string("Base"));
 
   value_ptr<Base, default_copy<Base> // request slicing
             >
     d(new Derived);
-  BOOST_CHECK(bool(d));
-  BOOST_CHECK_EQUAL(d->who(), std::string("Derived"));
+  BOOST_TEST(bool(d));
+  BOOST_TEST(d->who() == std::string("Derived"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

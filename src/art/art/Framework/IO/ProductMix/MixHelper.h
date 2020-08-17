@@ -30,6 +30,12 @@
 //     randomLimReplace -- events unique within a primary event
 //     randomNoReplace -- events guaranteed to be used once only.
 //
+// MT note: What gets mixed is unpredictable when multiple mixing
+//          modules run in parallel either because of multiple trigger
+//          paths or because of streams when the mixing mode is
+//          Mode::SEQUENTIAL.  For art 3.0, mixing will be entirely
+//          serialized.
+//
 // coverageFraction (default 1.0).
 //
 //   Ratio of sampled to total events in a file. Used by randomReplace
@@ -37,9 +43,11 @@
 //
 // wrapFiles (default false).
 //
-//   Re-start from fileNames[0] after secondary events are exhausted. If
-//   this is false, exhausting the secondary file stream will result in
-//   the filter returning false for the remainder of the job.
+//   Re-start from fileNames[0] after secondary events are
+//   exhausted. If this is false, exhausting the secondary file stream
+//   will result in the filter throwing an exception that is handled
+//   based on the configured handling policy for FileReadError
+//   exceptions.
 //
 // compactMissingProducts (default false).
 //
@@ -59,10 +67,10 @@
 // mixing. This should be called from the constructor of your detail
 // object.
 //
-// <function> must be convertible to std::function<std::string ()>. A
+// <function> must be convertible to std::function<std::string()>. A
 // free function taking no arguments and returning std::string, a
-// functor whose operator () has the same signature, or a bound free or
-// member function whose signature after binding is std::string () are
+// functor whose operator() has the same signature, or a bound free or
+// member function whose signature after binding is std::string() are
 // all convertible to std::function<std::string()>.
 //
 // E.g. for a detail class with member function std::string getMixFile():
@@ -77,21 +85,22 @@
 // 2. If the file name provider returns a string which is empty, the
 // MixFilter shall thenceforth return false.
 //
-// 3. If the file name provider returns a non-empty string that does not
-// correspond to a readable file, an exception shall be thrown.
+// 3. If the file name provider returns a non-empty string that does
+// not correspond to a readable file, an exception shall be thrown.
 //
 ////////////////////////////////////////////////////////////////////////
 // declareMixOp templates.
 //
-// These function templates should be used by writers of product-mixing
-// "detail" classes to declare each product mix operation.
+// These function templates should be used by writers of
+// product-mixing "detail" classes to declare each product mix
+// operation.
 //
 // All of the declareMixOp(...) function templates have the following
 // template arguments:
 //
 // 1. The BranchType (defaults to art::InEvent). Specify explicitly if
-//    you wish to mix subrun or run products, or if you need to specify
-//    explicitly any of the other template arguments.
+//    you wish to mix subrun or run products, or if you need to
+//    specify explicitly any of the other template arguments.
 //
 // 2. The incoming product type (deduced from the provided callable
 //    mixer argument).
@@ -158,18 +167,18 @@
 // combinations:
 //
 //   1. Provide an InputTag and a mixer that is a free function or
-//      function object.
+//      function object (wrapped as a MixFunc<PROD, OPROD>).
 //
-//   2. Provide an InputTag, an output instance label, and a mixer that
-//      is a free function or function object.
+//   2. Provide an InputTag, an output instance label, and a mixer
+//      that is a free function or function object.
 //
-//   3. Provide an InputTag, a mixer that is a non-const member function
-//      (of any class), and an object to which that member function should
-//      be bound.
+//   3. Provide an InputTag, a mixer that is a non-const member
+//      function (of any class), and an object to which that member
+//      function should be bound.
 //
-//   4. Provide an InputTag, an output instance label, a mixer that is a
-//      non-const member function (of any class), and an object to which
-//      that member function should be bound.
+//   4. Provide an InputTag, an output instance label, a mixer that is
+//      a non-const member function (of any class), and an object to
+//      which that member function should be bound.
 //
 //   5. Same as 3, but providing a mixer that is a const member function.
 //
@@ -211,193 +220,208 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "CLHEP/Random/RandFlat.h"
-#include "art/Framework/Core/ProducerBase.h"
+#include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Core/PtrRemapper.h"
+#include "art/Framework/Core/detail/EngineCreator.h"
+#include "art/Framework/IO/ProductMix/MixIOPolicy.h"
 #include "art/Framework/IO/ProductMix/MixOp.h"
 #include "art/Framework/IO/ProductMix/MixTypes.h"
 #include "art/Framework/IO/ProductMix/ProdToProdMapBuilder.h"
 #include "art/Framework/Principal/fwd.h"
-#include "art/Utilities/fwd.h"
 #include "canvas/Persistency/Common/EDProduct.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
 #include "canvas/Persistency/Provenance/Compatibility/BranchIDList.h"
-#include "canvas/Persistency/Provenance/FileFormatVersion.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Utilities/Exception.h"
 #include "cetlib/exempt_ptr.h"
-#include "cetlib/value_ptr.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
-#include <iosfwd>
 #include <functional>
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "Rtypes.h"
-#include "TFile.h"
-#include "TTree.h"
-
 namespace art {
-  class MixHelper;
-}
 
-class art::MixHelper {
-  using ProviderFunc_ = std::function<std::string()>;
+  class MixHelper : private detail::EngineCreator {
+    using ProviderFunc_ = std::function<std::string()>;
 
-public:
-  enum class Mode {
-    SEQUENTIAL = 0,
-    RANDOM_REPLACE,
-    RANDOM_LIM_REPLACE,
-    RANDOM_NO_REPLACE,
-    UNKNOWN
+  public:
+    enum class Mode {
+      SEQUENTIAL = 0,
+      RANDOM_REPLACE,
+      RANDOM_LIM_REPLACE,
+      RANDOM_NO_REPLACE,
+      UNKNOWN
+    };
+
+    struct Config {
+      fhicl::Sequence<std::string> filenames{fhicl::Name{"fileNames"}, {}};
+      fhicl::Atom<bool> compactMissingProducts{
+        fhicl::Name{"compactMissingProducts"},
+        false};
+      fhicl::Atom<std::string> readMode{fhicl::Name{"readMode"}, "sequential"};
+      fhicl::Atom<double> coverageFraction{fhicl::Name{"coverageFraction"},
+                                           1.0};
+      fhicl::Atom<bool> wrapFiles{fhicl::Name{"wrapFiles"}, false};
+      fhicl::Atom<seed_t> seed{fhicl::Name{"seed"}, -1};
+    };
+
+    explicit MixHelper(Config const& config,
+                       std::string const& moduleLabel,
+                       ProducesCollector& collector,
+                       std::unique_ptr<MixIOPolicy> ioHandle);
+    explicit MixHelper(fhicl::ParameterSet const& pset,
+                       std::string const& moduleLabel,
+                       ProducesCollector& collector,
+                       std::unique_ptr<MixIOPolicy> ioHandle);
+
+    // Returns the current mixing mode.
+    Mode readMode() const;
+
+    // Registers a callback to the detail object to determine the next
+    // secondary file to read.
+    void registerSecondaryFileNameProvider(ProviderFunc_ func);
+
+    // A.
+    template <class P>
+    void produces(std::string const& instanceName = {});
+
+    // B.
+    template <class P, BranchType B>
+    void produces(std::string const& instanceName = {});
+
+    // 1.
+    template <art::BranchType B = art::InEvent, typename PROD, typename OPROD>
+    void declareMixOp(InputTag const& inputTag,
+                      MixFunc<PROD, OPROD> mixFunc,
+                      bool outputProduct = true);
+
+    // 2.
+    template <art::BranchType B = art::InEvent, typename PROD, typename OPROD>
+    void declareMixOp(InputTag const& inputTag,
+                      std::string const& outputInstanceLabel,
+                      MixFunc<PROD, OPROD> mixFunc,
+                      bool outputProduct = true);
+
+    // 3.
+    template <art::BranchType B = art::InEvent,
+              typename PROD,
+              typename OPROD,
+              typename T>
+    void declareMixOp(InputTag const& inputTag,
+                      bool (T::*mixfunc)(std::vector<PROD const*> const&,
+                                         OPROD&,
+                                         PtrRemapper const&),
+                      T& t,
+                      bool outputProduct = true);
+
+    // 4.
+    template <art::BranchType B = art::InEvent,
+              typename PROD,
+              typename OPROD,
+              typename T>
+    void declareMixOp(InputTag const& inputTag,
+                      std::string const& outputInstanceLabel,
+                      bool (T::*mixfunc)(std::vector<PROD const*> const&,
+                                         OPROD&,
+                                         PtrRemapper const&),
+                      T& t,
+                      bool outputProduct = true);
+
+    // 5.
+    template <art::BranchType B = art::InEvent,
+              typename PROD,
+              typename OPROD,
+              typename T>
+    void declareMixOp(InputTag const& inputTag,
+                      bool (T::*mixfunc)(std::vector<PROD const*> const&,
+                                         OPROD&,
+                                         PtrRemapper const&) const,
+                      T const& t,
+                      bool outputProduct = true);
+
+    // 6.
+    template <art::BranchType B = art::InEvent,
+              typename PROD,
+              typename OPROD,
+              typename T>
+    void declareMixOp(InputTag const& inputTag,
+                      std::string const& outputInstanceLabel,
+                      bool (T::*mixfunc)(std::vector<PROD const*> const&,
+                                         OPROD&,
+                                         PtrRemapper const&) const,
+                      T const& t,
+                      bool outputProduct = true);
+
+    // Random number engine creation
+    base_engine_t& createEngine(seed_t seed);
+    base_engine_t& createEngine(seed_t seed,
+                                std::string const& kind_of_engine_to_make);
+    base_engine_t& createEngine(seed_t seed,
+                                std::string const& kind_of_engine_to_make,
+                                label_t const& engine_label);
+
+    //////////////////////////////////////////////////////////////////////
+    // Mix module writers should not need anything below this point.
+    //////////////////////////////////////////////////////////////////////
+    bool generateEventSequence(size_t nSecondaries,
+                               EntryNumberSequence& enSeq,
+                               EventIDSequence& eIDseq);
+    EventAuxiliarySequence generateEventAuxiliarySequence(
+      EntryNumberSequence const&);
+    void mixAndPut(EntryNumberSequence const& enSeq,
+                   EventIDSequence const& eIDseq,
+                   Event& e);
+    void setEventsToSkipFunction(std::function<size_t()> eventsToSkip);
+
+  private:
+    MixHelper(MixHelper const&) = delete;
+    MixHelper& operator=(MixHelper const&) = delete;
+
+    using MixOpList = std::vector<std::unique_ptr<MixOpBase>>;
+
+    cet::exempt_ptr<base_engine_t> initEngine_(seed_t seed, Mode readMode);
+    std::unique_ptr<CLHEP::RandFlat> initDist_(
+      cet::exempt_ptr<base_engine_t> engine) const;
+    bool consistentRequest_(std::string const& kind_of_engine_to_make,
+                            label_t const& engine_label) const;
+    Mode initReadMode_(std::string const& mode) const;
+    bool openNextFile_();
+
+    ProdToProdMapBuilder::ProductIDTransMap buildProductIDTransMap_(
+      MixOpList& mixOps);
+
+    ProducesCollector& collector_;
+    std::string const moduleLabel_;
+    std::vector<std::string> const filenames_;
+    bool compactMissingProducts_;
+    ProviderFunc_ providerFunc_{};
+    MixOpList mixOps_{};
+    PtrRemapper ptrRemapper_{};
+    std::vector<std::string>::const_iterator fileIter_;
+    Mode const readMode_;
+    double const coverageFraction_;
+    std::size_t nEventsReadThisFile_{};
+    std::size_t totalEventsRead_{};
+    bool const canWrapFiles_;
+    unsigned nOpensOverThreshold_{};
+    ProdToProdMapBuilder ptpBuilder_{};
+    cet::exempt_ptr<base_engine_t> engine_;
+    std::unique_ptr<CLHEP::RandFlat> dist_;
+    std::function<size_t()> eventsToSkip_{};
+    EntryNumberSequence shuffledSequence_{}; // RANDOM_NO_REPLACE only.
+    bool haveSubRunMixOps_{false};
+    bool haveRunMixOps_{false};
+    EventIDIndex eventIDIndex_{};
+
+    std::unique_ptr<MixIOPolicy> ioHandle_{nullptr};
   };
 
-  // Constructor.
-  MixHelper(fhicl::ParameterSet const& pset, ProducerBase& producesProvider);
-
-  // Returns the current mixing mode.
-  Mode readMode() const;
-
-  // Registers a callback to the detail object to determine the next
-  // secondary file to read.
-  void registerSecondaryFileNameProvider(ProviderFunc_ func);
-
-  // A.
-  template <class P>
-  void produces(std::string const& instanceName = {});
-
-  // B.
-  template <class P, BranchType B>
-  void produces(std::string const& instanceName = {});
-
-  // 1.
-  template <art::BranchType B = art::InEvent, typename PROD, typename OPROD>
-  void declareMixOp(InputTag const& inputTag,
-                    MixFunc<PROD, OPROD> mixFunc,
-                    bool outputProduct = true);
-
-  // 2.
-  template <art::BranchType B = art::InEvent, typename PROD, typename OPROD>
-  void declareMixOp(InputTag const& inputTag,
-                    std::string const& outputInstanceLabel,
-                    MixFunc<PROD, OPROD> mixFunc,
-                    bool outputProduct = true);
-
-  // 3.
-  template <art::BranchType B = art::InEvent,
-            typename PROD,
-            typename OPROD,
-            typename T>
-  void declareMixOp(InputTag const& inputTag,
-                    bool (T::*mixfunc)(std::vector<PROD const*> const&,
-                                       OPROD&,
-                                       PtrRemapper const&),
-                    T& t,
-                    bool outputProduct = true);
-
-  // 4.
-  template <art::BranchType B = art::InEvent,
-            typename PROD,
-            typename OPROD,
-            typename T>
-  void declareMixOp(InputTag const& inputTag,
-                    std::string const& outputInstanceLabel,
-                    bool (T::*mixfunc)(std::vector<PROD const*> const&,
-                                       OPROD&,
-                                       PtrRemapper const&),
-                    T& t,
-                    bool outputProduct = true);
-
-  // 5.
-  template <art::BranchType B = art::InEvent,
-            typename PROD,
-            typename OPROD,
-            typename T>
-  void declareMixOp(InputTag const& inputTag,
-                    bool (T::*mixfunc)(std::vector<PROD const*> const&,
-                                       OPROD&,
-                                       PtrRemapper const&) const,
-                    T const& t,
-                    bool outputProduct = true);
-
-  // 6.
-  template <art::BranchType B = art::InEvent,
-            typename PROD,
-            typename OPROD,
-            typename T>
-  void declareMixOp(InputTag const& inputTag,
-                    std::string const& outputInstanceLabel,
-                    bool (T::*mixfunc)(std::vector<PROD const*> const&,
-                                       OPROD&,
-                                       PtrRemapper const&) const,
-                    T const& t,
-                    bool outputProduct = true);
-
-  //////////////////////////////////////////////////////////////////////
-  // Mix module writers should not need anything below this point.
-  //////////////////////////////////////////////////////////////////////
-  bool generateEventSequence(size_t nSecondaries,
-                             EntryNumberSequence& enSeq,
-                             EventIDSequence& eIDseq);
-  void generateEventAuxiliarySequence(EntryNumberSequence const&,
-                                      EventAuxiliarySequence&);
-  void mixAndPut(EntryNumberSequence const& enSeq,
-                 EventIDSequence const& eIDseq,
-                 Event& e);
-  void setEventsToSkipFunction(std::function<size_t()> eventsToSkip);
-
-private:
-  MixHelper(MixHelper const&) = delete;
-  MixHelper& operator=(MixHelper const&) = delete;
-
-  using MixOpList = std::vector<std::unique_ptr<MixOpBase>>;
-
-  Mode initReadMode_(std::string const& mode) const;
-
-  void openAndReadMetaData_(std::string fileName);
-  bool openNextFile_();
-  void buildProductIDTransMap_(
-    ProdToProdMapBuilder::ProductIDTransMap& transMap);
-
-  ProducerBase& producesProvider_;
-  std::vector<std::string> const filenames_;
-  bool compactMissingProducts_;
-  ProviderFunc_ providerFunc_{};
-  MixOpList mixOps_{};
-  PtrRemapper ptrRemapper_{};
-  std::vector<std::string>::const_iterator fileIter_;
-  Mode const readMode_;
-  double const coverageFraction_;
-  Long64_t nEventsReadThisFile_{};
-  Long64_t nEventsInFile_{};
-  Long64_t totalEventsRead_{};
-  bool const canWrapFiles_;
-  unsigned nOpensOverThreshold_{};
-  FileFormatVersion ffVersion_{};
-  std::unique_ptr<art::BranchIDLists> branchIDLists_{
-    nullptr}; // For backwards compatibility
-  ProdToProdMapBuilder ptpBuilder_{};
-  std::unique_ptr<CLHEP::RandFlat> dist_;
-  std::function<size_t()> eventsToSkip_{};
-  EntryNumberSequence shuffledSequence_{}; // RANDOM_NO_REPLACE only.
-  bool haveSubRunMixOps_{false};
-  bool haveRunMixOps_{false};
-
-  // Root-specific state.
-  cet::value_ptr<TFile> currentFile_{};
-  cet::exempt_ptr<TTree> currentMetaDataTree_{nullptr};
-  std::array<cet::exempt_ptr<TTree>, art::BranchType::NumBranchTypes>
-    currentDataTrees_{{nullptr}};
-  FileIndex currentFileIndex_{};
-  std::array<RootBranchInfoList, art::BranchType::NumBranchTypes> dataBranches_{
-    {}};
-  EventIDIndex eventIDIndex_{};
-};
-
-namespace art {
-  std::ostream& operator<<(std::ostream& os, MixHelper::Mode);
+  std::ostream& operator<<(std::ostream&, MixHelper::Mode);
 }
 
 inline auto
@@ -411,7 +435,7 @@ template <class P>
 inline void
 art::MixHelper::produces(std::string const& instanceName)
 {
-  producesProvider_.produces<P>(instanceName);
+  collector_.produces<P>(instanceName);
 }
 
 // B.
@@ -419,7 +443,7 @@ template <class P, art::BranchType B>
 inline void
 art::MixHelper::produces(std::string const& instanceName)
 {
-  producesProvider_.produces<P, B>(instanceName);
+  collector_.produces<P, B>(instanceName);
 }
 
 // 1.
@@ -448,7 +472,8 @@ art::MixHelper::declareMixOp(InputTag const& inputTag,
   } else if (B == art::InRun) {
     haveRunMixOps_ = true;
   }
-  mixOps_.emplace_back(new MixOp<PROD, OPROD>(inputTag,
+  mixOps_.emplace_back(new MixOp<PROD, OPROD>(moduleLabel_,
+                                              inputTag,
                                               outputInstanceLabel,
                                               mixFunc,
                                               outputProduct,
@@ -466,8 +491,11 @@ art::MixHelper::declareMixOp(InputTag const& inputTag,
                              T& t,
                              bool outputProduct)
 {
-  declareMixOp<B>(
-    inputTag, inputTag.instance(), mixFunc, t, outputProduct); // 4.
+  declareMixOp<B>(inputTag,
+                  inputTag.instance(),
+                  mixFunc,
+                  t,
+                  outputProduct); // 4.
 }
 
 // 4.
@@ -501,8 +529,11 @@ art::MixHelper::declareMixOp(InputTag const& inputTag,
                              T const& t,
                              bool outputProduct)
 {
-  declareMixOp<B>(
-    inputTag, inputTag.instance(), mixFunc, t, outputProduct); // 6.
+  declareMixOp<B>(inputTag,
+                  inputTag.instance(),
+                  mixFunc,
+                  t,
+                  outputProduct); // 6.
 }
 
 // 6.

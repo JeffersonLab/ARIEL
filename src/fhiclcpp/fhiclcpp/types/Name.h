@@ -6,7 +6,7 @@
 
 namespace fhicl {
 
-  std::string const get_regex_replace_str(std::string const& str);
+  std::string get_regex_replace_str(std::string const& str);
 
   struct Name {
 

@@ -1,28 +1,17 @@
 #define BOOST_TEST_MODULE (ParentageRegistry_t)
 #include "cetlib/quiet_unit_test.hpp"
 
-#include "canvas/Persistency/Provenance/BranchID.h"
 #include "canvas/Persistency/Provenance/Parentage.h"
 #include "canvas/Persistency/Provenance/ParentageRegistry.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "cetlib/SimultaneousFunctionSpawner.h"
 #include "cetlib/container_algorithms.h"
-#include "cetlib/test_macros.h"
 
 #include <string>
 #include <vector>
 
 using namespace art;
 using namespace std::string_literals;
-
-namespace {
-  ProductID
-  makeProductID(std::string const& name)
-  {
-    BranchID const bid{name};
-    return ProductID{bid.id()};
-  }
-}
 
 BOOST_AUTO_TEST_SUITE(ParentageTest)
 
@@ -39,11 +28,10 @@ BOOST_AUTO_TEST_CASE(concurrent_insertion_reading)
                        std::back_inserter(setsOfParents),
                        [](auto const& parentNames) {
                          ParentProductIDs pids;
-                         cet::transform_all(parentNames,
-                                            std::back_inserter(pids),
-                                            [](auto const& name) {
-                                              return makeProductID(name);
-                                            });
+                         cet::transform_all(
+                           parentNames,
+                           std::back_inserter(pids),
+                           [](auto const& name) { return ProductID{name}; });
                          return pids;
                        });
   }
@@ -64,7 +52,7 @@ BOOST_AUTO_TEST_CASE(concurrent_insertion_reading)
     cet::SimultaneousFunctionSpawner sfs{tasks};
   }
 
-  BOOST_REQUIRE_EQUAL(ParentageRegistry::get().size(), parentages.size());
+  BOOST_REQUIRE(ParentageRegistry::get().size() == parentages.size());
 
   // Retrieve histories in parallel
   {
@@ -81,7 +69,7 @@ BOOST_AUTO_TEST_CASE(concurrent_insertion_reading)
         });
       });
     cet::SimultaneousFunctionSpawner sfs{tasks};
-    CET_CHECK_EQUAL_COLLECTIONS(parentages, retrievedParentages);
+    BOOST_TEST(parentages == retrievedParentages);
   }
 }
 

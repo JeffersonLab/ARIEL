@@ -21,8 +21,8 @@ namespace gallery {
   BranchMapReader::updateFile(TFile* tFile)
   {
 
-    TTree* metaDataTree = dynamic_cast<TTree*>(
-      tFile->Get(art::rootNames::metaDataTreeName().c_str()));
+    std::unique_ptr<TTree> metaDataTree{
+      tFile->Get<TTree>(art::rootNames::metaDataTreeName().c_str())};
     if (!metaDataTree) {
       throwTreeNotFound(art::rootNames::metaDataTreeName());
     }
@@ -80,13 +80,51 @@ namespace gallery {
   }
 
   art::BranchDescription const*
-  BranchMapReader::productToBranch(art::ProductID const& pid) const
+  BranchMapReader::productDescription(InfoForTypeLabelInstance const& info,
+                                      std::string const& process) const
+  {
+    return productDescription(
+      info.type(), info.label(), info.instance(), process);
+  }
+
+  art::BranchDescription const*
+  BranchMapReader::productDescription(art::TypeID const& type,
+                                      std::string const& label,
+                                      std::string const& instance,
+                                      std::string const& process) const
+  {
+    auto const fcn = type.friendlyClassName();
+    auto match = [&fcn, &label, &instance, &process](auto const& pr) {
+      auto const& pd = pr.second;
+      return pd.friendlyClassName() == fcn && pd.moduleLabel() == label &&
+             pd.productInstanceName() == instance &&
+             pd.processName() == process;
+    };
+    auto const end = cend(productIDToDescriptionMap_);
+    auto it = std::find_if(cbegin(productIDToDescriptionMap_), end, match);
+    return it == end ? nullptr : &it->second;
+  }
+
+  art::BranchDescription const*
+  BranchMapReader::productDescription(art::ProductID const pid) const
   {
     auto bdi = productIDToDescriptionMap_.find(pid);
-    if (productIDToDescriptionMap_.end() == bdi) {
+    if (bdi == cend(productIDToDescriptionMap_)) {
       return nullptr;
     }
     return &bdi->second;
+  }
+
+  std::map<art::ProductID, art::BranchDescription> const&
+  BranchMapReader::productDescriptions() const
+  {
+    return productIDToDescriptionMap_;
+  }
+
+  cet::exempt_ptr<art::BranchIDLists const>
+  BranchMapReader::branchIDLists() const
+  {
+    return branchIDLists_.get();
   }
 
   bool

@@ -7,11 +7,13 @@
 
 #include <cmath>
 
-double tex::phi_small( double arg ){
-  static double twopi = 2.0*M_PI;
-  if ( arg <= -M_PI      ) {
+double
+tex::phi_small(double arg)
+{
+  static double twopi = 2.0 * M_PI;
+  if (arg <= -M_PI) {
     arg += twopi;
-  } else if ( arg > M_PI ){
+  } else if (arg > M_PI) {
     arg -= twopi;
   }
   return arg;

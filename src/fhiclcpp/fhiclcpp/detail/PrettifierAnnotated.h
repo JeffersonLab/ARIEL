@@ -118,7 +118,7 @@ namespace fhicl {
       void before_action(key_t const&,
                          any_t const&,
                          ParameterSet const*) override;
-      void after_action() override;
+      void after_action(key_t const&) override;
 
       void enter_table(key_t const&, any_t const&) override;
       void enter_sequence(key_t const&, any_t const&) override;

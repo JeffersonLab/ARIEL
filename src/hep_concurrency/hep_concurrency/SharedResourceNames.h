@@ -53,3 +53,7 @@ namespace hep {
 } // hep
 
 #endif /* hep_concurrency_SharedResourceNames_h */
+
+// Local Variables:
+// mode: c++
+// End:

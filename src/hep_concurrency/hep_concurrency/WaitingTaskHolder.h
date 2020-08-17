@@ -34,3 +34,7 @@ namespace hep {
 } // namespace hep
 
 #endif /* hep_concurrency_WaitingTaskHolder_h */
+
+// Local Variables:
+// mode: c++
+// End:

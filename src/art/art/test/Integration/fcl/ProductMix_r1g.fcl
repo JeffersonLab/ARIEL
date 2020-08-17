@@ -1,8 +1,0 @@
-#include "ProductMix_r1.fcl"
-
-physics.filters.mixFilter.compactMissingProducts: true
-physics.filters.mixFilter.expectedRespondFunctionCalls: 2
-physics.analyzers: @erase
-outputs: @erase
-physics.e1: @erase
-physics.end_paths: @erase

@@ -10,6 +10,7 @@ art_make(
     toyexperiment_recodataproducts
     toyexperiment_pdt
     toyexperiment_utilities
+    canvas
     cetlib
     cetlib_except
     ${CLHEP}
@@ -18,6 +19,7 @@ art_make(
     art-workbook_ExDataProducts
     art-workbook_IterativeAlgDevel
     art-workbook_ExUtilities
+    art_Persistency_Provenance
     toyexperiment_recodataproducts
     toyexperiment_reconstruction
     toyexperiment_conditions_conditions_service

@@ -52,7 +52,7 @@ namespace {
     void routePayload(ostringstream const&, mf::ErrorObj const&) override;
 
   private:
-    Connection connection_;
+    Connection* connection_;
     Ntuple<string,
            string,
            string,
@@ -69,11 +69,13 @@ namespace {
   {
     delete msgTable_;
     msgTable_ = nullptr;
+    delete connection_;
+    connection_ = nullptr;
   }
 
   sqlite3Plugin::sqlite3Plugin(Parameters const& ps)
     : ELdestination{ps().elDestConfig()}
-    , connection_{factory.make(ps().filename())}
+    , connection_{factory.make_connection(ps().filename())}
     , msgTable_{new Ntuple<string,
                            string,
                            string,
@@ -83,7 +85,7 @@ namespace {
                            unsigned,
                            string,
                            string,
-                           string>{connection_,
+                           string>{*connection_,
                                    "Messages"s,
                                    {{"Timestamp"s,
                                      "Hostname"s,

@@ -107,3 +107,7 @@ namespace hep {
 } // namespace hep
 
 #endif /* hep_concurrency_ThreadSafeAddOnlyContainer_h */
+
+// Local Variables:
+// mode: c++
+// End:

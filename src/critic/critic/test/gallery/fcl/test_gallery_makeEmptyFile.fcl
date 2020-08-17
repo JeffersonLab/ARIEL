@@ -1,0 +1,91 @@
+process_name: EMPTY
+
+services.scheduler.wantSummary: false
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents: 1
+}
+
+physics:
+{
+  producers:
+  {
+    m1:
+    {
+      module_type: GalleryTestProducer
+      value1: 111
+      value2: 121
+      value3: 131
+      string1: s111
+      string2: s121
+      string3: s131
+    }
+    m2:
+    {
+      module_type: GalleryTestProducer
+      value1: 211
+      value2: 221
+      value3: 231
+      string1: s211
+      string2: s221
+      string3: s231
+    }
+    m3:
+    {
+      module_type: GalleryTestProducer
+      value1: 311
+      value2: 321
+      value3: 331
+      string1: s311
+      string2: s321
+      string3: s331
+    }
+    m4:
+    {
+      module_type: GalleryTestProducer
+      value1: 411
+      value2: 421
+      value3: 431
+      string1: s411
+      string2: s421
+      string3: s431
+    }
+    m5:
+    {
+      module_type: GalleryTestProducer
+      value1: 511
+      value2: 521
+      value3: 531
+      string1: s511
+      string2: s521
+      string3: s531
+    }
+    m6:
+    {
+      module_type: GalleryTestProducer
+      value1: 611
+      value2: 621
+      value3: 631
+      string1: s611
+      string2: s621
+      string3: s631
+    }
+  }
+  p1: [ m1, m2, m3, m4, m5, m6 ]
+  e1: [ output1 ]
+
+  trigger_paths: [ p1 ]
+  end_paths: [ e1 ]
+}
+
+outputs:
+{
+  output1:
+  {
+    module_type: RootOutput
+    fileName: "test_gallery_empty.root"
+    SelectEvents: [ "!p1" ]
+  }
+}

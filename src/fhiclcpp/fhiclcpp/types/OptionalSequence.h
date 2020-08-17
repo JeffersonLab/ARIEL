@@ -27,10 +27,9 @@ namespace fhicl {
   class OptionalSequence final : public detail::SequenceBase,
                                  private detail::RegisterIfTableMember {
   public:
-    static_assert(!tt::is_table_fragment<T>::value, NO_NESTED_TABLE_FRAGMENTS);
-    static_assert(!tt::is_optional_parameter<T>::value, NO_OPTIONAL_TYPES);
-    static_assert(!tt::is_delegated_parameter<T>::value,
-                  NO_DELEGATED_PARAMETERS);
+    static_assert(!tt::is_table_fragment_v<T>, NO_NESTED_TABLE_FRAGMENTS);
+    static_assert(!tt::is_optional_parameter_v<T>, NO_OPTIONAL_TYPES);
+    static_assert(!tt::is_delegated_parameter_v<T>, NO_DELEGATED_PARAMETERS);
 
     using ftype = std::array<std::shared_ptr<tt::fhicl_type<T>>, N>;
     using value_type = std::array<tt::return_type<T>, N>;
@@ -56,7 +55,7 @@ namespace fhicl {
     }
 
     bool
-    hasValue() const
+    hasValue() const noexcept
     {
       return has_value_;
     }
@@ -66,7 +65,7 @@ namespace fhicl {
     bool has_value_{false};
 
     std::size_t
-    get_size() const override
+    get_size() const noexcept override
     {
       return value_.size();
     }
@@ -103,10 +102,9 @@ namespace fhicl {
     : public detail::SequenceBase,
       private detail::RegisterIfTableMember {
   public:
-    static_assert(!tt::is_table_fragment<T>::value, NO_NESTED_TABLE_FRAGMENTS);
-    static_assert(!tt::is_optional_parameter<T>::value, NO_OPTIONAL_TYPES);
-    static_assert(!tt::is_delegated_parameter<T>::value,
-                  NO_DELEGATED_PARAMETERS);
+    static_assert(!tt::is_table_fragment_v<T>, NO_NESTED_TABLE_FRAGMENTS);
+    static_assert(!tt::is_optional_parameter_v<T>, NO_OPTIONAL_TYPES);
+    static_assert(!tt::is_delegated_parameter_v<T>, NO_DELEGATED_PARAMETERS);
 
     using ftype = std::vector<std::shared_ptr<tt::fhicl_type<T>>>;
     using value_type = std::vector<tt::return_type<T>>;
@@ -120,7 +118,6 @@ namespace fhicl {
     bool
     operator()(value_type& t) const
     {
-
       if (!has_value_)
         return false;
 
@@ -131,6 +128,12 @@ namespace fhicl {
 
       std::swap(result, t);
       return true;
+    }
+
+    bool
+    hasValue() const noexcept
+    {
+      return has_value_;
     }
 
   private:
@@ -166,7 +169,7 @@ namespace fhicl {
     }
 
     std::size_t
-    get_size() const override
+    get_size() const noexcept override
     {
       return value_.size();
     }
@@ -190,7 +193,117 @@ namespace fhicl {
   };
 }
 
-#include "fhiclcpp/types/detail/OptionalSequence.icc"
+#include "fhiclcpp/detail/printing_helpers.h"
+
+namespace fhicl {
+
+  //==================================================================
+  // e.g. OptionalSequence<int,4> ====> std::array<int,4>
+  //
+  template <typename T, std::size_t N>
+  OptionalSequence<T, N>::OptionalSequence(Name&& name)
+    : OptionalSequence{std::move(name), Comment("")}
+  {}
+
+  template <typename T, std::size_t N>
+  OptionalSequence<T, N>::OptionalSequence(Name&& name, Comment&& comment)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::OPTIONAL,
+                   par_type::SEQ_ARRAY,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    for (std::size_t i{}; i != N; ++i) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i));
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T, std::size_t N>
+  OptionalSequence<T, N>::OptionalSequence(Name&& name,
+                                           Comment&& comment,
+                                           std::function<bool()> maybeUse)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::OPTIONAL_CONDITIONAL,
+                   par_type::SEQ_ARRAY,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    for (std::size_t i{}; i != N; ++i) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i));
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T, std::size_t N>
+  void
+  OptionalSequence<T, N>::do_set_value(fhicl::ParameterSet const&,
+                                       bool const /*trimParents*/)
+  {
+    // We do not explicitly set the sequence values here as the
+    // individual elements are set one at a time.  However, this
+    // function is reached in the ValidateThenSet algorithm if the
+    // optional parameter is present.  Otherwise, this override is
+    // skipped.
+    has_value_ = true;
+  }
+
+  //==================================================================
+  // e.g. OptionalSequence<int> ====> std::vector<int>
+  //
+
+  template <typename T>
+  OptionalSequence<T, -1ull>::OptionalSequence(Name&& name)
+    : OptionalSequence{std::move(name), Comment("")}
+  {}
+
+  template <typename T>
+  OptionalSequence<T, -1ull>::OptionalSequence(Name&& name, Comment&& comment)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::OPTIONAL,
+                   par_type::SEQ_VECTOR,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+  {
+    value_.emplace_back(new tt::fhicl_type<T>{Name::sequence_element(0ul)});
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T>
+  OptionalSequence<T, -1ull>::OptionalSequence(Name&& name,
+                                               Comment&& comment,
+                                               std::function<bool()> maybeUse)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::OPTIONAL_CONDITIONAL,
+                   par_type::SEQ_VECTOR,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+  {
+    value_.emplace_back(new tt::fhicl_type<T>{Name::sequence_element(0ul)});
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T>
+  void
+  OptionalSequence<T, -1ull>::do_set_value(fhicl::ParameterSet const&,
+                                           bool const /*trimParents*/)
+  {
+    // We do not explicitly set the sequence values here as the
+    // individual elements are set one at a time.  However, this
+    // function is reached in the ValidateThenSet algorithm if the
+    // optional parameter is present.  Otherwise, this override is
+    // skipped.
+    has_value_ = true;
+  }
+}
 
 #endif /* fhiclcpp_types_OptionalSequence_h */
 

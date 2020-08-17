@@ -3,7 +3,8 @@
 #include "boost/filesystem.hpp"
 #include "boost/regex.hpp"
 #include "cetlib/container_algorithms.h"
-#include "cetlib/os_libpath.h"
+#include "cetlib/detail/plugin_search_path.h"
+#include "cetlib/plugin_libpath.h"
 #include "cetlib/search_path.h"
 #include "cetlib/shlib_utils.h"
 #include "cetlib_except/demangle.h"
@@ -14,7 +15,6 @@ extern "C" {
 }
 
 #include <algorithm>
-#include <cstdlib>
 #include <functional>
 #include <iterator>
 #include <ostream>
@@ -33,17 +33,17 @@ namespace {
   }
 }
 
-cet::LibraryManager::LibraryManager(cet::search_path search_path,
+cet::LibraryManager::LibraryManager(search_path search_path,
                                     std::string lib_type)
   : LibraryManager{std::move(search_path),
                    std::move(lib_type),
                    default_pattern_stem}
 {}
 
-cet::LibraryManager::LibraryManager(cet::search_path search_path,
+cet::LibraryManager::LibraryManager(search_path search_path,
                                     std::string lib_type,
                                     std::string pattern)
-  : search_path_{std::move(search_path)}
+  : search_path_{detail::plugin_search_path(std::move(search_path))}
   , lib_type_{std::move(lib_type)}
   , pattern_stem_{std::move(pattern)}
 {
@@ -74,7 +74,9 @@ cet::LibraryManager::LibraryManager(std::string lib_type)
 {}
 
 cet::LibraryManager::LibraryManager(std::string lib_type, std::string pattern)
-  : LibraryManager{search_path{os_libpath()}, lib_type, pattern}
+  : LibraryManager{search_path{plugin_libpath(), std::nothrow},
+                   std::move(lib_type),
+                   std::move(pattern)}
 {}
 
 size_t
@@ -231,12 +233,12 @@ cet::LibraryManager::getSymbolByLibspec_(std::string const& libspec,
   if (trans == good_spec_trans_map_.cend()) {
     // No good translation => zero or too many
     std::ostringstream error_msg;
-    error_msg << "Library specification \"" << libspec << "\":";
+    error_msg << "Library specification \"" << libspec << "\"";
     auto const bad_trans = spec_trans_map_.find(libspec);
     if (bad_trans != spec_trans_map_.cend()) {
       error_msg << " corresponds to multiple libraries:\n";
-      cet::copy_all(bad_trans->second,
-                    std::ostream_iterator<std::string>(error_msg, "\n"));
+      copy_all(bad_trans->second,
+               std::ostream_iterator<std::string>(error_msg, "\n"));
     } else {
       auto const& path_name = search_path_.showenv();
       error_msg << " does not correspond to any library";

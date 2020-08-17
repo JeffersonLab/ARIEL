@@ -1,0 +1,17 @@
+services.TFileService.fileName: "tfile_output.root"
+
+physics: {
+  analyzers: {
+    hist: {
+      module_type: TestTFileService
+    }
+  }
+  e1: [hist]
+}
+
+source: {
+  module_type: EmptyEvent
+  maxEvents: 10
+}
+
+process_name: DEVEL

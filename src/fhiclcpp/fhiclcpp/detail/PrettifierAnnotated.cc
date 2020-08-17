@@ -27,7 +27,7 @@ PrettifierAnnotated::before_action(key_t const& key,
 }
 
 void
-PrettifierAnnotated::after_action()
+PrettifierAnnotated::after_action(key_t const&)
 {
   cached_info_ = curr_info_;
 }
@@ -35,7 +35,7 @@ PrettifierAnnotated::after_action()
 //==========================================================================
 
 void
-PrettifierAnnotated::enter_table(std::string const& key, boost::any const&)
+PrettifierAnnotated::enter_table(std::string const& key, std::any const&)
 {
   buffer_ << indent_() << table::printed_prefix(key)
           << print_annotated_info(curr_info_, cached_info_) << nl();
@@ -43,7 +43,7 @@ PrettifierAnnotated::enter_table(std::string const& key, boost::any const&)
 }
 
 void
-PrettifierAnnotated::exit_table(std::string const& key, boost::any const&)
+PrettifierAnnotated::exit_table(std::string const& key, std::any const&)
 {
   indent_.pop();
   buffer_ << indent_() << table::closing_brace()
@@ -53,7 +53,7 @@ PrettifierAnnotated::exit_table(std::string const& key, boost::any const&)
 //==========================================================================
 
 void
-PrettifierAnnotated::enter_sequence(std::string const& key, boost::any const& a)
+PrettifierAnnotated::enter_sequence(std::string const& key, std::any const& a)
 {
   push_size_(a);
   buffer_ << indent_() << sequence::printed_prefix(key)
@@ -62,7 +62,7 @@ PrettifierAnnotated::enter_sequence(std::string const& key, boost::any const& a)
 }
 
 void
-PrettifierAnnotated::exit_sequence(std::string const& key, boost::any const&)
+PrettifierAnnotated::exit_sequence(std::string const& key, std::any const&)
 {
   indent_.pop();
   buffer_ << indent_() << sequence::closing_brace()
@@ -73,7 +73,7 @@ PrettifierAnnotated::exit_sequence(std::string const& key, boost::any const&)
 //==========================================================================
 
 void
-PrettifierAnnotated::atom(std::string const& key, boost::any const& a)
+PrettifierAnnotated::atom(std::string const& key, std::any const& a)
 {
   buffer_ << indent_() << atom::printed_prefix(key) << atom::value(a)
           << printed_suffix(key, curr_size_)
@@ -83,9 +83,9 @@ PrettifierAnnotated::atom(std::string const& key, boost::any const& a)
 //=========================================================================
 
 void
-PrettifierAnnotated::push_size_(boost::any const& a)
+PrettifierAnnotated::push_size_(std::any const& a)
 {
-  sequence_sizes_.emplace(boost::any_cast<ps_sequence_t>(a).size());
+  sequence_sizes_.emplace(std::any_cast<ps_sequence_t>(a).size());
   curr_size_ = sequence_sizes_.top();
 }
 

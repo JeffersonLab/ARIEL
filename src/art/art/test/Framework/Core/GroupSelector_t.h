@@ -6,7 +6,7 @@ namespace arttest {
   class ProdTypeA {};
   template <typename T>
   class ProdTypeB {};
-}
+} // namespace arttest
 #endif /* art_test_Framework_Core_GroupSelector_t_h */
 
 // Local Variables:

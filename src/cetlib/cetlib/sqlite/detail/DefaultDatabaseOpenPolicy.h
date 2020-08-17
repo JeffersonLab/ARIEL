@@ -13,15 +13,11 @@
 
 struct sqlite3;
 
-namespace cet {
-  namespace sqlite {
-    namespace detail {
-      class DefaultDatabaseOpenPolicy {
-      public:
-        sqlite3* open(std::string const& file_name);
-      };
-    }
-  }
+namespace cet::sqlite::detail {
+  class DefaultDatabaseOpenPolicy {
+  public:
+    sqlite3* open(std::string const& file_name);
+  };
 }
 
 #endif /* cetlib_sqlite_detail_DefaultDatabaseOpenPolicy_h */

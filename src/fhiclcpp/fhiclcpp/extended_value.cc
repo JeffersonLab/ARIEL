@@ -8,7 +8,7 @@
 
 #include <regex>
 
-using boost::any_cast;
+using std::any_cast;
 using std::string;
 
 // ----------------------------------------------------------------------
@@ -29,31 +29,27 @@ fhicl::extended_value::to_string() const
     }
 
     case COMPLEX: {
-      complex_t c = any_cast<complex_t>(value);
+      auto c = any_cast<complex_t>(value);
       return '(' + c.first + ',' + c.second + ')';
     }
 
     case SEQUENCE: {
-      sequence_t q = any_cast<sequence_t>(value);
+      auto q = any_cast<sequence_t>(value);
       string s("[");
       string sep;
-      for (sequence_t::const_iterator b = q.begin(), e = q.end(), it = b;
-           it != e;
-           ++it) {
-        s.append(sep).append(it->to_string());
+      for (auto const& v : q) {
+        s.append(sep).append(v.to_string());
         sep = ",";
       }
       return s + ']';
     }
 
     case TABLE: {
-      table_t t = any_cast<table_t>(value);
+      auto t = any_cast<table_t>(value);
       string s("{");
       string sep;
-      for (table_t::const_iterator b = t.cbegin(), e = t.cend(), it = b;
-           it != e;
-           ++it) {
-        s.append(sep).append(it->first + ':' + it->second.to_string());
+      for (auto const& pr : t) {
+        s.append(sep).append(pr.first + ':' + pr.second.to_string());
         sep = " ";
       }
       return s + '}';
@@ -91,17 +87,17 @@ fhicl::extended_value::set_prolog(bool new_prolog_state)
     }
 
     case SEQUENCE: {
-      sequence_t& q = any_cast<sequence_t&>(value);
-      for (sequence_t::iterator it = q.begin(), e = q.end(); it != e; ++it) {
-        it->set_prolog(new_prolog_state);
+      auto& q = any_cast<sequence_t&>(value);
+      for (auto& e : q) {
+        e.set_prolog(new_prolog_state);
       }
       break;
     }
 
     case TABLE: {
-      table_t& t = any_cast<table_t&>(value);
-      for (table_t::iterator it = t.begin(), e = t.end(); it != e; ++it) {
-        it->second.set_prolog(new_prolog_state);
+      auto& t = any_cast<table_t&>(value);
+      for (auto& pr : t) {
+        pr.second.set_prolog(new_prolog_state);
       }
       break;
     }

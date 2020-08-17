@@ -8,7 +8,7 @@
 
 namespace tex {
 
-  double phi_norm( double phi );
+  double phi_norm(double phi);
 
 }
 

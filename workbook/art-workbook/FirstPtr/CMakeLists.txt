@@ -10,6 +10,7 @@ art_make(
     cetlib_except
   MODULE_LIBRARIES
     art-workbook_FirstPtr
+    art_Persistency_Provenance
     toyexperiment_mcdataproducts
     toyexperiment_pdt_pdt_service
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}

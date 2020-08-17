@@ -1,0 +1,22 @@
+# The purpose of this test is to ensure that there are no errors when
+# inserting more entries than the internal buffer limit of the
+# FileCatalogMetadata cet::sqlite::Ntuple object supports (1000).  In
+# this case, a flush to disk must happen during writing of all FCMD
+# entries.
+
+process_name: DEVEL
+
+source: {
+  module_type: EmptyEvent
+  maxEvents: 1
+}
+
+physics.ep1: [o1]
+
+outputs.o1: {
+  module_type: RootOutput
+  fileName: "out.root"
+  FCMDPlugins: [ { plugin_type: Metadata nExtraEntries: 1010 } ]
+}
+
+services.FileCatalogMetadata.checkSyntax: true

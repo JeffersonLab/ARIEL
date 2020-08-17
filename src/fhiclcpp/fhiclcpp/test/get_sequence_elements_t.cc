@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE (get sequence elements test)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/make_ParameterSet.h"
@@ -34,23 +33,23 @@ BOOST_FIXTURE_TEST_SUITE(sampleConfig, SampleConfigFixture)
 
 BOOST_AUTO_TEST_CASE(element_lookup)
 {
-  BOOST_CHECK_EQUAL(pset.get<int>("g[0]"), 1);
-  BOOST_CHECK_EQUAL(pset.get<int>("h[0].h1"), 12);
-  BOOST_CHECK_EQUAL(pset.get<int>("m[0]"), -1);
-  BOOST_CHECK_EQUAL(pset.get<int>("vv[0][1]"), 2);
+  BOOST_TEST(pset.get<int>("g[0]") == 1);
+  BOOST_TEST(pset.get<int>("h[0].h1") == 12);
+  BOOST_TEST(pset.get<int>("m[0]") == -1);
+  BOOST_TEST(pset.get<int>("vv[0][1]") == 2);
 
-  BOOST_CHECK_EQUAL(pset.get<std::string>("h[1].h2"), "h2");
+  BOOST_TEST(pset.get<std::string>("h[1].h2") == "h2");
 }
 
 BOOST_AUTO_TEST_CASE(element_container_lookup)
 {
-  auto vec0 = pset.get<std::vector<int>>("vv[0]");
-  auto ref0 = {1, 2, 3};
-  CET_CHECK_EQUAL_COLLECTIONS(vec0, ref0);
+  auto const vec0 = pset.get<std::vector<int>>("vv[0]");
+  std::vector const ref0{1, 2, 3};
+  BOOST_TEST(vec0 == ref0);
 
   auto vec1 = pset.get<std::vector<int>>("vv[1]");
-  auto ref1 = {2, 3, 4};
-  CET_CHECK_EQUAL_COLLECTIONS(vec1, ref1);
+  std::vector const ref1{2, 3, 4};
+  BOOST_TEST(vec1 == ref1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

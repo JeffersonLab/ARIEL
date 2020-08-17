@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(GoodTuple1)
   std::vector<std::string> const ref2{"Y"s, "Z"s};
   auto validatedConfig = validateConfig(good);
   auto const& pars = validatedConfig().pars();
-  BOOST_TEST_REQUIRE(pars.size() == 2);
+  BOOST_TEST_REQUIRE(pars.size() == 2ull);
   BOOST_TEST_REQUIRE(std::get<0>(pars[0]) == "A"s);
   BOOST_TEST_REQUIRE(std::get<1>(pars[0]) == ref1);
   BOOST_TEST_REQUIRE(std::get<0>(pars[1]) == "X"s);

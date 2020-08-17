@@ -1,142 +1,74 @@
 #ifndef art_Framework_Core_EDFilter_h
 #define art_Framework_Core_EDFilter_h
+// vim: set sw=2 expandtab :
 
-// ======================================================================
-//
-// EDFilter - The base class of all "modules" used to control the flow of
-// processing in a processing path.  Filters can also insert products
-// into the event.  These products should be informational products about
-// the filter decision.
-//
-// ======================================================================
-
-#include "art/Framework/Core/EngineCreator.h"
 #include "art/Framework/Core/Frameworkfwd.h"
-#include "art/Framework/Core/ProducerBase.h"
 #include "art/Framework/Core/WorkerT.h"
-#include "art/Framework/Principal/Consumer.h"
+#include "art/Framework/Core/detail/Filter.h"
+#include "art/Framework/Core/detail/LegacyModule.h"
 #include "art/Framework/Principal/fwd.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
-#include "canvas/Persistency/Provenance/RangeSet.h"
+#include "art/Utilities/ScheduleID.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include <memory>
 #include <string>
-
-// ----------------------------------------------------------------------
 
 namespace art {
 
-  class EDFilter : public ProducerBase, public Consumer, public EngineCreator {
+  class EDFilter : public detail::Filter, private detail::LegacyModule {
   public:
-    static constexpr bool Pass{true};
-    static constexpr bool Fail{false};
-
-    template <typename T>
-    friend class WorkerT;
     using ModuleType = EDFilter;
     using WorkerType = WorkerT<EDFilter>;
 
-    virtual ~EDFilter() = default;
+    explicit EDFilter(fhicl::ParameterSet const& pset)
+      : detail::Filter{pset}
+      , detail::LegacyModule{pset.get<std::string>("module_label")}
+    {}
 
-    template <typename PROD, BranchType B = InEvent>
-    ProductID getProductID(std::string const& instanceName = {}) const;
+    template <typename Config>
+    explicit EDFilter(Table<Config> const& config) : EDFilter{config.get_PSet()}
+    {}
 
-    template <typename UserConfig>
-    using Table = ProducerBase::Table<UserConfig>;
+    using detail::LegacyModule::createEngine;
+    using detail::LegacyModule::scheduleID;
+    using detail::LegacyModule::serialTaskQueueChain;
 
-  protected:
-    // The returned pointer will be null unless the this is currently
-    // executing its event loop function ('filter').
-    CurrentProcessingContext const* currentContext() const;
+    std::string workerType() const;
 
   private:
-    using CPC_exempt_ptr = cet::exempt_ptr<CurrentProcessingContext const>;
+    void setupQueues() override final;
+    void beginJobWithFrame(ProcessingFrame const&) override final;
+    void endJobWithFrame(ProcessingFrame const&) override final;
+    void respondToOpenInputFileWithFrame(FileBlock const&,
+                                         ProcessingFrame const&) override final;
+    void respondToCloseInputFileWithFrame(
+      FileBlock const&,
+      ProcessingFrame const&) override final;
+    void respondToOpenOutputFilesWithFrame(
+      FileBlock const&,
+      ProcessingFrame const&) override final;
+    void respondToCloseOutputFilesWithFrame(
+      FileBlock const&,
+      ProcessingFrame const&) override final;
+    bool beginRunWithFrame(Run&, ProcessingFrame const&) override final;
+    bool endRunWithFrame(Run&, ProcessingFrame const&) override final;
+    bool beginSubRunWithFrame(SubRun&, ProcessingFrame const&) override final;
+    bool endSubRunWithFrame(SubRun&, ProcessingFrame const&) override final;
+    bool filterWithFrame(Event&, ProcessingFrame const&) override final;
 
-    bool doEvent(EventPrincipal& ep, CPC_exempt_ptr cpc, CountingStatistics&);
-    void doBeginJob();
-    void doEndJob();
-    bool doBeginRun(RunPrincipal& rp, CPC_exempt_ptr cpc);
-    bool doEndRun(RunPrincipal& rp, CPC_exempt_ptr cpc);
-    bool doBeginSubRun(SubRunPrincipal& srp, CPC_exempt_ptr cpc);
-    bool doEndSubRun(SubRunPrincipal& srp, CPC_exempt_ptr cpc);
-    void doRespondToOpenInputFile(FileBlock const& fb);
-    void doRespondToCloseInputFile(FileBlock const& fb);
-    void doRespondToOpenOutputFiles(FileBlock const& fb);
-    void doRespondToCloseOutputFiles(FileBlock const& fb);
-
-    std::string
-    workerType() const
-    {
-      return "WorkerT<EDFilter>";
-    }
-
+    virtual void beginJob();
+    virtual void endJob();
+    virtual void respondToOpenInputFile(FileBlock const&);
+    virtual void respondToCloseInputFile(FileBlock const&);
+    virtual void respondToOpenOutputFiles(FileBlock const&);
+    virtual void respondToCloseOutputFiles(FileBlock const&);
+    virtual bool beginRun(Run&);
+    virtual bool endRun(Run&);
+    virtual bool beginSubRun(SubRun&);
+    virtual bool endSubRun(SubRun&);
     virtual bool filter(Event&) = 0;
-    virtual void
-    beginJob()
-    {}
-    virtual void
-    endJob()
-    {}
-    virtual bool
-    beginRun(Run&)
-    {
-      return true;
-    }
-    virtual bool
-    endRun(Run&)
-    {
-      return true;
-    }
-    virtual bool
-    beginSubRun(SubRun&)
-    {
-      return true;
-    }
-    virtual bool
-    endSubRun(SubRun&)
-    {
-      return true;
-    }
-    virtual void
-    respondToOpenInputFile(FileBlock const&)
-    {}
-    virtual void
-    respondToCloseInputFile(FileBlock const&)
-    {}
-    virtual void
-    respondToOpenOutputFiles(FileBlock const&)
-    {}
-    virtual void
-    respondToCloseOutputFiles(FileBlock const&)
-    {}
+  };
 
-    void
-    setModuleDescription(ModuleDescription const& md)
-    {
-      moduleDescription_ = md;
-      // Since the module description in the Consumer base class is
-      // owned by pointer, we must give it the owned object of this
-      // class--i.e. moduleDescription_, not md.
-      Consumer::setModuleDescription(moduleDescription_);
-    }
-
-    ModuleDescription moduleDescription_{};
-    CPC_exempt_ptr current_context_{nullptr};
-    bool checkPutProducts_{true};
-  }; // EDFilter
-
-  template <typename PROD, BranchType B>
-  inline ProductID
-  EDFilter::getProductID(std::string const& instanceName) const
-  {
-    return ProducerBase::getProductID<PROD, B>(moduleDescription_,
-                                               instanceName);
-  }
-
-} // art
-
-// ======================================================================
+} // namespace art
 
 #endif /* art_Framework_Core_EDFilter_h */
 

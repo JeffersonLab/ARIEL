@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace fhicl {
@@ -43,18 +44,11 @@ namespace fhicl {
                      std::function<bool()> maybeUse,
                      T const& t);
 
-    template <std::size_t... I>
-    T
-    fill(via_type const& via, std::index_sequence<I...>) const
-    {
-      return T{std::get<I>(via)...};
-    }
-
     T
     operator()() const
     {
       via_type via;
-      return tupleObj_(via) ? fill(via, std::index_sequence_for<ARGS...>{}) :
+      return tupleObj_(via) ? std::make_from_tuple<T>(via) :
                               tupleObj_.has_default() ?
                               *t_ :
                               throw fhicl::exception(
@@ -176,8 +170,7 @@ namespace fhicl {
 
   template <typename T>
   struct has_insertion_operator
-    : has_insertion_operator_impl::has_insertion_operator<T> {
-  };
+    : has_insertion_operator_impl::has_insertion_operator<T> {};
 
   struct NoInsert {
     template <typename T>

@@ -70,7 +70,8 @@
 
 #define NO_DELEGATED_PARAMETERS                                                \
   "\n\n"                                                                       \
-  "fhiclcpp error: The 'DelegatedParameter' and 'OptionalDelegatedParameter'"  \
+  "fhiclcpp error: The 'DelegatedParameter' and "                              \
+  "'OptionalDelegatedParameter'\n"                                             \
   "                types cannot be template arguments to any fhiclcpp "        \
   "types.\n\n"
 

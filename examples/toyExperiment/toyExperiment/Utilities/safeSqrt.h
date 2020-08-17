@@ -12,9 +12,11 @@
 
 namespace tex {
 
-  template<typename T>
-  inline T safeSqrt( T x ){
-    return (x>0.) ? std::sqrt(x) : 0.;
+  template <typename T>
+  inline T
+  safeSqrt(T x)
+  {
+    return (x > 0.) ? std::sqrt(x) : 0.;
   }
 
 }

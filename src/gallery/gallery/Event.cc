@@ -57,6 +57,12 @@ namespace gallery {
     return eventNavigator_->processHistory();
   }
 
+  art::BranchDescription const&
+  Event::getProductDescription(art::ProductID const pid) const
+  {
+    return dataGetterHelper_->getProductDescription(pid);
+  }
+
   long long
   Event::numberOfEventsInFile() const
   {
@@ -111,7 +117,8 @@ namespace gallery {
     updateAfterEventChange(oldFileEntry);
   }
 
-  Event& Event::operator++()
+  Event&
+  Event::operator++()
   {
     auto const oldFileEntry = fileEntry();
     eventNavigator_->next();
@@ -119,7 +126,8 @@ namespace gallery {
     return *this;
   }
 
-  Event& Event::operator--()
+  Event&
+  Event::operator--()
   {
     if (!randomAccessOK_)
       throwIllegalRandomAccess();
@@ -175,13 +183,17 @@ namespace gallery {
     return eventNavigator_->getTTree();
   }
 
-  void
+  ProductWithID
   Event::getByLabel(std::type_info const& typeInfoOfWrapper,
-                    art::InputTag const& inputTag,
-                    art::EDProduct const*& edProduct) const
+                    art::InputTag const& inputTag) const
   {
+    return dataGetterHelper_->getByLabel(typeInfoOfWrapper, inputTag);
+  }
 
-    dataGetterHelper_->getByLabel(typeInfoOfWrapper, inputTag, edProduct);
+  std::vector<ProductWithID>
+  Event::getManyByType(std::type_info const& typeInfoOfWrapper) const
+  {
+    return dataGetterHelper_->getManyByType(typeInfoOfWrapper);
   }
 
   void
@@ -197,8 +209,9 @@ namespace gallery {
                                       art::InputTag const& tag) const
   {
     auto e = std::make_shared<art::Exception>(art::errors::ProductNotFound);
-    *e << "Failed to find product for \n  type = '" << art::TypeID{typeInfo}.className()
-       << "'\n  module = '" << tag.label() << "'\n  productInstance = '"
+    *e << "Failed to find product for \n  type = '"
+       << art::TypeID{typeInfo}.className() << "'\n  module = '" << tag.label()
+       << "'\n  productInstance = '"
        << ((!tag.instance().empty()) ? tag.instance().c_str() : "")
        << "'\n  process='"
        << ((!tag.process().empty()) ? tag.process().c_str() : "") << "'\n";

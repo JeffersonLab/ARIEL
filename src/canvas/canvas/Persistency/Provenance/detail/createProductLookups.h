@@ -4,11 +4,9 @@
 #include "canvas/Persistency/Provenance/BranchDescription.h"
 #include "canvas/Persistency/Provenance/type_aliases.h"
 
-namespace art {
-  namespace detail {
-    ProductLookup_t createProductLookups(
-      ProductDescriptions const& descriptions);
-  }
+namespace art::detail {
+  ProductLookup_t createProductLookups(
+    ProductDescriptionsByID const& descriptions);
 }
 
 #endif /* canvas_Persistency_Provenance_detail_createProductLookups_h */

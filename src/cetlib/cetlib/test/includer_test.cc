@@ -130,47 +130,46 @@ BOOST_AUTO_TEST_CASE(no_inclusion_test)
 
   cet::includer const a{file_a, policy};
   std::string const result1{a.begin(), a.end()};
-  BOOST_CHECK_EQUAL(result1, expected_string(contents_a));
+  BOOST_TEST(result1 == expected_string(contents_a));
 
   cet::includer const b{file_b, policy};
   std::string const result2{b.begin(), b.end()};
-  BOOST_CHECK_EQUAL(result2, expected_string(contents_b));
+  BOOST_TEST(result2 == expected_string(contents_b));
 
   cet::includer const c{file_c, policy};
   std::string const result3{c.begin(), c.end()};
-  BOOST_CHECK_EQUAL(result3, expected_string(contents_c));
+  BOOST_TEST(result3 == expected_string(contents_c));
 }
 
 BOOST_AUTO_TEST_CASE(single_inclusion_test)
 {
   cet::includer const i{file_i, policy};
   std::string const result{i.begin(), i.end()};
-  BOOST_CHECK_EQUAL(result,
-                    expected_string("begin\n") + expected_string(contents_a) +
-                      expected_string("end\n"));
+  BOOST_TEST(result == expected_string("begin\n") +
+                         expected_string(contents_a) +
+                         expected_string("end\n"));
 }
 
 BOOST_AUTO_TEST_CASE(double_inclusion_test)
 {
   cet::includer j(file_j, policy);
   std::string result(j.begin(), j.end());
-  BOOST_CHECK_EQUAL(result,
-                    expected_string("begin\n") + expected_string(contents_a) +
-                      expected_string(contents_b) +
-                      expected_string(contents_c) + expected_string("end\n"));
+  BOOST_TEST(result ==
+             expected_string("begin\n") + expected_string(contents_a) +
+               expected_string(contents_b) + expected_string(contents_c) +
+               expected_string("end\n"));
 }
 
 BOOST_AUTO_TEST_CASE(repeated_inclusion_test)
 {
   cet::includer k(file_k, policy);
   std::string result(k.begin(), k.end());
-  BOOST_CHECK_EQUAL(result,
-                    expected_string("begin\n") + expected_string("begin\n") +
-                      expected_string(contents_a) +
-                      expected_string(contents_b) +
-                      expected_string(contents_c) + expected_string("end\n") +
-                      expected_string("begin\n") + expected_string(contents_a) +
-                      expected_string("end\n") + expected_string("end\n"));
+  BOOST_TEST(result ==
+             expected_string("begin\n") + expected_string("begin\n") +
+               expected_string(contents_a) + expected_string(contents_b) +
+               expected_string(contents_c) + expected_string("end\n") +
+               expected_string("begin\n") + expected_string(contents_a) +
+               expected_string("end\n") + expected_string("end\n"));
 }
 
 BOOST_AUTO_TEST_CASE(malformed_inclusion_test)
@@ -204,15 +203,15 @@ BOOST_AUTO_TEST_CASE(string_inclusion_test)
   std::istringstream is_a(a);
   cet::includer inc_a(is_a, policy);
   std::string result_a(inc_a.begin(), inc_a.end());
-  BOOST_CHECK_EQUAL(result_a, a);
+  BOOST_TEST(result_a == a);
 
   std::string i = contents_i;
   std::istringstream is_i(i);
   cet::includer inc_i(is_i, policy);
   std::string result_i(inc_i.begin(), inc_i.end());
-  BOOST_CHECK_EQUAL(result_i,
-                    expected_string("begin\n") + expected_string(contents_a) +
-                      expected_string("end\n"));
+  BOOST_TEST(result_i == expected_string("begin\n") +
+                           expected_string(contents_a) +
+                           expected_string("end\n"));
 }
 
 BOOST_AUTO_TEST_CASE(backtrace_test)
@@ -220,24 +219,24 @@ BOOST_AUTO_TEST_CASE(backtrace_test)
   cet::includer j(file_j, policy);
   auto it = j.begin();
   std::advance(it, 5);
-  BOOST_REQUIRE(*it == '\n');
+  BOOST_TEST_REQUIRE(*it == '\n');
   std::cerr << j.whereis(it) << "\n";
   std::cerr << "\n";
   std::string cmp("line 1, character 6, of file \"././j.txt\"");
-  BOOST_REQUIRE_EQUAL(j.whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.whereis(it) == cmp);
   std::advance(it, 10);
-  BOOST_REQUIRE(*it == 'y');
+  BOOST_TEST_REQUIRE(*it == 'y');
   std::cerr << j.whereis(it) << "\n";
   std::cerr << "\n";
   cmp = "line 2, character 4, of file \"././a.txt\"\n"
         "included from line 2 of file \"././j.txt\"";
-  BOOST_REQUIRE_EQUAL(j.whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.whereis(it) == cmp);
   std::advance(it, 10);
-  BOOST_REQUIRE(*it == '7');
+  BOOST_TEST_REQUIRE(*it == '7');
   std::cerr << j.whereis(it) << "\n";
   cmp = "line 2, character 2, of file \"././b.txt\"\n"
         "included from line 3 of file \"././j.txt\"";
-  BOOST_REQUIRE_EQUAL(j.whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.whereis(it) == cmp);
 }
 
 BOOST_AUTO_TEST_CASE(highlighted_backtrace_test)
@@ -245,27 +244,27 @@ BOOST_AUTO_TEST_CASE(highlighted_backtrace_test)
   cet::includer j(file_j, policy);
   auto it = j.begin();
   std::advance(it, 5);
-  BOOST_REQUIRE(*it == '\n');
+  BOOST_TEST_REQUIRE(*it == '\n');
   std::cerr << j.highlighted_whereis(it) << "\n";
   std::cerr << "\n";
   std::string cmp("line 1, character 6, of file \"././j.txt\"");
   cmp += "\n\nbegin\n     ^";
-  BOOST_REQUIRE_EQUAL(j.highlighted_whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.highlighted_whereis(it) == cmp);
   std::advance(it, 10);
-  BOOST_REQUIRE(*it == 'y');
+  BOOST_TEST_REQUIRE(*it == 'y');
   std::cerr << j.highlighted_whereis(it) << "\n";
   std::cerr << "\n";
   cmp = "line 2, character 4, of file \"././a.txt\"\n"
         "included from line 2 of file \"././j.txt\"";
   cmp += "\n\nvwxyz\n   ^";
-  BOOST_REQUIRE_EQUAL(j.highlighted_whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.highlighted_whereis(it) == cmp);
   std::advance(it, 10);
-  BOOST_REQUIRE(*it == '7');
+  BOOST_TEST_REQUIRE(*it == '7');
   std::cerr << j.highlighted_whereis(it) << "\n";
   cmp = "line 2, character 2, of file \"././b.txt\"\n"
         "included from line 3 of file \"././j.txt\"";
   cmp += "\n\n67890\n ^";
-  BOOST_REQUIRE_EQUAL(j.highlighted_whereis(it), cmp);
+  BOOST_TEST_REQUIRE(j.highlighted_whereis(it) == cmp);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

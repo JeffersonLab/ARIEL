@@ -1,6 +1,3 @@
-art_dictionary(NO_INSTALL)
-
-# Library link requirements for tests here
 set(default_test_libraries
   art_Framework_Services_Registry
   art_Framework_Core
@@ -10,10 +7,9 @@ set(default_test_libraries
   ${CMAKE_DL_LIBS}
  )
 
-#########################################################################
-# New tests (post-ART fork).
-####################################
-# cet_test macro
+cet_make_library(LIBRARY_NAME set_manager_for_tests
+  SOURCE set_manager_for_tests.cc
+  LIBRARIES art_Framework_Services_Registry)
 
 foreach (type Analyzer Filter Output Producer)
   SET_SOURCE_FILES_PROPERTIES(PMTest${type}_module.cc
@@ -22,35 +18,43 @@ foreach (type Analyzer Filter Output Producer)
     )
   simple_plugin(PMTest${type} "module" NO_INSTALL)
 endforeach()
+simple_plugin(CheckTriggerBits "module" NO_INSTALL USE_BOOST_UNIT
+              art_Framework_Services_System_TriggerNamesService_service)
 
 cet_test(PathManager_t USE_BOOST_UNIT
   LIBRARIES
+  art_Framework_Art
   art_Framework_Core
   fhiclcpp
   cetlib
   )
 
-########################################################################
-# If any cppunit tests require more libraries than the default, specify
-# them in a ${target}_libs variable.
-########################################################################
-
-simple_plugin(TestMod module NO_INSTALL)
-cet_test(maker2_t LIBRARIES ${default_test_libraries})
-
 foreach(cpp_test
     EventSelector_t
     EventSelWildcard_t
     EventSelExc_t
-    CurrentProcessingContext_t
-    CPCSentry_t
     RegistryTemplate_t
     parse_path_spec_t)
   cet_test(${cpp_test} SOURCES ${cpp_test}.cpp
-    LIBRARIES ${default_test_libraries}
+    LIBRARIES ${default_test_libraries} set_manager_for_tests
     )
 endforeach()
 
 cet_test(GroupSelector_t USE_BOOST_UNIT
   LIBRARIES ${default_test_libraries}
 )
+
+cet_test(ProductRegistryHelper_t USE_BOOST_UNIT
+  LIBRARIES art_Framework_Core cetlib_except)
+
+cet_test(trigger_bits_01 HANDBUILT
+  TEST_EXEC art_ut
+  TEST_ARGS -- -c trigger_bits_01.fcl
+  DATAFILES trigger_bits_01.fcl)
+
+cet_test(trigger_bits_02 HANDBUILT
+  TEST_EXEC art_ut
+  TEST_ARGS -- -c trigger_bits_02.fcl
+  DATAFILES trigger_bits_02.fcl)
+
+add_subdirectory(data-dependencies)

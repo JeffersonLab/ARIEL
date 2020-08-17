@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/split_path.{h,cc}
-% Chris Green.
-% 2016-10-13 (on commit 889f6a2).
-
-* `cet::split_path`{.cpp} operates on an `std::string const &`{.cpp}, placing its answer into an `std::vector<std::string>`{.cpp} by reference. Semantics are those to be expected of this type of access to those entities. Non-trivial operation is outsourced to `boost:algorithm::split()`{.cpp}, which may reasonably expected to have the same semantics.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

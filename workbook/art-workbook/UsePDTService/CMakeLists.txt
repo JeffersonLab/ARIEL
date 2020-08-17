@@ -9,6 +9,7 @@ art_make(
     cetlib_except
     ${Boost_SYSTEM_LIBRARY}
   MODULE_LIBRARIES
+    art_Persistency_Provenance
     art-workbook_UsePDTService
     toyexperiment_pdt
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}

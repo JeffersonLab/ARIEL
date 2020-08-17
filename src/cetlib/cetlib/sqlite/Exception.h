@@ -12,29 +12,22 @@
 
 // ----------------------------------------------------------------------
 
-namespace cet {
-  namespace sqlite {
-    namespace errors {
+namespace cet::sqlite {
+  namespace errors {
 
-      enum ErrorCodes {
-        LogicError = 0,
-        SQLExecutionError,
-        OtherError,
-        Unknown
-      };
+    enum ErrorCodes { LogicError = 0, SQLExecutionError, OtherError, Unknown };
 
-    } // errors
+  } // errors
 
-    namespace ExceptionDetail {
-      std::string translate(errors::ErrorCodes);
-    }
+  namespace ExceptionDetail {
+    std::string translate(errors::ErrorCodes);
+  }
 
-    using Exception =
-      cet::coded_exception<errors::ErrorCodes, ExceptionDetail::translate>;
-  } // sqlite
-} // cet
+  using Exception =
+    cet::coded_exception<errors::ErrorCodes, ExceptionDetail::translate>;
+} // cet::sqlite
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_sqlite_Exception_h */
 

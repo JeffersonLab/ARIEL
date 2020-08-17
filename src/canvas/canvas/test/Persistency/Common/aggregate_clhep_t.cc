@@ -9,13 +9,13 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 
+using arttest::MockRun;
 using CLHEP::Hep2Vector;
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
 using CLHEP::HepMatrix;
 using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;
-using arttest::MockRun;
 
 namespace {
   double constexpr tolerance = std::numeric_limits<double>::epsilon();

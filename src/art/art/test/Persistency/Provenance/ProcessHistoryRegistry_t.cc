@@ -6,7 +6,6 @@
 #include "canvas/Persistency/Provenance/ProcessHistory.h"
 #include "cetlib/SimultaneousFunctionSpawner.h"
 #include "cetlib/container_algorithms.h"
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <string>
@@ -31,7 +30,7 @@ namespace {
     return ProcessConfiguration{
       process_name, processParams.id(), getReleaseVersion()};
   }
-}
+} // namespace
 
 BOOST_AUTO_TEST_SUITE(ProcessHistoryTest)
 
@@ -66,7 +65,7 @@ BOOST_AUTO_TEST_CASE(concurrent_insertion_reading)
     cet::SimultaneousFunctionSpawner sfs{tasks};
   }
 
-  BOOST_REQUIRE_EQUAL(ProcessHistoryRegistry::get().size(), histories.size());
+  BOOST_TEST_REQUIRE(ProcessHistoryRegistry::get().size() == histories.size());
 
   // Retrieve histories in parallel
   {
@@ -83,7 +82,7 @@ BOOST_AUTO_TEST_CASE(concurrent_insertion_reading)
         });
       });
     cet::SimultaneousFunctionSpawner sfs{tasks};
-    CET_CHECK_EQUAL_COLLECTIONS(histories, retrievedHistories);
+    BOOST_TEST(histories == retrievedHistories);
   }
 }
 

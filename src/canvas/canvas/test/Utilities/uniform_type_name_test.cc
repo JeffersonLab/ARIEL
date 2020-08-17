@@ -11,18 +11,16 @@ using art::uniform_type_name;
 using std::string;
 
 template <unsigned int, typename>
-struct MyUIntTemplate_t {
-};
+struct MyUIntTemplate_t {};
 
 template <unsigned long, typename>
-struct MyULongTemplate_t {
-};
+struct MyULongTemplate_t {};
 
 namespace {
   void
   testit(std::type_info const& tid, std::string const ref)
   {
-    BOOST_CHECK_EQUAL(uniform_type_name(tid), ref);
+    BOOST_TEST(uniform_type_name(tid) == ref);
   }
 }
 

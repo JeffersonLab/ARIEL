@@ -10,15 +10,11 @@
 namespace art {
 
   class ActionTable; // Action.h
-  class AssnsGroup;
   class ConsumesRecorder;
-  class CurrentProcessingContext;
   class DataViewImpl;
-  class DeferredProductGetter;
   class Event;
   class EventPrincipal;
   class Group;
-  class GroupFactory;
   template <typename T>
   class Handle;
   class NoDelayedReader;
@@ -49,14 +45,7 @@ namespace art {
   struct WorkerParams;
   class BranchDescription;
 
-  namespace gfactory {
-    namespace detail {
-      template <typename... ARGS>
-      std::unique_ptr<Group> make_group(BranchDescription const& pd,
-                                        ARGS&&... args);
-    }
-  }
-} // art
+} // namespace art
 
 #endif /* art_Framework_Principal_fwd_h */
 

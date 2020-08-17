@@ -1,0 +1,8 @@
+# N.B. There is no trigger path included for this test!  The goal is
+# to ensure that a module that would throw in its constructor is never
+# made.
+
+physics.producers.p1: {
+   module_type: ThrowingProducer
+   throwFromCtor: true
+}

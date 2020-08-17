@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/shlib_utils.{h,cc.in}
-% Chris Green.
-% 2016-10-13 (on commit 889f6a2).
-
-* Both functions `cet::shlib_prefix()`{.cpp} and `cet::shlib_suffix()`{.cpp} have function-local `static std::string const`{.cpp} objects. Provided the C++11 memory model is correctty implemented, there are no implications for threading safety.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

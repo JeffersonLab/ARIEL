@@ -6,7 +6,6 @@
 
 #include "fhiclcpp/make_ParameterSet.h"
 
-#include "boost/any.hpp"
 #include "cetlib/includer.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/ParameterSetRegistry.h"

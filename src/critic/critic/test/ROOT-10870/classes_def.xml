@@ -1,0 +1,10 @@
+<lcgdict>
+  <class name="r10870::ProductID" ClassVersion="10">
+   <version ClassVersion="10" checksum="1797498204"/>
+  </class>
+  <class name="r10870::DataObj" ClassVersion="10">
+   <version ClassVersion="10" checksum="317939867"/>
+  </class>
+  <class name="r10870::Handle<r10870::DataObj>"/>
+  <class name="r10870::Handle<int>"/>
+</lcgdict>

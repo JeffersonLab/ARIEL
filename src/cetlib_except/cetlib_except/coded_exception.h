@@ -81,7 +81,7 @@ cet::coded_exception<Code, translate>::codeToString(Code code)
   return translate(code);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_except_coded_exception_h */
 

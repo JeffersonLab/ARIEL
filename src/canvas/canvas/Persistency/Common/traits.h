@@ -23,8 +23,7 @@
 #include <vector>
 
 namespace art {
-  //------------------------------------------------------------
-  //
+
   // The trait struct template key_traits<K> is used to carry
   // information relevant to the type K when used as a 'key' in
   // PtrVector and its related classes and templates.
@@ -50,7 +49,6 @@ namespace art {
 
   // If we ever need to support instantiations of std::basic_string
   // other than std::string, this is the place to do it.
-
   // For value, we make a 1-character long string that contains an
   // unprintable character; we are hoping nobody ever uses such a
   // string as a legal key.
@@ -60,32 +58,26 @@ namespace art {
     static const key_type value;
   };
 
-  //------------------------------------------------------------
-  // ... Check for value_type
   template <typename T, typename = void>
-  struct has_value_type : std::false_type {
-  };
+  struct has_value_type : std::false_type {};
 
   template <typename T>
-  struct has_value_type<T, cet::enable_if_type_exists_t<typename T::value_type>>
+  struct has_value_type<T, std::void_t<typename T::value_type>>
     : std::true_type {
     using element_type = typename T::value_type;
   };
 
-  // ... Check for mapped_type
   template <typename T, typename = void>
-  struct has_mapped_type : std::false_type {
-  };
+  struct has_mapped_type : std::false_type {};
 
   template <typename T>
-  struct has_mapped_type<T,
-                         cet::enable_if_type_exists_t<typename T::mapped_type>>
+  struct has_mapped_type<T, std::void_t<typename T::mapped_type>>
     : std::true_type {
     using element_type = typename T::mapped_type;
   };
 
-  // A type supports a view if it has a nested 'value_type' or
-  // 'mapped_type' type name.
+  // A type supports a view if it has a nested 'value_type' or 'mapped_type'
+  // type name.
   template <typename T, typename = void>
   struct SupportsView : std::false_type {
     static std::type_info const*
@@ -119,7 +111,7 @@ namespace art {
     }
   };
 
-  //------------------------------------------------------------
+  //
   // The trait struct template has_fillView<T> is used to
   // indicate whether or not the type T has a member function
   //
@@ -127,19 +119,16 @@ namespace art {
   //
   // We assume the 'general case' for T is to not support fillView.
   // Classes which do support fillView must specialize this trait.
-  //------------------------------------------------------------
+  //
 
-  // has_fillView
   template <typename T, typename = void>
-  struct has_fillView {
-  };
+  struct has_fillView {};
 
   template <typename T>
   struct has_fillView<
     T,
     cet::enable_if_function_exists_t<void (T::*)(std::vector<void const*>&),
-                                     &T::fillView>> {
-  };
+                                     &T::fillView>> {};
 
   template <typename T>
   struct CannotFillView {
@@ -153,8 +142,7 @@ namespace art {
   };
 
   template <class T, typename = void>
-  struct MaybeFillView : CannotFillView<T> {
-  };
+  struct MaybeFillView : CannotFillView<T> {};
 
   template <typename T>
   struct MaybeFillView<T, std::enable_if_t<has_fillView<T>::value>> {
@@ -177,8 +165,7 @@ namespace art {
 
   template <class A>
   struct MaybeFillView<std::vector<bool, A>>
-    : CannotFillView<std::vector<bool, A>> {
-  };
+    : CannotFillView<std::vector<bool, A>> {};
 
   template <class T, class A>
   struct MaybeFillView<std::list<T, A>> {
@@ -221,7 +208,7 @@ namespace art {
     }
   };
 
-  //------------------------------------------------------------
+  //
   // The trait struct template has_setPtr<T> is used to
   // indicate whether or not the type T has a member function
   //
@@ -229,35 +216,22 @@ namespace art {
   //
   // We assume the 'general case' for T is to not support setPtr.
   // Classes which do support setPtr must specialize this trait.
-  //------------------------------------------------------------
+  //
 
   template <class T>
-  struct has_setPtr : std::false_type {
-  };
-
+  struct has_setPtr : std::false_type {};
   template <class T, class A>
-  struct has_setPtr<std::vector<T, A>> : std::true_type {
-  };
-
+  struct has_setPtr<std::vector<T, A>> : std::true_type {};
   template <class A>
-  struct has_setPtr<std::vector<bool, A>> : std::false_type {
-  };
-
+  struct has_setPtr<std::vector<bool, A>> : std::false_type {};
   template <class T, class A>
-  struct has_setPtr<std::list<T, A>> : std::true_type {
-  };
-
+  struct has_setPtr<std::list<T, A>> : std::true_type {};
   template <class T, class A>
-  struct has_setPtr<std::deque<T, A>> : std::true_type {
-  };
-
+  struct has_setPtr<std::deque<T, A>> : std::true_type {};
   template <class T, class A>
-  struct has_setPtr<std::set<T, A>> : std::true_type {
-  };
-
+  struct has_setPtr<std::set<T, A>> : std::true_type {};
   template <class T>
-  struct has_setPtr<cet::map_vector<T>> : std::true_type {
-  };
+  struct has_setPtr<cet::map_vector<T>> : std::true_type {};
 }
 
 #endif /* canvas_Persistency_Common_traits_h */

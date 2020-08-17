@@ -6,20 +6,18 @@
 #include "toyExperiment/Analyzers/PlotOrientation.h"
 
 std::string const&
-tex::PlotOrientationDetail::typeName() {
+tex::PlotOrientationDetail::typeName()
+{
   static std::string type("PlotOrientation");
   return type;
 }
 
-std::map<tex::PlotOrientationDetail::enum_type,std::string> const&
-tex::PlotOrientationDetail::names(){
+std::map<tex::PlotOrientationDetail::enum_type, std::string> const&
+tex::PlotOrientationDetail::names()
+{
 
-  static const std::map<enum_type,std::string> nam =
-    { { unknown,   "unknown" },
-      { portrait,  "portrait"},
-      { landscape, "landscape"}
-    };
+  static const std::map<enum_type, std::string> nam = {
+    {unknown, "unknown"}, {portrait, "portrait"}, {landscape, "landscape"}};
 
   return nam;
 }
-

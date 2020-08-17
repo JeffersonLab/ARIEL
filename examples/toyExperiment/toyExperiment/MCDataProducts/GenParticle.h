@@ -20,44 +20,72 @@ namespace tex {
   class GenParticle {
 
   public:
-
     typedef art::PtrVector<GenParticle> children_type;
 
     GenParticle();
 
-    GenParticle( PDGCode::type                  pdgId,
-                 art::Ptr<GenParticle> const&   parent,
-                 CLHEP::Hep3Vector const&       position,
-                 CLHEP::HepLorentzVector const& momentum );
+    GenParticle(PDGCode::type pdgId,
+                art::Ptr<GenParticle> const& parent,
+                CLHEP::Hep3Vector const& position,
+                CLHEP::HepLorentzVector const& momentum);
 
-    PDGCode::type                  pdgId()           const { return  _pdgId;              }
-    bool                           hasParent()       const { return  _parent.isNonnull(); }
-    bool                           hasChildren()     const { return !_children.empty();   }
-    art::Ptr<GenParticle> const&   parent()          const { return  _parent;             }
-    children_type const&           children()        const { return  _children;           }
-    art::Ptr<GenParticle> const&   child( size_t i ) const { return  _children.at(i);     }
-    CLHEP::Hep3Vector const&       position()        const { return  _position;           }
-    CLHEP::HepLorentzVector const& momentum()        const { return  _momentum;           }
+    PDGCode::type
+    pdgId() const
+    {
+      return _pdgId;
+    }
+    bool
+    hasParent() const
+    {
+      return _parent.isNonnull();
+    }
+    bool
+    hasChildren() const
+    {
+      return !_children.empty();
+    }
+    art::Ptr<GenParticle> const&
+    parent() const
+    {
+      return _parent;
+    }
+    children_type const&
+    children() const
+    {
+      return _children;
+    }
+    art::Ptr<GenParticle> const&
+    child(size_t i) const
+    {
+      return _children.at(i);
+    }
+    CLHEP::Hep3Vector const&
+    position() const
+    {
+      return _position;
+    }
+    CLHEP::HepLorentzVector const&
+    momentum() const
+    {
+      return _momentum;
+    }
 
-    void addChild( art::Ptr<GenParticle> const& child );
+    void addChild(art::Ptr<GenParticle> const& child);
 
   private:
-
     // PDG particle ID code.
     PDGCode::type _pdgId;
 
     // Ancestry navigation.
     art::Ptr<GenParticle> _parent;
-    children_type         _children;
+    children_type _children;
 
     // Position, momentum at creation.
-    CLHEP::Hep3Vector       _position;
+    CLHEP::Hep3Vector _position;
     CLHEP::HepLorentzVector _momentum;
-
   };
 
-  std::ostream& operator<<(std::ostream& ost,
-                           const tex::GenParticle& genp );
+  std::ostream& operator<<(std::ostream& ost, const tex::GenParticle& genp);
 }
 
 #endif /* MCDataProducts_GenParticle_h */

@@ -23,6 +23,8 @@ namespace art {
 
     void setBranchIDLists(cet::exempt_ptr<BranchIDLists const> bidLists);
 
+    TClassStreamer* Generate() const override;
+
     void operator()(TBuffer& R_b, void* objp) override;
 
   private:

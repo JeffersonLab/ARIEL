@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace fhicl {
@@ -29,21 +30,12 @@ namespace fhicl {
                              Comment&& comment,
                              std::function<bool()> maybeUse);
 
-    template <std::size_t... I>
-    T
-    fill(typename OptionalTuple<ARGS...>::value_type const& via,
-         std::index_sequence<I...>) const
-    {
-      return T{std::get<I>(via)...};
-    }
-
     bool
     operator()(T& result) const
     {
       typename OptionalTuple<ARGS...>::value_type via;
       if (tupleObj_(via)) {
-        auto tmp = fill(via, std::index_sequence_for<ARGS...>{});
-        std::swap(result, tmp);
+        result = std::make_from_tuple(via);
         return true;
       }
       return false;

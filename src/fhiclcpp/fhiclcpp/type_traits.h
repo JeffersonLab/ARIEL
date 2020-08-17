@@ -49,6 +49,11 @@ namespace fhicl {
   template <typename T, typename... ARGS>
   class OptionalTupleAs;
 
+  template <typename T, typename Config>
+  class TableAs;
+  template <typename T, typename Config>
+  class OptionalTableAs;
+
   class DelegatedParameter;
   class OptionalDelegatedParameter;
 }
@@ -56,17 +61,16 @@ namespace fhicl {
 namespace tt {
 
   using cet::enable_if_function_exists_t;
-  using std::enable_if;
-  using std::is_floating_point;
 
   template <bool b, typename T = void>
   using disable_if = std::enable_if<!b, T>;
 
+  template <bool b, typename T = void>
+  using disable_if_t = typename disable_if<b, T>::type;
+
   template <typename T>
-  struct is_int : std::integral_constant<bool,
-                                         std::is_integral<T>::value &&
-                                           !std::is_unsigned<T>::value> {
-  };
+  struct is_int
+    : std::bool_constant<std::is_integral_v<T> && !std::is_unsigned_v<T>> {};
 
   template <typename T>
   using is_numeric = std::is_arithmetic<T>;
@@ -75,22 +79,19 @@ namespace tt {
   using is_uint = std::is_unsigned<T>;
 
   template <typename T, typename = void>
-  struct is_callable : std::false_type {
-  };
+  struct is_callable : std::false_type {};
 
   template <typename T>
   struct is_callable<
     T,
     enable_if_function_exists_t<std::set<std::string> (T::*)(), &T::operator()>>
-    : std::true_type {
-  };
+    : std::true_type {};
 
   template <typename T>
   struct is_callable<
     T,
     enable_if_function_exists_t<std::set<std::string> (T::*)() const,
-                                &T::operator()>> : std::true_type {
-  };
+                                &T::operator()>> : std::true_type {};
 
   //=======================================================
   // Enforce (non)const-ness
@@ -114,138 +115,137 @@ namespace tt {
   // Check if sequence type
   //
   template <typename Container>
-  struct is_sequence_type : std::false_type {
-  };
+  struct is_sequence_type : std::false_type {};
 
   template <typename ARG, std::size_t SZ>
-  struct is_sequence_type<std::array<ARG, SZ>> : std::true_type {
-  };
+  struct is_sequence_type<std::array<ARG, SZ>> : std::true_type {};
   template <typename... ARGS>
-  struct is_sequence_type<std::tuple<ARGS...>> : std::true_type {
-  };
+  struct is_sequence_type<std::tuple<ARGS...>> : std::true_type {};
   template <typename... ARGS>
-  struct is_sequence_type<std::vector<ARGS...>> : std::true_type {
-  };
+  struct is_sequence_type<std::vector<ARGS...>> : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_sequence_type_v{is_sequence_type<T>::value};
 
   //=======================================================
   // Check if Table<>
   //
   template <typename T>
-  struct is_table : std::false_type {
-  };
+  struct is_table : std::false_type {};
 
   template <typename T, typename KeysToIgnore>
-  struct is_table<fhicl::Table<T, KeysToIgnore>> : std::true_type {
-  };
+  struct is_table<fhicl::Table<T, KeysToIgnore>> : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_table_v{is_table<T>::value};
 
   //=======================================================
   // Check if TableFragment<>
   //
   template <typename T>
-  struct is_table_fragment : std::false_type {
-  };
+  struct is_table_fragment : std::false_type {};
 
   template <typename T>
-  struct is_table_fragment<fhicl::TableFragment<T>> : std::true_type {
-  };
+  struct is_table_fragment<fhicl::TableFragment<T>> : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_table_fragment_v{is_table_fragment<T>::value};
 
   //=======================================================
   // Check if optional parameter
   //
   template <typename T>
-  struct is_optional_parameter : std::false_type {
-  };
+  struct is_optional_parameter : std::false_type {};
 
   template <typename T>
-  struct is_optional_parameter<fhicl::OptionalTable<T>> : std::true_type {
-  };
+  struct is_optional_parameter<fhicl::OptionalTable<T>> : std::true_type {};
 
   template <typename T>
-  struct is_optional_parameter<fhicl::OptionalAtom<T>> : std::true_type {
-  };
+  struct is_optional_parameter<fhicl::OptionalAtom<T>> : std::true_type {};
 
   template <typename T, std::size_t SZ>
   struct is_optional_parameter<fhicl::OptionalSequence<T, SZ>>
-    : std::true_type {
-  };
+    : std::true_type {};
 
   template <typename... TYPES>
   struct is_optional_parameter<fhicl::OptionalTuple<TYPES...>>
-    : std::true_type {
-  };
+    : std::true_type {};
 
   template <typename T, typename... ARGS>
   struct is_optional_parameter<fhicl::OptionalTupleAs<T(ARGS...)>>
-    : std::true_type {
-  };
+    : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_optional_parameter_v{
+    is_optional_parameter<T>::value};
 
   //=======================================================
   // Check if delegated parameter
   //
   template <typename T>
-  struct is_delegated_parameter : std::false_type {
-  };
+  struct is_delegated_parameter : std::false_type {};
 
   template <>
-  struct is_delegated_parameter<fhicl::DelegatedParameter> : std::true_type {
-  };
+  struct is_delegated_parameter<fhicl::DelegatedParameter> : std::true_type {};
 
   template <>
   struct is_delegated_parameter<fhicl::OptionalDelegatedParameter>
-    : std::true_type {
-  };
+    : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_delegated_parameter_v{
+    is_delegated_parameter<T>::value};
 
   //=======================================================
   // Check if fhicl type -- i.e. Atom<>, Table<>, etc.
   //
   template <typename T>
-  struct is_fhicl_type : std::false_type {
-  };
+  struct is_fhicl_type : std::false_type {};
 
   // ... Table
   template <typename T, typename KeysToIgnore>
-  struct is_fhicl_type<fhicl::Table<T, KeysToIgnore>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::Table<T, KeysToIgnore>> : std::true_type {};
 
   template <typename T>
-  struct is_fhicl_type<fhicl::OptionalTable<T>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::OptionalTable<T>> : std::true_type {};
 
   // ... Atom
   template <typename T>
-  struct is_fhicl_type<fhicl::Atom<T>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::Atom<T>> : std::true_type {};
 
   template <typename T>
-  struct is_fhicl_type<fhicl::OptionalAtom<T>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::OptionalAtom<T>> : std::true_type {};
 
   // ... Sequence
   template <typename T, std::size_t SZ>
-  struct is_fhicl_type<fhicl::Sequence<T, SZ>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::Sequence<T, SZ>> : std::true_type {};
 
   template <typename T, std::size_t SZ>
-  struct is_fhicl_type<fhicl::OptionalSequence<T, SZ>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::OptionalSequence<T, SZ>> : std::true_type {};
 
   // ... Tuple
   template <typename... TYPES>
-  struct is_fhicl_type<fhicl::Tuple<TYPES...>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::Tuple<TYPES...>> : std::true_type {};
 
   template <typename... TYPES>
-  struct is_fhicl_type<fhicl::OptionalTuple<TYPES...>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::OptionalTuple<TYPES...>> : std::true_type {};
 
   // ... TupleAs
   template <typename T, typename... ARGS>
-  struct is_fhicl_type<fhicl::TupleAs<T(ARGS...)>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::TupleAs<T(ARGS...)>> : std::true_type {};
 
   template <typename T, typename... ARGS>
-  struct is_fhicl_type<fhicl::OptionalTupleAs<T(ARGS...)>> : std::true_type {
-  };
+  struct is_fhicl_type<fhicl::OptionalTupleAs<T(ARGS...)>> : std::true_type {};
+
+  // ... TableAs
+  template <typename T, typename Config>
+  struct is_fhicl_type<fhicl::TableAs<T, Config>> : std::true_type {};
+
+  template <typename T, typename Config>
+  struct is_fhicl_type<fhicl::OptionalTableAs<T, Config>> : std::true_type {};
+
+  template <typename T>
+  inline constexpr bool is_fhicl_type_v{is_fhicl_type<T>::value};
 
   //=======================================================
   // Get FHiCL types: can be Atom, Sequence, Tuple, or Table
@@ -268,6 +268,11 @@ namespace tt {
   template <typename... ARGS>
   struct fhicl_type_impl<fhicl::Tuple<ARGS...>> {
     using type = fhicl::Tuple<ARGS...>;
+  };
+
+  template <typename T, typename Config>
+  struct fhicl_type_impl<fhicl::TableAs<T, Config>> {
+    using type = fhicl::TableAs<T, Config>;
   };
 
   template <typename T, typename... ARGS>
@@ -293,6 +298,11 @@ namespace tt {
   template <typename... ARGS>
   struct fhicl_type_impl<fhicl::OptionalTuple<ARGS...>> {
     using type = fhicl::OptionalTuple<ARGS...>;
+  };
+
+  template <typename T, typename Config>
+  struct fhicl_type_impl<fhicl::OptionalTableAs<T, Config>> {
+    using type = fhicl::OptionalTableAs<T, Config>;
   };
 
   template <typename T, typename... ARGS>
@@ -330,6 +340,11 @@ namespace tt {
   template <typename... ARGS>
   struct return_type_impl<fhicl::Tuple<ARGS...>> {
     using value_type = typename fhicl::Tuple<ARGS...>::value_type;
+  };
+
+  template <typename T, typename Config>
+  struct return_type_impl<fhicl::TableAs<T, Config>> {
+    using value_type = typename fhicl::TableAs<T, Config>::value_type;
   };
 
   template <typename T, typename... ARGS>

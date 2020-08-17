@@ -1,0 +1,52 @@
+process_name: DEVEL
+
+source: {
+  module_type: GeneratorTest
+  fileNames: [ dummy ]
+  readNextImpl: {
+    tool_type: ReadNextArbitrator
+    threshold: 1
+  }
+}
+
+physics: {
+  producers: {
+    runProd: {
+      module_type: IntProducer
+      ivalue: 23
+      branchType: 2
+    }
+    subRunProd: {
+      module_type: IntProducer
+      ivalue: 13
+      branchType: 1
+    }
+    eventProd: {
+      module_type: IntProducer
+      ivalue: 3
+      branchType: 0
+    }
+  }
+  analyzers: {
+    runReader: {
+      module_type: IntTestAnalyzer
+      input_label: "runProd"
+      expected_value: 23
+      branch_type: 2
+    }
+    subRunReader: {
+      module_type: IntTestAnalyzer
+      input_label: "subRunProd"
+      expected_value: 13
+      branch_type: 1
+    }
+    eventReader: {
+      module_type: IntTestAnalyzer
+      input_label: "eventProd"
+      expected_value: 3
+      branch_type: 0
+    }
+  }
+  tp: [runProd, subRunProd, eventProd]
+  ep: [runReader, subRunReader, eventReader]
+}

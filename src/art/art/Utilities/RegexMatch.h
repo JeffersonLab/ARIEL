@@ -23,7 +23,7 @@ namespace art {
     std::vector<std::string> const& strings,
     std::string const& pattern);
 
-} // art
+} // namespace art
 
 // ======================================================================
 

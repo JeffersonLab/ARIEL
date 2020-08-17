@@ -10,8 +10,10 @@
 #include "toyExperiment/Utilities/phi_norm.h"
 #include "toyExperiment/Utilities/phi_small.h"
 
-double tex::dphi( double arg1, double arg2 ){
+double
+tex::dphi(double arg1, double arg2)
+{
   double phi1 = phi_norm(arg1);
   double phi2 = phi_norm(arg2);
-  return phi_small( phi1-phi2 );
+  return phi_small(phi1 - phi2);
 }

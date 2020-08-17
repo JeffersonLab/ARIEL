@@ -65,18 +65,18 @@ public:
             LibraryManager::nothrow_t) const -> RESULT_TYPE (*)(ARGS...);
 
   template <typename FUNCTION_TYPE>
-  std::enable_if_t<std::is_function<FUNCTION_TYPE>::value, FUNCTION_TYPE*> find(
+  std::enable_if_t<std::is_function_v<FUNCTION_TYPE>, FUNCTION_TYPE*> find(
     std::string const& funcname,
     std::string const& libspec) const;
 
   // May define subclasses.
   virtual ~PluginFactory() = default;
 
-private:
   // Not copyable.
   PluginFactory(PluginFactory const&) = delete;
   PluginFactory& operator=(PluginFactory const&) = delete;
 
+private:
   template <typename T>
   void resolveSymbolOrThrow_(std::string const& libspec,
                              std::string const& funcname,
@@ -112,7 +112,7 @@ cet::PluginFactory::call(std::string const& libspec,
 }
 
 template <typename FUNCTION_TYPE>
-inline std::enable_if_t<std::is_function<FUNCTION_TYPE>::value, FUNCTION_TYPE*>
+inline std::enable_if_t<std::is_function_v<FUNCTION_TYPE>, FUNCTION_TYPE*>
 cet::PluginFactory::find(std::string const& libspec,
                          std::string const& funcname) const
 {

@@ -19,16 +19,18 @@ namespace tex {
   // Some helper functions.
   // These are found in ../src/sqrtOrThrow.cc and are used to avoid code bloat
   // in the instantiated templates.
-  void throwHelperForSqrtOrThrow( double, double );
-  void throwHelperForSqrtOrThrow( float,  float  );
+  void throwHelperForSqrtOrThrow(double, double);
+  void throwHelperForSqrtOrThrow(float, float);
 
-  template<typename T>
-  T sqrtOrThrow ( T x, T eps ){
+  template <typename T>
+  T
+  sqrtOrThrow(T x, T eps)
+  {
     T retval(0.);
-    if ( x > 0. ) {
+    if (x > 0.) {
       retval = sqrt(x);
-    }else if ( x < -eps ){
-      throwHelperForSqrtOrThrow(x,eps);
+    } else if (x < -eps) {
+      throwHelperForSqrtOrThrow(x, eps);
     }
     return retval;
   }

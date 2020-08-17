@@ -1,12 +1,14 @@
 #include "fhiclcpp/types/detail/NameStackRegistry.h"
 #include "fhiclcpp/exception.h"
-#include <iostream>
+
+#include <numeric>
 #include <regex>
-#include <string>
-#include <vector>
+
+namespace {
+  std::regex const re_sequence_element{R"(\[\d+\])"};
+}
 
 namespace fhicl {
-
   std::string
   NameStackRegistry::full_key(std::string const& name)
   {
@@ -15,15 +17,11 @@ namespace fhicl {
         << "Cannot insert empty name into 'NameStackRegistry'.\n";
     }
 
-    if (names_.empty() ||
-        std::regex_match(name, std::regex{R"(\[\d+\])"})) // Sequence elements
+    if (names_.empty() || std::regex_match(name, re_sequence_element)) {
       names_.emplace_back(name);
-    else
+    } else {
       names_.emplace_back("." + name);
+    }
     return std::accumulate(names_.begin(), names_.end(), std::string{});
   }
 }
-
-// Local variables:
-// mode: c++
-// End:

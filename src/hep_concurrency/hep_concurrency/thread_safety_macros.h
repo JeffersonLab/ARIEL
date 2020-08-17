@@ -8,3 +8,7 @@
 #define CMS_THREAD_GUARD(_var_)
 #endif
 #endif /* hep_concurrency_thread_safety_macros_h */
+
+// Local Variables:
+// mode: c++
+// End:

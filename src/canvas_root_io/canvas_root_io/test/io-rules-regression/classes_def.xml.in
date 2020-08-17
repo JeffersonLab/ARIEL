@@ -1,0 +1,12 @@
+<lcgdict>
+  <class name="arttest::EDProduct" ClassVersion="10">
+   <version ClassVersion="10" checksum="2721308887"/>
+  </class>
+  <class name="arttest::Vertex" ClassVersion="@VERTEX_VERSION@">
+   <version ClassVersion="11" checksum="1499188199"/>
+   <version ClassVersion="10" checksum="3503080947"/>
+  </class>
+  <class name="std::vector<arttest::Vertex>"/>
+  @VERTEX_POINT_T@
+  <class name="arttest::Wrapper<std::vector<arttest::Vertex> >"/>
+@VERTEX_IO_RULES@</lcgdict>

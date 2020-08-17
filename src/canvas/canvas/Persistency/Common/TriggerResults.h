@@ -1,80 +1,42 @@
 #ifndef canvas_Persistency_Common_TriggerResults_h
 #define canvas_Persistency_Common_TriggerResults_h
+// vim: set sw=2 expandtab :
 
-// ======================================================================
 //
-// TriggerResults
+//  The trigger path results are maintained here as a sequence of entries,
+//  one per trigger path.  They are assigned in the order they appeared in
+//  the process-level pset.  (They are actually stored in the base class
+//  HLTGlobalStatus)
 //
-// The trigger path results are maintained here as a sequence of entries,
-// one per trigger path.  They are assigned in the order they appeared in
-// the process-level pset.  (They are actually stored in the base class
-// HLTGlobalStatus)
+//  The ParameterSetID can be used to get a ParameterSet from the registry
+//  of parameter sets.  This ParameterSet contains a vector<string> named
+//  "trigger_paths" that contains the trigger path names in the same order
+//  as the trigger path results stored here.
 //
-// The ParameterSetID can be used to get a ParameterSet from the registry
-// of parameter sets.  This ParameterSet contains a vector<string> named
-// "trigger_paths" that contains the trigger path names in the same order
-// as the trigger path results stored here.
-//
-// ======================================================================
 
 #include "canvas/Persistency/Common/HLTGlobalStatus.h"
 #include "fhiclcpp/ParameterSetID.h"
 
-// ----------------------------------------------------------------------
-
 namespace art {
 
   class TriggerResults : public HLTGlobalStatus {
-  private:
-    // Parameter set id
-    fhicl::ParameterSetID psetid_{};
+  public:
+    ~TriggerResults() noexcept;
+    TriggerResults();
+
+    TriggerResults(HLTGlobalStatus const& hlt,
+                   fhicl::ParameterSetID const& psetid);
 
   public:
-    TriggerResults() = default;
+    fhicl::ParameterSetID const& parameterSetID() const;
 
-    // Standard contructor
-    TriggerResults(HLTGlobalStatus const& hlt,
-                   fhicl::ParameterSetID const& psetid)
-      : HLTGlobalStatus{hlt}, psetid_{psetid}
-    {}
+  private:
+    fhicl::ParameterSetID psetid_{};
+  };
 
-    // Get stored parameter set id
-    fhicl::ParameterSetID const&
-    parameterSetID() const
-    {
-      return psetid_;
-    }
+  void swap(TriggerResults& lhs, TriggerResults& rhs);
 
-    // swap function
-    void
-    swap(TriggerResults& other)
-    {
-      this->HLTGlobalStatus::swap(other);
-      psetid_.swap(other.psetid_);
-    }
-
-    // Copy assignment using swap.
-    // We can't ref-qualify assignment because of GCC_XML.
-    TriggerResults&
-    operator=(TriggerResults const& rhs)
-    {
-      TriggerResults temp{rhs};
-      this->swap(temp);
-      return *this;
-    }
-
-  }; // TriggerResults
-
-  // Free swap function
-  inline void
-  swap(TriggerResults& lhs, TriggerResults& rhs)
-  {
-    lhs.swap(rhs);
-  }
-
-} // art
-
-  // ======================================================================
+} // namespace art
 
 #endif /* canvas_Persistency_Common_TriggerResults_h */
 

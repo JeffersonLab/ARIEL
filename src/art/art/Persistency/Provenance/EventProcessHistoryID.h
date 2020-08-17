@@ -18,7 +18,7 @@ namespace art {
   {
     return lh.eventID_ < rh.eventID_;
   }
-}
+} // namespace art
 
 #endif /* art_Persistency_Provenance_EventProcessHistoryID_h */
 

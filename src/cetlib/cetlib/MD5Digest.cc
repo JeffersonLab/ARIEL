@@ -46,11 +46,25 @@ namespace cet {
   std::string
   MD5Result::toString() const
   {
-    std::ostringstream os;
-    os << std::hex << std::setfill('0');
-    for (size_t i = 0; i < sizeof(bytes); ++i)
-      os << std::setw(2) << static_cast<int>(bytes[i]);
-    return os.str();
+    // Note: The code used to be this:
+    //
+    // std::ostringstream os;
+    // os << std::hex << std::setfill('0');
+    // for (size_t i = 0; i < sizeof(bytes); ++i)
+    //  os << std::setw(2) << static_cast<int>(bytes[i]);
+    // return os.str();
+    //
+    // However profiling shows that this causes a measurable
+    // slowdown.  The following code does the same thing, but
+    // is much faster.
+    constexpr char hex_bytes[] = "0123456789abcdef";
+    std::string ret;
+    ret.resize(sizeof(bytes) << 1);
+    for (size_t i = 0; i < sizeof(bytes); ++i) {
+      ret[i << 1] = hex_bytes[bytes[i] >> 4];
+      ret[(i << 1) + 1] = hex_bytes[bytes[i] & 0x0F];
+    }
+    return ret;
   }
 
   std::string

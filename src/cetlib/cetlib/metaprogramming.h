@@ -22,13 +22,10 @@ namespace cet {
   //   struct has_nested_type<T, enable_if_type_exists_t<typename
   //   T::NestedType>> : std::true_type {}
   //
-  template <class T, class R = void>
-  struct enable_if_type_exists {
-    using type = R;
-  };
-
   template <class T>
-  using enable_if_type_exists_t = typename enable_if_type_exists<T>::type;
+  using enable_if_type_exists_t [[deprecated(
+    "\n\ncetlib warning: Please use std::void_t<T> instead.\n\n")]] =
+    std::void_t<T>;
 
   //=====================================
   // Detect function
@@ -43,7 +40,7 @@ namespace cet {
   //   &T::my_function>> : std::true_type {}
   //
   template <typename T, typename U, typename R = void>
-  using enable_if_same_t = std::enable_if_t<std::is_same<T, U>::value, R>;
+  using enable_if_same_t = std::enable_if_t<std::is_same_v<T, U>, R>;
 
   template <typename FT, FT f, typename R = void>
   using enable_if_function_exists_t = enable_if_same_t<FT, decltype(f), R>;

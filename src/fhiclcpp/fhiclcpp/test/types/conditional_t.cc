@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE (keymap test)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 #include "fhiclcpp/test/types/CondConfig.h"
@@ -45,10 +44,10 @@ BOOST_AUTO_TEST_CASE(cond_02_t)
   Table<CondConfig> table{Name("pset")};
   table.validate_ParameterSet(
     create_PSet(file).get<fhicl::ParameterSet>("pset"));
-  BOOST_CHECK_EQUAL(table().flag(), false);
-  BOOST_CHECK_EQUAL(table().num2(), 4);
-  BOOST_CHECK_EQUAL(table().shape(), "sphere");
-  BOOST_CHECK_EQUAL(table().sphereParams().radius(), 7);
+  BOOST_TEST(table().flag() == false);
+  BOOST_TEST(table().num2() == 4);
+  BOOST_TEST(table().shape() == "sphere");
+  BOOST_TEST(table().sphereParams().radius() == 7);
 }
 
 BOOST_AUTO_TEST_CASE(cond_03_t)
@@ -57,17 +56,17 @@ BOOST_AUTO_TEST_CASE(cond_03_t)
   Table<CondConfig> table{Name("pset")};
   table.validate_ParameterSet(
     create_PSet(file).get<fhicl::ParameterSet>("pset"));
-  BOOST_CHECK_EQUAL(table().flag(), true);
+  BOOST_TEST(table().flag() == true);
   int number{16};
-  BOOST_CHECK_EQUAL(table().num1(number), false);
-  BOOST_CHECK_EQUAL(table().shape(), "box");
+  BOOST_TEST(table().num1(number) == false);
+  BOOST_TEST(table().shape() == "box");
   auto ref = {4, 9, 2};
   auto hls = table().boxParams().halfLengths();
-  CET_CHECK_EQUAL_COLLECTIONS(hls(), ref);
-  BOOST_CHECK_EQUAL(table().boxParams().material(), "Wood");
+  BOOST_TEST(hls() == ref, boost::test_tools::per_element{});
+  BOOST_TEST(table().boxParams().material() == "Wood");
   std::string name;
-  BOOST_CHECK_EQUAL(table().boxParams().boxName(name), true);
-  BOOST_CHECK_EQUAL(name, "Stan");
+  BOOST_TEST(table().boxParams().boxName(name) == true);
+  BOOST_TEST(name == "Stan");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

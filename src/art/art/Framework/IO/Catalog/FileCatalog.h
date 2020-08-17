@@ -120,7 +120,7 @@ namespace art {
     bool active_{false};
   }; // FileCatalog
 
-} // art
+} // namespace art
 
 // ======================================================================
 

@@ -50,13 +50,13 @@ namespace art {
     LocalSignal(size_t nSchedules);
 
     // 1. Free function or functor (or pre-bound member function).
-    void watch(ScheduleID sID, std::function<ResultType(Args...)> slot);
+    void watch(ScheduleID const, std::function<ResultType(Args...)> slot);
     // 2. Non-const member function.
     template <typename T>
-    void watch(ScheduleID sID, ResultType (T::*slot)(Args...), T& t);
+    void watch(ScheduleID const, ResultType (T::*slot)(Args...), T& t);
     // 3. Const member function.
     template <typename T>
-    void watch(ScheduleID sID,
+    void watch(ScheduleID const,
                ResultType (T::*slot)(Args...) const,
                T const& t);
 
@@ -69,10 +69,7 @@ namespace art {
     template <typename T>
     void watchAll(ResultType (T::*slot)(Args...) const, T const& t);
 
-    void invoke(ScheduleID sID, Args&&... args) const; // Discard ResultType.
-
-    void clear(ScheduleID sID);
-    void clearAll();
+    void invoke(ScheduleID const, Args&&... args) const; // Discard ResultType.
 
   private:
     ContainerType_ signals_;
@@ -91,7 +88,7 @@ namespace art {
             typename... Args>
   void
   LocalSignal<STYPE, ResultType(Args...)>::watch(
-    ScheduleID sID,
+    ScheduleID const sID,
     std::function<ResultType(Args...)> slot)
   {
     detail::connect_to_signal<STYPE>(signals_.at(sID.id()), slot);
@@ -103,7 +100,7 @@ namespace art {
             typename... Args>
   template <typename T>
   void
-  LocalSignal<STYPE, ResultType(Args...)>::watch(ScheduleID sID,
+  LocalSignal<STYPE, ResultType(Args...)>::watch(ScheduleID const sID,
                                                  ResultType (T::*slot)(Args...),
                                                  T& t)
   {
@@ -116,7 +113,7 @@ namespace art {
             typename... Args>
   template <typename T>
   void
-  LocalSignal<STYPE, ResultType(Args...)>::watch(ScheduleID sID,
+  LocalSignal<STYPE, ResultType(Args...)>::watch(ScheduleID const sID,
                                                  ResultType (T::*slot)(Args...)
                                                    const,
                                                  T const& t)
@@ -167,7 +164,7 @@ namespace art {
             typename ResultType,
             typename... Args>
   void
-  LocalSignal<STYPE, ResultType(Args...)>::invoke(ScheduleID sID,
+  LocalSignal<STYPE, ResultType(Args...)>::invoke(ScheduleID const sID,
                                                   Args&&... args) const
   {
     for (auto f : signals_.at(sID.id())) {
@@ -175,27 +172,7 @@ namespace art {
     }
   }
 
-  template <detail::SignalResponseType STYPE,
-            typename ResultType,
-            typename... Args>
-  void
-  LocalSignal<STYPE, ResultType(Args...)>::clear(ScheduleID const sID)
-  {
-    signals_.at(sID.id()).clear();
-  }
-
-  template <detail::SignalResponseType STYPE,
-            typename ResultType,
-            typename... Args>
-  void
-  LocalSignal<STYPE, ResultType(Args...)>::clearAll()
-  {
-    for (auto& signal : signals_) {
-      signal.clear();
-    }
-  }
-
-} // art
+} // namespace art
 #endif /* art_Framework_Services_Registry_LocalSignal_h */
 
 // Local Variables:

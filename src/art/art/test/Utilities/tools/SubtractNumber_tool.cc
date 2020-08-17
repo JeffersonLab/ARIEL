@@ -17,6 +17,6 @@ namespace arttest {
       --i;
     }
   };
-}
+} // namespace arttest
 
 DEFINE_ART_CLASS_TOOL(arttest::SubtractNumber)

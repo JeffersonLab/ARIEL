@@ -11,14 +11,12 @@
 
 namespace tex {
 
-  class EnsureTApplication{
+  class EnsureTApplication {
 
   public:
-
-    explicit EnsureTApplication( int argc=0, char** argv=nullptr);
+    explicit EnsureTApplication(int argc = 0, char** argv = nullptr);
 
   private:
-
   };
 
 } // end namespace tex

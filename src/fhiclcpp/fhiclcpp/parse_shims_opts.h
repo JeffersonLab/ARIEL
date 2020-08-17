@@ -6,3 +6,7 @@ namespace shims {
 }
 
 #endif /* fhiclcpp_parse_shims_opts_h */
+
+// Local Variables:
+// mode: c++
+// End:

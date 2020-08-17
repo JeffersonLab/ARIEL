@@ -1,6 +1,5 @@
 #include "cetlib_except/exception_collector.h"
 #include <cstdlib>
-#include <iostream>
 
 using cet::exception_collector;
 

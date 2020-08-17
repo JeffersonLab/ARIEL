@@ -12,16 +12,32 @@
 
 namespace bfs = boost::filesystem;
 
-art::PostCloseFileRenamer::PostCloseFileRenamer(FileStatsCollector const& stats)
-  : stats_{stats}
-{}
-
 // For sanity.  To avoid unintentionally introducing std overloads, we
 // do not make a using declaration for boost::regex.
 using namespace boost::regex_constants;
 using boost::regex_match;
 using boost::regex_search;
 using boost::smatch;
+
+namespace {
+  boost::regex const rename_re{
+    "%[lp]|%(\\d+)?([#rRsS])|%t([ocrRsS])|%if([bnedp])|%"
+    "ifs%([^%]*)%([^%]*)%([ig]*)%|%.",
+    ECMAScript};
+
+  std::string
+  to_string(boost::posix_time::ptime const& pt)
+  {
+    if (pt == boost::posix_time::ptime{}) {
+      return "-";
+    }
+    return boost::posix_time::to_iso_string(pt);
+  }
+}
+
+art::PostCloseFileRenamer::PostCloseFileRenamer(FileStatsCollector const& stats)
+  : stats_{stats}
+{}
 
 // Do not substitute for the "%(\\d+)?#" pattern here.
 std::string
@@ -30,14 +46,8 @@ art::PostCloseFileRenamer::applySubstitutionsNoIndex_(
 {
   std::string result; // Empty
   smatch match;
-  auto sb = cbegin(filePattern), si = sb, se = cend(filePattern);
-  while (
-    regex_search(si,
-                 se,
-                 match,
-                 boost::regex{"%[lp]|%(\\d+)?([#rRsS])|%t([oc])|%if([bnedp])|%"
-                              "ifs%([^%]*)%([^%]*)%([ig]*)%|%.",
-                              ECMAScript})) {
+  auto sb = cbegin(filePattern), sid = sb, se = cend(filePattern);
+  while (regex_search(sid, se, match, rename_re)) {
     // Precondition: that the regex creates the sub-matches we think it
     // should.
     assert(match.size() == 8);
@@ -84,9 +94,9 @@ art::PostCloseFileRenamer::applySubstitutionsNoIndex_(
         }
         break;
     }
-    si = match[0].second; // Set position for next match start.
+    sid = match[0].second; // Set position for next match start.
   }
-  result.append(si, se); // Append unmatched text at end.
+  result.append(sid, se); // Append unmatched text at end.
   return result;
 }
 
@@ -174,10 +184,22 @@ art::PostCloseFileRenamer::subTimestamp_(boost::smatch const& match) const
   std::string result;
   switch (*(match[3].first)) {
     case 'o': // Open.
-      result = boost::posix_time::to_iso_string(stats_.outputFileOpenTime());
+      result = to_string(stats_.outputFileOpenTime());
       break;
     case 'c': // Close.
-      result = boost::posix_time::to_iso_string(stats_.outputFileCloseTime());
+      result = to_string(stats_.outputFileCloseTime());
+      break;
+    case 'r': // Start of Run with lowest number.
+      result = to_string(stats_.lowestRunStartTime());
+      break;
+    case 'R': // Start of Run with highest number.
+      result = to_string(stats_.highestRunStartTime());
+      break;
+    case 's': // Start of SubRun with lowest number.
+      result = to_string(stats_.lowestSubRunStartTime());
+      break;
+    case 'S': // Start of SubRun with highest number.
+      result = to_string(stats_.highestSubRunStartTime());
       break;
     default: // INTERNAL ERROR.
       throw Exception(errors::LogicError)
@@ -215,13 +237,13 @@ art::PostCloseFileRenamer::subFilledNumericNoIndex_(
       num_str << "%" << match[1].str() << "#";
       break;
     case 'r':
-      if (stats_.lowestSubRunID().runID().isValid()) {
-        zero_fill(num_str, stats_.lowestSubRunID().run());
+      if (stats_.lowestRunID().isValid()) {
+        zero_fill(num_str, stats_.lowestRunID().run());
       }
       break;
     case 'R':
-      if (stats_.highestSubRunID().runID().isValid()) {
-        zero_fill(num_str, stats_.highestSubRunID().run());
+      if (stats_.highestRunID().isValid()) {
+        zero_fill(num_str, stats_.highestRunID().run());
       }
       break;
     case 's':

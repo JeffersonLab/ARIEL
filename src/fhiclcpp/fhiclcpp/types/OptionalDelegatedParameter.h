@@ -9,8 +9,6 @@
 #include "fhiclcpp/types/detail/TableMemberRegistry.h"
 #include "fhiclcpp/types/detail/strip_containing_names.h"
 
-#include <iostream>
-
 namespace fhicl {
 
   //========================================================
@@ -23,7 +21,6 @@ namespace fhicl {
     explicit OptionalDelegatedParameter(Name&& name,
                                         Comment&& comment,
                                         std::function<bool()> maybeUse);
-
     bool
     hasValue() const
     {
@@ -34,8 +31,7 @@ namespace fhicl {
     bool
     get_if_present(T& t) const
     {
-      std::string const& trimmed_key =
-        detail::strip_first_containing_name(key());
+      auto const trimmed_key = detail::strip_first_containing_name(key());
       return pset_.get_if_present<T>(trimmed_key, t);
     }
 

@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/simple_stats.{h,cc}
-% Chris Green.
-% 2016-10-13 (on commit 889f6a2).
-
-* Class `cet::simple_stats`{.cpp} has a single non-`const`{.cpp} overload set: `cet::simple_stats::sample()`{.cpp}. `cet::simple_stats`{.cpp} is not safe against simultaneous non-`const`{.cpp} calls on the same object, or against a call to `const`{.cpp} functions at the same time as a call to `cet::simple_stats::sample()`{.cpp} on the same object.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

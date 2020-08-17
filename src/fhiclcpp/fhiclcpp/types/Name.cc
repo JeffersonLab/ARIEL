@@ -1,18 +1,15 @@
 #include "fhiclcpp/types/Name.h"
+
 #include <regex>
-#include <string>
 
-namespace fhicl {
-
-  std::string const
-  get_regex_replace_str(std::string const& istr)
-  {
-    static std::regex const r("\\[|\\]");
-    auto ostr = std::regex_replace(istr, r, "\\$&");
-    return ostr;
-  }
+namespace {
+  std::regex const re{"\\[|\\]"};
 }
 
-// Local variables:
-// mode: c++
-// End:
+namespace fhicl {
+  std::string
+  get_regex_replace_str(std::string const& str)
+  {
+    return std::regex_replace(str, re, "\\$&");
+  }
+}

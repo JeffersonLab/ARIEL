@@ -7,9 +7,13 @@
 //
 // ======================================================================
 
-#include <memory>
+#include "canvas/Utilities/TypeID.h"
+#include "canvas/Utilities/product_metatype.h"
 
 namespace art {
+  namespace detail {
+    class AssnsBase;
+  }
 
   template <typename L, typename R, typename D>
   class Assns;
@@ -29,11 +33,13 @@ namespace art {
   class ProductID;
   class RefCore;
   template <typename T>
+  class Sampled;
+  template <typename T>
   class Wrapper;
-
+  using product_typeids_t = std::map<product_metatype, TypeID>;
 } // art
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* canvas_Persistency_Common_fwd_h */
 

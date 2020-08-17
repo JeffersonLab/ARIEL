@@ -1,3 +1,0 @@
-## Multi-threading analysis of `cet::PluginTypeDeducer`{.cpp}
-
-Template that only includes one `static std::string const`{.cpp} data member--no threading issues.

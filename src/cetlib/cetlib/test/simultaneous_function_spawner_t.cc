@@ -1,8 +1,7 @@
 #define BOOST_TEST_MODULE (simultaneous_function_spawner test)
-#include "cetlib/SimultaneousFunctionSpawner.h"
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
-#include <iostream>
+
+#include "cetlib/SimultaneousFunctionSpawner.h"
 
 BOOST_AUTO_TEST_SUITE(simultaneous_function_spawner)
 
@@ -12,20 +11,12 @@ BOOST_AUTO_TEST_CASE(cout)
   cet::SimultaneousFunctionSpawner sfs{cet::repeated_task(7u, task)};
 }
 
-BOOST_AUTO_TEST_CASE(non_atomic_int)
-{
-  int i{};
-  auto task = [&i] { ++i; };
-  cet::SimultaneousFunctionSpawner sfs{cet::repeated_task(7u, task)};
-  std::cout << i << '\n'; // Don't expect it to necessarily be 7
-}
-
 BOOST_AUTO_TEST_CASE(atomic_int)
 {
   std::atomic<int> i{1};
   auto task = [&i] { ++i; };
   cet::SimultaneousFunctionSpawner sfs{cet::repeated_task(7u, task)};
-  BOOST_REQUIRE_EQUAL(i, 8);
+  BOOST_TEST(i == 8);
 }
 
 BOOST_AUTO_TEST_CASE(assign_different_numbers)
@@ -41,7 +32,7 @@ BOOST_AUTO_TEST_CASE(assign_different_numbers)
   tasks.push_back([&nums] { nums[6] = 2; });
   auto const ref = {1, 3, 5, 7, 6, 4, 2};
   cet::SimultaneousFunctionSpawner sfs{tasks};
-  CET_CHECK_EQUAL_COLLECTIONS(nums, ref);
+  BOOST_TEST(nums == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

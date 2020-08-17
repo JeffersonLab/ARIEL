@@ -12,7 +12,7 @@
 namespace art {
   class DelayedReader;
   class GroupQueryResult;
-} // art
+} // namespace art
 
 // ======================================================================
 

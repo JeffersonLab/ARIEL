@@ -20,7 +20,7 @@ namespace arttest {
   private:
     fhicl::ParameterSet pset_;
   };
-}
+} // namespace arttest
 
 #endif /* art_test_Utilities_tools_NestedClassTool_h */
 

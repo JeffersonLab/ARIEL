@@ -11,9 +11,19 @@
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/make_ParameterSet.h"
 #include "fhiclcpp/parse.h"
-#include <iostream>
+
+#include <ostream>
 #include <regex>
 #include <string>
+
+namespace fhicl {
+  std::ostream&
+  boost_test_print_type(std::ostream& os, Protection const protection)
+  {
+    return os << to_string(protection);
+  }
+}
+
 using namespace fhicl;
 using namespace std;
 
@@ -26,7 +36,7 @@ BOOST_AUTO_TEST_CASE(empty_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK(pset.is_empty());
+  BOOST_TEST(pset.is_empty());
 }
 
 BOOST_AUTO_TEST_CASE(nonempty_document)
@@ -37,13 +47,13 @@ BOOST_AUTO_TEST_CASE(nonempty_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK(!pset.is_empty());
-  BOOST_CHECK_EQUAL(pset.get<int>("a"), 1);
-  BOOST_CHECK_EQUAL(pset.get<int>("b"), 2);
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("a"), 1u);
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("b"), 2u);
-  BOOST_CHECK_EQUAL(pset.get<string>("a"), "1");
-  BOOST_CHECK_EQUAL(pset.get<string>("b"), "2");
+  BOOST_TEST(!pset.is_empty());
+  BOOST_TEST(pset.get<int>("a") == 1);
+  BOOST_TEST(pset.get<int>("b") == 2);
+  BOOST_TEST(pset.get<unsigned>("a") == 1u);
+  BOOST_TEST(pset.get<unsigned>("b") == 2u);
+  BOOST_TEST(pset.get<string>("a") == "1");
+  BOOST_TEST(pset.get<string>("b") == "2");
 }
 
 BOOST_AUTO_TEST_CASE(nested_document)
@@ -54,15 +64,15 @@ BOOST_AUTO_TEST_CASE(nested_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK(!pset.is_empty());
+  BOOST_TEST(!pset.is_empty());
   BOOST_REQUIRE_NO_THROW(pset.get<ParameterSet>("x"));
-  BOOST_REQUIRE(!pset.get<ParameterSet>("x").is_empty());
-  BOOST_CHECK_EQUAL(pset.get<int>("x.a"), 1);
-  BOOST_CHECK_EQUAL(pset.get<int>("x.b"), 2);
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("x.a"), 1u);
-  BOOST_CHECK_EQUAL(pset.get<unsigned>("x.b"), 2u);
-  BOOST_CHECK_EQUAL(pset.get<string>("x.a"), "1");
-  BOOST_CHECK_EQUAL(pset.get<string>("x.b"), "2");
+  BOOST_TEST_REQUIRE(!pset.get<ParameterSet>("x").is_empty());
+  BOOST_TEST(pset.get<int>("x.a") == 1);
+  BOOST_TEST(pset.get<int>("x.b") == 2);
+  BOOST_TEST(pset.get<unsigned>("x.a") == 1u);
+  BOOST_TEST(pset.get<unsigned>("x.b") == 2u);
+  BOOST_TEST(pset.get<string>("x.a") == "1");
+  BOOST_TEST(pset.get<string>("x.b") == "2");
 }
 
 BOOST_AUTO_TEST_CASE(badly_nested_document)
@@ -88,10 +98,10 @@ BOOST_AUTO_TEST_CASE(overridden_prolog_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK_EQUAL(pset.get<int>("a"), 2);
+  BOOST_TEST(pset.get<int>("a") == 2);
   BOOST_REQUIRE_NO_THROW(pset.get<ParameterSet>("t"));
-  BOOST_REQUIRE(!pset.get<ParameterSet>("t").is_empty());
-  BOOST_CHECK_EQUAL(pset.get<int>("t.a"), 12);
+  BOOST_TEST_REQUIRE(!pset.get<ParameterSet>("t").is_empty());
+  BOOST_TEST(pset.get<int>("t.a") == 12);
   BOOST_CHECK_THROW(pset.get<int>("t.b"), cet::exception);
 }
 
@@ -108,7 +118,7 @@ BOOST_AUTO_TEST_CASE(contiguous_prolog)
                          "END_PROLOG\n";
   intermediate_table tbl;
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
-  BOOST_CHECK(tbl.exists("c"));
+  BOOST_TEST(tbl.exists("c"));
 }
 
 BOOST_AUTO_TEST_CASE(noncontiguous_prolog)
@@ -139,9 +149,9 @@ BOOST_AUTO_TEST_CASE(overridden_toplevel_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK_EQUAL(pset.get<int>("a"), 6);
-  BOOST_CHECK_EQUAL(pset.get<int>("b"), 5);
-  BOOST_CHECK_EQUAL(pset.get<int>("c"), 4);
+  BOOST_TEST(pset.get<int>("a") == 6);
+  BOOST_TEST(pset.get<int>("b") == 5);
+  BOOST_TEST(pset.get<int>("c") == 4);
 }
 
 BOOST_AUTO_TEST_CASE(overridden_nested_document)
@@ -157,9 +167,9 @@ BOOST_AUTO_TEST_CASE(overridden_nested_document)
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
-  BOOST_CHECK_EQUAL(pset.get<int>("t.a"), 6);
-  BOOST_CHECK_EQUAL(pset.get<int>("t.b"), 5);
-  BOOST_CHECK_EQUAL(pset.get<int>("t.c"), 4);
+  BOOST_TEST(pset.get<int>("t.a") == 6);
+  BOOST_TEST(pset.get<int>("t.b") == 5);
+  BOOST_TEST(pset.get<int>("t.c") == 4);
 }
 
 BOOST_AUTO_TEST_CASE(nil_value)
@@ -181,16 +191,16 @@ BOOST_AUTO_TEST_CASE(nil_value)
   typedef void* nil_t;
   nil_t nil_value = 0;
 
-  BOOST_CHECK_EQUAL(pset.get<nil_t>("a"), nil_value);
-  BOOST_CHECK_EQUAL(pset.get<nil_t>("t.a"), nil_value);
+  BOOST_TEST(pset.get<nil_t>("a") == nil_value);
+  BOOST_TEST(pset.get<nil_t>("t.a") == nil_value);
   BOOST_CHECK_THROW(pset.get<string>("a"), fhicl::exception);
   BOOST_CHECK_THROW(pset.get<string>("t.a"), fhicl::exception);
-  BOOST_CHECK_EQUAL(pset.get<string>("b"), "nil");
-  BOOST_CHECK_EQUAL(pset.get<string>("t.b"), "nil");
-  BOOST_CHECK_EQUAL(pset.get<string>("c"), "@nil");
-  BOOST_CHECK_EQUAL(pset.get<string>("t.c"), "@nil");
-  BOOST_CHECK_EQUAL(pset.get<string>("d"), "nil");
-  BOOST_CHECK_EQUAL(pset.get<string>("t.d"), "nil");
+  BOOST_TEST(pset.get<string>("b") == "nil");
+  BOOST_TEST(pset.get<string>("t.b") == "nil");
+  BOOST_TEST(pset.get<string>("c") == "@nil");
+  BOOST_TEST(pset.get<string>("t.c") == "@nil");
+  BOOST_TEST(pset.get<string>("d") == "nil");
+  BOOST_TEST(pset.get<string>("t.d") == "nil");
 }
 
 BOOST_AUTO_TEST_CASE(erase_value)
@@ -207,15 +217,15 @@ BOOST_AUTO_TEST_CASE(erase_value)
                          "b.x: @erase\n";
   intermediate_table tbl;
   BOOST_REQUIRE_NO_THROW(parse_document(document, tbl));
-  BOOST_CHECK(tbl.exists("x"));
-  BOOST_CHECK(!tbl.exists("z"));
-  BOOST_CHECK(!tbl.exists("a"));
-  BOOST_CHECK(tbl.exists("b"));
-  BOOST_CHECK(!tbl.exists("b.x"));
-  BOOST_CHECK(tbl.exists("b.y"));
-  BOOST_CHECK(tbl.exists("c"));
-  BOOST_CHECK(!tbl.exists("c.x"));
-  BOOST_CHECK(tbl.exists("c.y"));
+  BOOST_TEST(tbl.exists("x"));
+  BOOST_TEST(!tbl.exists("z"));
+  BOOST_TEST(!tbl.exists("a"));
+  BOOST_TEST(tbl.exists("b"));
+  BOOST_TEST(!tbl.exists("b.x"));
+  BOOST_TEST(tbl.exists("b.y"));
+  BOOST_TEST(tbl.exists("c"));
+  BOOST_TEST(!tbl.exists("c.x"));
+  BOOST_TEST(tbl.exists("c.y"));
 }
 
 BOOST_AUTO_TEST_CASE(expand_nested_tables)
@@ -231,7 +241,7 @@ BOOST_AUTO_TEST_CASE(expand_nested_tables)
                          "}\n";
   intermediate_table tbl;
   parse_document(document, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::string>("modules.A.B.x"), std::string("bar"));
+  BOOST_TEST(tbl.get<std::string>("modules.A.B.x") == std::string("bar"));
 }
 
 BOOST_AUTO_TEST_CASE(expand_table)
@@ -245,15 +255,15 @@ BOOST_AUTO_TEST_CASE(expand_table)
                          "y: @local::y\n";
   intermediate_table tbl;
   parse_document(document, tbl);
-  BOOST_CHECK(tbl.exists("x.ethel"));
-  BOOST_CHECK(tbl.exists("x.charlie"));
-  BOOST_CHECK(tbl.exists("bill"));
-  BOOST_CHECK(tbl.exists("charlie"));
-  BOOST_CHECK(tbl.exists("y.bill"));
-  BOOST_CHECK(tbl.exists("y.charlie"));
-  BOOST_CHECK_EQUAL(tbl.get<std::string>("x.bill"), std::string("twelve"));
-  BOOST_CHECK_EQUAL(tbl.get<std::string>("bill"), std::string("twelve"));
-  BOOST_CHECK_EQUAL(tbl.get<std::string>("y.bill"), std::string("one dozen"));
+  BOOST_TEST(tbl.exists("x.ethel"));
+  BOOST_TEST(tbl.exists("x.charlie"));
+  BOOST_TEST(tbl.exists("bill"));
+  BOOST_TEST(tbl.exists("charlie"));
+  BOOST_TEST(tbl.exists("y.bill"));
+  BOOST_TEST(tbl.exists("y.charlie"));
+  BOOST_TEST(tbl.get<std::string>("x.bill") == std::string("twelve"));
+  BOOST_TEST(tbl.get<std::string>("bill") == std::string("twelve"));
+  BOOST_TEST(tbl.get<std::string>("y.bill") == std::string("one dozen"));
 }
 
 BOOST_AUTO_TEST_CASE(expand_sequence)
@@ -266,15 +276,15 @@ BOOST_AUTO_TEST_CASE(expand_sequence)
                          "ethel: [ @sequence::fred, six ]\n";
   intermediate_table tbl;
   parse_document(document, tbl);
-  BOOST_CHECK(tbl.exists("fred"));
-  BOOST_CHECK(tbl.exists("bill"));
-  BOOST_CHECK(tbl.exists("charlie"));
-  BOOST_CHECK(tbl.exists("ethel"));
+  BOOST_TEST(tbl.exists("fred"));
+  BOOST_TEST(tbl.exists("bill"));
+  BOOST_TEST(tbl.exists("charlie"));
+  BOOST_TEST(tbl.exists("ethel"));
 
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
 
-  BOOST_CHECK_EQUAL(pset.get<std::vector<std::string>>("charlie").size(), 3ul);
+  BOOST_TEST(pset.get<std::vector<std::string>>("charlie").size() == 3ul);
 
   std::vector<std::string> const billref{
     "one", "two", "three", "four", "five", "six"};
@@ -282,15 +292,23 @@ BOOST_AUTO_TEST_CASE(expand_sequence)
 
   auto cmp = [](std::vector<std::string> const& seq,
                 std::vector<std::string> const& ref) {
-    BOOST_CHECK_EQUAL(seq.size(), ref.size());
+    BOOST_TEST(seq.size() == ref.size());
     for (auto i = seq.cbegin(), e = seq.cend(), iref = ref.cbegin(); i != e;
          ++i, ++iref) {
-      BOOST_CHECK_EQUAL(*i, *iref);
+      BOOST_TEST(*i == *iref);
     }
   };
 
   cmp(pset.get<std::vector<std::string>>("bill"), billref);
   cmp(pset.get<std::vector<std::string>>("ethel"), ethelref);
+}
+
+BOOST_AUTO_TEST_CASE(string_escaping)
+{
+  intermediate_table tbl;
+  BOOST_CHECK_THROW(parse_document(R"(x: "$\d+^")", tbl), cet::exception);
+  BOOST_CHECK_NO_THROW(parse_document(R"(x: "$\\d+^")", tbl));
+  BOOST_CHECK_NO_THROW(parse_document(R"(x: '$\d+^')", tbl));
 }
 
 BOOST_AUTO_TEST_CASE(bad_lookup)
@@ -340,7 +358,7 @@ BOOST_AUTO_TEST_CASE(colon_spacing)
   for (auto const& ref : refs) {
     BOOST_CHECK_NO_THROW(parse_document(prolog + ref, tbl));
     auto const cpos = ref.find("::");
-    BOOST_REQUIRE(cpos != std::string::npos);
+    BOOST_TEST_REQUIRE(cpos != std::string::npos);
     std::string bad1{ref};
     std::string bad2{ref};
     bad1.insert(cpos, " ");
@@ -357,7 +375,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_01)
                           "x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_02)
@@ -369,7 +387,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_02)
                           "x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 37ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 37ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_03)
@@ -381,7 +399,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_03)
                           "x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 33ul);
 }
 
 #define PV_EXCEPTION                                                           \
@@ -399,7 +417,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_04)
                           "x @protect_ignore: 33\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_05)
@@ -410,7 +428,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_05)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_06)
@@ -420,7 +438,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_06)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_07)
@@ -432,8 +450,8 @@ BOOST_AUTO_TEST_CASE(protect_ignore_07)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 37ul);
-  BOOST_CHECK(tbl.find("a.x").protection == fhicl::Protection::NONE);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 37ul);
+  BOOST_TEST(tbl.find("a.x").protection == fhicl::Protection::NONE);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_08)
@@ -445,7 +463,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_08)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_09)
@@ -454,7 +472,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_09)
                           "a.x @protect_ignore: 33\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_10)
@@ -465,7 +483,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_10)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_11)
@@ -475,7 +493,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_11)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_12)
@@ -487,7 +505,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_12)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 37ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 37ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_13)
@@ -499,7 +517,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_13)
                           "a.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_14)
@@ -508,7 +526,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_14)
                           "a @protect_ignore: { x : 33 }\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_15)
@@ -519,7 +537,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_15)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_16)
@@ -529,7 +547,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_16)
                           "a.b.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_17)
@@ -542,7 +560,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_17)
                           "a.b.x : 41\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 37ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 37ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_18)
@@ -554,7 +572,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_18)
                           "a.b.x : 37\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_19)
@@ -563,7 +581,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_19)
                           "a : { b @protect_ignore: { x : 33 } }\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_20)
@@ -574,7 +592,7 @@ BOOST_AUTO_TEST_CASE(protect_ignore_20)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_ignore_21)
@@ -613,7 +631,7 @@ BOOST_AUTO_TEST_CASE(protect_error_02)
                           "x : 33\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_error_03)
@@ -651,7 +669,7 @@ BOOST_AUTO_TEST_CASE(protect_error_06)
                           "a : { x @protect_error: 33 }\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_error_07)
@@ -662,7 +680,7 @@ BOOST_AUTO_TEST_CASE(protect_error_07)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.x"), 33ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.x") == 33ul);
 }
 
 BOOST_AUTO_TEST_CASE(protect_error_08)
@@ -709,7 +727,7 @@ BOOST_AUTO_TEST_CASE(erase_01)
                           "x : @erase";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK(tbl.empty());
+  BOOST_TEST(tbl.empty());
 }
 
 BOOST_AUTO_TEST_CASE(erase_02)
@@ -720,7 +738,7 @@ BOOST_AUTO_TEST_CASE(erase_02)
                           "END_PROLOG\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK(tbl.empty());
+  BOOST_TEST(tbl.empty());
 }
 
 BOOST_AUTO_TEST_CASE(erase_03)
@@ -729,7 +747,7 @@ BOOST_AUTO_TEST_CASE(erase_03)
                           "x : @erase";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(erase_04)
@@ -746,7 +764,7 @@ BOOST_AUTO_TEST_CASE(erase_05)
                           "a : @erase\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK(tbl.empty());
+  BOOST_TEST(tbl.empty());
 }
 
 BOOST_AUTO_TEST_CASE(erase_06)
@@ -755,7 +773,7 @@ BOOST_AUTO_TEST_CASE(erase_06)
                           "a.b : @erase\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(erase_07)
@@ -764,7 +782,7 @@ BOOST_AUTO_TEST_CASE(erase_07)
                           "a.b.x : @erase\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(erase_08)
@@ -773,7 +791,7 @@ BOOST_AUTO_TEST_CASE(erase_08)
                           "a.b.c : @erase\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.c.x"), 29ul);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.c.x") == 29ul);
 }
 
 BOOST_AUTO_TEST_CASE(erase_09)
@@ -798,10 +816,48 @@ BOOST_AUTO_TEST_CASE(erase_11)
                           "a : @erase\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK(tbl.empty());
+  BOOST_TEST(tbl.empty());
 }
 
 BOOST_AUTO_TEST_CASE(protect_local_01)
+{
+  std::string const doc = "a @protect_ignore: 42\n"
+                          "b: @local::a\n";
+  intermediate_table tbl;
+  parse_document(doc, tbl);
+  BOOST_TEST(tbl.find("b").protection == Protection::PROTECT_IGNORE);
+}
+
+BOOST_AUTO_TEST_CASE(protect_local_02)
+{
+  std::string const doc = "a @protect_error: 42\n"
+                          "b: 43\n"
+                          "b: @local::a\n";
+  intermediate_table tbl;
+  PV_EXCEPTION;
+}
+
+BOOST_AUTO_TEST_CASE(protect_local_03)
+{
+  std::string const doc = "a @protect_ignore: 42\n"
+                          "b: @local::a\n"
+                          "b: @erase\n"
+                          "b: 43\n";
+  intermediate_table tbl;
+  parse_document(doc, tbl);
+  BOOST_TEST(tbl.get<std::size_t>("b") == 42ul);
+}
+
+BOOST_AUTO_TEST_CASE(protect_local_04)
+{
+  std::string const doc = "a @protect_error: 42\n"
+                          "b: @local::a\n"
+                          "b: 43\n";
+  intermediate_table tbl;
+  PV_EXCEPTION;
+}
+
+BOOST_AUTO_TEST_CASE(protect_local_05)
 {
   std::string const doc = "BEGIN_PROLOG\n"
                           "x @protect_ignore: 27\n"
@@ -811,11 +867,11 @@ BOOST_AUTO_TEST_CASE(protect_local_01)
                           "a.b.x: 29\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 27ul);
-  BOOST_CHECK(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 27ul);
+  BOOST_TEST(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
 }
 
-BOOST_AUTO_TEST_CASE(protect_local_02)
+BOOST_AUTO_TEST_CASE(protect_local_06)
 {
   std::string const doc = "BEGIN_PROLOG\n"
                           "x @protect_ignore: 27\n"
@@ -827,7 +883,7 @@ BOOST_AUTO_TEST_CASE(protect_local_02)
   PV_EXCEPTION;
 }
 
-BOOST_AUTO_TEST_CASE(protect_local_03)
+BOOST_AUTO_TEST_CASE(protect_local_07)
 {
   std::string const doc = "BEGIN_PROLOG\n"
                           "x @protect_ignore: 27\n"
@@ -837,10 +893,10 @@ BOOST_AUTO_TEST_CASE(protect_local_03)
                           "a.b.x: 29\n";
   intermediate_table tbl;
   parse_document(doc, tbl);
-  BOOST_CHECK_EQUAL(tbl.get<std::size_t>("a.b.x"), 27ul);
-  BOOST_CHECK(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
-  BOOST_CHECK(tbl.find("a").protection == Protection::PROTECT_IGNORE);
-  BOOST_CHECK(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
+  BOOST_TEST(tbl.get<std::size_t>("a.b.x") == 27ul);
+  BOOST_TEST(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
+  BOOST_TEST(tbl.find("a").protection == Protection::PROTECT_IGNORE);
+  BOOST_TEST(tbl.find("a.b.x").protection == Protection::PROTECT_IGNORE);
 }
 
 namespace {

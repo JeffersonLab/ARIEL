@@ -1,0 +1,31 @@
+parent r10870 v0_00_01
+defaultqual e20
+#
+libdir	fq_dir lib
+fcldir  -
+
+# define product/version pairs
+product		version		<format=2>
+gcc		v9_3_0		e20
+gcc		v8_2_0		e19
+clang		v7_0_0		c7
+root		v6_22_00b	-
+cetbuildtools	v7_17_02	-	only_for_build
+end_product_list
+
+
+# Matrix of qualifiers versus dependent products
+qualifier	root		clang	gcc	compiler	notes
+e20:debug	e20:debug:p383b	-	-nq-	gcc
+e20:prof	e20:prof:p383b	-	-nq-	gcc
+e19:debug	e19:debug:p383b	-	-nq-	gcc
+e19:prof	e19:prof:p383b	-	-nq-	gcc
+c7:debug	c7:debug:p383b	-nq-    -	clang
+c7:prof		c7:prof:p383b	-nq-    -	clang
+end_qualifier_list
+
+# Local Variables:
+# tab-width: 8
+# End:
+
+# vi:set ts=8 noexpandtab:

@@ -34,22 +34,19 @@ namespace art {
     using cet::enable_if_function_exists_t;
 
     template <typename T, typename = void>
-    struct has_aggregate : std::false_type {
-    };
+    struct has_aggregate : std::false_type {};
 
     template <typename T>
     struct has_aggregate<
       T,
       enable_if_function_exists_t<void (T::*)(T const&), &T::aggregate>>
-      : std::true_type {
-    };
+      : std::true_type {};
 
     template <typename T>
     struct has_aggregate<
       T,
       enable_if_function_exists_t<void (T::*)(T), &T::aggregate>>
-      : std::true_type {
-    };
+      : std::true_type {};
 
     template <typename T, typename Enable = void>
     struct CanBeAggregated : std::false_type {
@@ -118,7 +115,7 @@ namespace art {
       static void
       aggregate(std::array<T, N>& p, std::array<T, N> const& other)
       {
-        cet::transform_all(p, other, std::begin(p), [](T t1, T const& t2) {
+        cet::transform_all(p, other, begin(p), [](T t1, T const& t2) {
           CanBeAggregated<T>::aggregate(t1, t2);
           return t1;
         });
@@ -151,12 +148,12 @@ namespace art {
     };
 
     // std::tuple not currently supported by ROOT6
-    template <typename... ARGS>
-    struct CanBeAggregated<std::tuple<ARGS...>> : std::true_type {
+    template <typename... Args>
+    struct CanBeAggregated<std::tuple<Args...>> : std::true_type {
       static void
-      aggregate(std::tuple<ARGS...>& p, std::tuple<ARGS...> const& other)
+      aggregate(std::tuple<Args...>& p, std::tuple<Args...> const& other)
       {
-        AggregateTuple<sizeof...(ARGS) - 1>::combine(p, other);
+        AggregateTuple<sizeof...(Args) - 1>::combine(p, other);
       }
     };
 

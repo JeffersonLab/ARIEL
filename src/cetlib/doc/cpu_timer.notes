@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/cpu_timer.{h,cc}
-% Chris Green.
-% 2016-10-13 (on commit 2152c1c).
-
-* The class `cpu_timer`{.cpp} has the usual threading issues concommitant with non-`const`{.cpp} state and non-`const`{.cpp} member functions. The non-`const`{.cpp} functions are `reset()`{.cpp}, `start()`{.cpp} and `stop()`{.cpp}. Calling them from different threads simultaneously would be problematic, as would calling any of the `const`{.cpp} functions simultaneously with non-`const`{.cpp} access.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

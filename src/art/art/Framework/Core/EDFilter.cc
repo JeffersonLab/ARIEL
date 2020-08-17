@@ -1,125 +1,140 @@
 #include "art/Framework/Core/EDFilter.h"
+// vim: set sw=2 expandtab :
 
-#include "art/Framework/Core/CPCSentry.h"
-#include "art/Framework/Core/detail/get_failureToPut_flag.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/EventPrincipal.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/RunPrincipal.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Principal/SubRunPrincipal.h"
-#include "canvas/Utilities/Exception.h"
-#include "cetlib_except/demangle.h"
-#include "fhiclcpp/ParameterSetRegistry.h"
+using namespace std;
 
 namespace art {
 
-  bool
-  EDFilter::doEvent(EventPrincipal& ep,
-                    CPC_exempt_ptr cpc,
-                    CountingStatistics& counts)
+  string
+  EDFilter::workerType() const
   {
-    detail::CPCSentry sentry{current_context_, cpc};
-    Event e{ep, moduleDescription_, this};
-    counts.increment<stats::Run>();
-    bool const rc = filter(e);
-    e.commit(ep, checkPutProducts_, expectedProducts<InEvent>());
-    counts.update(rc);
-    return rc;
+    return "WorkerT<EDFilter>";
   }
 
   void
-  EDFilter::doBeginJob()
+  EDFilter::setupQueues()
   {
-    // 'checkPutProducts_' cannot be set during the c'tor
-    // initialization list since 'moduleDescription_' is empty there.
-    auto const& mainID = moduleDescription_.mainParameterSetID();
-    auto const& scheduler_pset =
-      fhicl::ParameterSetRegistry::get(mainID).get<fhicl::ParameterSet>(
-        "services.scheduler");
-    auto const& module_pset =
-      fhicl::ParameterSetRegistry::get(moduleDescription_.parameterSetID());
-    checkPutProducts_ =
-      detail::get_failureToPut_flag(scheduler_pset, module_pset);
-    prepareForJob(scheduler_pset);
-    beginJob();
+    createQueues();
   }
 
   void
-  EDFilter::doEndJob()
-  {
-    endJob();
-    showMissingConsumes();
-  }
-
-  bool
-  EDFilter::doBeginRun(RunPrincipal& rp, CPC_exempt_ptr cpc)
-  {
-    detail::CPCSentry sentry{current_context_, cpc};
-    Run r{rp, moduleDescription_, this, RangeSet::forRun(rp.id())};
-    bool const rc = beginRun(r);
-    r.commit(rp);
-    return rc;
-  }
-
-  bool
-  EDFilter::doEndRun(RunPrincipal& rp, CPC_exempt_ptr cpc)
-  {
-    detail::CPCSentry sentry{current_context_, cpc};
-    Run r{rp, moduleDescription_, this, rp.seenRanges()};
-    bool const rc = endRun(r);
-    r.commit(rp);
-    return rc;
-  }
-
-  bool
-  EDFilter::doBeginSubRun(SubRunPrincipal& srp, CPC_exempt_ptr cpc)
-  {
-    detail::CPCSentry sentry{current_context_, cpc};
-    SubRun sr{srp, moduleDescription_, this, RangeSet::forSubRun(srp.id())};
-    bool const rc = beginSubRun(sr);
-    sr.commit(srp);
-    return rc;
-  }
-
-  bool
-  EDFilter::doEndSubRun(SubRunPrincipal& srp, CPC_exempt_ptr cpc)
-  {
-    detail::CPCSentry sentry{current_context_, cpc};
-    SubRun sr{srp, moduleDescription_, this, srp.seenRanges()};
-    bool const rc = endSubRun(sr);
-    sr.commit(srp);
-    return rc;
-  }
-
-  void
-  EDFilter::doRespondToOpenInputFile(FileBlock const& fb)
+  EDFilter::respondToOpenInputFileWithFrame(FileBlock const& fb,
+                                            ProcessingFrame const&)
   {
     respondToOpenInputFile(fb);
   }
 
   void
-  EDFilter::doRespondToCloseInputFile(FileBlock const& fb)
+  EDFilter::respondToCloseInputFileWithFrame(FileBlock const& fb,
+                                             ProcessingFrame const&)
   {
     respondToCloseInputFile(fb);
   }
 
   void
-  EDFilter::doRespondToOpenOutputFiles(FileBlock const& fb)
+  EDFilter::respondToOpenOutputFilesWithFrame(FileBlock const& fb,
+                                              ProcessingFrame const&)
   {
     respondToOpenOutputFiles(fb);
   }
 
   void
-  EDFilter::doRespondToCloseOutputFiles(FileBlock const& fb)
+  EDFilter::respondToCloseOutputFilesWithFrame(FileBlock const& fb,
+                                               ProcessingFrame const&)
   {
     respondToCloseOutputFiles(fb);
   }
 
-  CurrentProcessingContext const*
-  EDFilter::currentContext() const
+  void
+  EDFilter::beginJobWithFrame(ProcessingFrame const&)
   {
-    return current_context_.get();
+    beginJob();
   }
 
-} // art
+  void
+  EDFilter::endJobWithFrame(ProcessingFrame const&)
+  {
+    endJob();
+  }
+
+  bool
+  EDFilter::beginRunWithFrame(Run& r, ProcessingFrame const&)
+  {
+    return beginRun(r);
+  }
+
+  bool
+  EDFilter::endRunWithFrame(Run& r, ProcessingFrame const&)
+  {
+    return endRun(r);
+  }
+
+  bool
+  EDFilter::beginSubRunWithFrame(SubRun& sr, ProcessingFrame const&)
+  {
+    return beginSubRun(sr);
+  }
+
+  bool
+  EDFilter::endSubRunWithFrame(SubRun& sr, ProcessingFrame const&)
+  {
+    return endSubRun(sr);
+  }
+
+  bool
+  EDFilter::filterWithFrame(Event& e, ProcessingFrame const& frame)
+  {
+    ScheduleIDSentry sentry{*this, frame.scheduleID()};
+    return filter(e);
+  }
+
+  // Default implementations
+  void
+  EDFilter::beginJob()
+  {}
+
+  void
+  EDFilter::endJob()
+  {}
+
+  void
+  EDFilter::respondToOpenInputFile(FileBlock const&)
+  {}
+
+  void
+  EDFilter::respondToCloseInputFile(FileBlock const&)
+  {}
+
+  void
+  EDFilter::respondToOpenOutputFiles(FileBlock const&)
+  {}
+
+  void
+  EDFilter::respondToCloseOutputFiles(FileBlock const&)
+  {}
+
+  bool
+  EDFilter::beginRun(Run&)
+  {
+    return true;
+  }
+
+  bool
+  EDFilter::endRun(Run&)
+  {
+    return true;
+  }
+
+  bool
+  EDFilter::beginSubRun(SubRun&)
+  {
+    return true;
+  }
+
+  bool
+  EDFilter::endSubRun(SubRun&)
+  {
+    return true;
+  }
+
+} // namespace art

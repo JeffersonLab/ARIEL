@@ -1,5 +1,5 @@
 //#define NDEBUG
-#define ML_DEBUG // always enable debug
+#define MF_DEBUG // always enable debug
 
 #include "boost/filesystem.hpp"
 #include "boost/program_options.hpp"
@@ -93,5 +93,5 @@ main(int argc, char* argv[])
     cerr << "Caught unknown exception from mf::StartMessageFacility" << endl;
     return 5;
   }
-  LOG_DEBUG("WildcardDebug_t") << "Testing";
+  MF_LOG_DEBUG("WildcardDebug_t") << "Testing";
 }

@@ -22,7 +22,7 @@ namespace art {
         SPECIFIC_ERRORS = 504
       };
     }
-  }
+  } // namespace detail
 
   // Enum values must be scoped, eg FileDeliveryStatus::OK.
   using detail::FDS::FileDeliveryStatus;
@@ -30,7 +30,7 @@ namespace art {
   // Translate enum to string;
   std::string translateFileDeliveryStatus(FileDeliveryStatus stat);
 
-} // end of art namespace
+} // namespace art
 
 #endif /* art_Framework_Services_FileServiceInterfaces_FileDeliveryStatus_h */
 

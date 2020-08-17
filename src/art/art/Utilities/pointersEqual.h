@@ -28,7 +28,7 @@ namespace art {
     throw art::Exception(art::errors::LogicError)
       << "Tried to compare two incompatible pointers.\n";
   }
-}
+} // namespace art
 
 #endif /* art_Utilities_pointersEqual_h */
 

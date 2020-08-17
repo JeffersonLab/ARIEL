@@ -110,7 +110,8 @@ namespace art {
     static constexpr double MB{KB * KB};
     static constexpr double MiB{KiB * KiB};
   };
-}
+
+} // namespace art
 #endif /* art_Utilities_LinuxProcData_h */
 
 // Local variables:

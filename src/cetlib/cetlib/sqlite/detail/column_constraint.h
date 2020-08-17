@@ -32,17 +32,14 @@
 
 #include <string>
 
-namespace cet {
-  namespace sqlite {
-
-    struct primary_key {
-      static std::string
-      snippet()
-      {
-        return " PRIMARY KEY";
-      }
-    };
-  }
+namespace cet::sqlite {
+  struct primary_key {
+    static std::string
+    snippet()
+    {
+      return " PRIMARY KEY";
+    }
+  };
 }
 
 #endif /* cetlib_sqlite_detail_column_constraint_h */

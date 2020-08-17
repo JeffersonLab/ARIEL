@@ -1,32 +1,31 @@
 #ifndef art_Framework_Principal_Handle_h
 #define art_Framework_Principal_Handle_h
+// vim: set sw=2 expandtab :
 
-// ======================================================================
+//==========================================================================
+//  Handle: Non-owning "smart pointer" for reference to EDProducts and
+//          their Provenances.
 //
-// Handle: Non-owning "smart pointer" for reference to EDProducts and
-//         their Provenances.
+//  ValidHandle: A Handle that can not be invalid, and thus does not check
+//           for validity upon dereferencing.
 //
-// ValidHandle: A Handle that can not be invalid, and thus does not check
-//          for validity upon dereferencing.
+//  If the pointed-to EDProduct or Provenance is destroyed, use of the
+//  Handle becomes undefined. There is no way to query the Handle to
+//  discover if this has happened.
 //
-// If the pointed-to EDProduct or Provenance is destroyed, use of the
-// Handle becomes undefined. There is no way to query the Handle to
-// discover if this has happened.
+//  Handles can have:
+//  -- Product and Provenance pointers both null;
+//  -- Both pointers valid
 //
-// Handles can have:
-// -- Product and Provenance pointers both null;
-// -- Both pointers valid
+//  ValidHandles must have Product and Provenance pointers valid.
 //
-// ValidHandles must have Product and Provenance pointers valid.
+//  To check validity, one can use the Handle::isValid() function.
+//  ValidHandles cannot be invalid, and so have no validity checks.
 //
-// To check validity, one can use the Handle::isValid() function.
-// ValidHandles cannot be invalid, and so have no validity checks.
-//
-// If failedToGet() returns true then the requested data is not available
-// If failedToGet() returns false but isValid() is also false then no
-// attempt to get data has occurred
-//
-// ======================================================================
+//  If failedToGet() returns true then the requested data is not available
+//  If failedToGet() returns false but isValid() is also false then no
+//  attempt to get data has occurred
+//==========================================================================
 
 #include "art/Framework/Principal/Group.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -41,7 +40,7 @@
 #include <typeinfo>
 
 namespace art {
-  // defined herein:
+
   template <typename T>
   class Handle;
   template <typename T>
@@ -53,47 +52,39 @@ namespace art {
   template <class T>
   void convert_handle(GroupQueryResult const&, Handle<T>&);
 
-  // forward declarations:
   class EDProduct;
   template <typename T>
   class Wrapper;
 
   namespace detail {
-    inline void
-    throw_if_invalid(std::string const&)
-    {}
-
-    template <typename H, typename... T>
+    template <typename... T>
     void
-    throw_if_invalid(std::string const& msg, H const& h, T const&... t)
+    throw_if_invalid(std::string const& msg, T const&... t)
     {
-      if (!h.isValid())
+      bool const all_valid = true && (... && t.isValid());
+      if (!all_valid) {
         throw Exception{art::errors::NullPointerError} << msg << '\n';
-      throw_if_invalid(msg, t...);
+      }
     }
-  }
+  } // namespace detail
 
   template <class T>
   std::enable_if_t<detail::is_handle<T>::value, RangeSet const&>
   range_of_validity(T const& h);
-
   template <class T, class U>
   std::enable_if_t<detail::are_handles<T, U>::value, bool> same_ranges(
     T const& a,
     U const& b);
-
   template <class T, class U>
   std::enable_if_t<detail::are_handles<T, U>::value, bool> disjoint_ranges(
     T const& a,
     U const& b);
-
   template <class T, class U>
   std::enable_if_t<detail::are_handles<T, U>::value, bool> overlapping_ranges(
     T const& a,
     U const& b);
-}
 
-// ======================================================================
+} // namespace art
 
 template <typename T>
 class art::Handle {
@@ -101,10 +92,14 @@ public:
   using element_type = T;
   class HandleTag {};
 
-  // c'tors:
+  ~Handle() = default;
   explicit constexpr Handle() =
     default; // Default-constructed handles are invalid.
   explicit Handle(GroupQueryResult const&);
+  Handle(Handle const&) = default;
+  Handle(Handle&&) = default;
+  Handle& operator=(Handle const&) = default;
+  Handle& operator=(Handle&&) = default;
 
   // pointer behaviors:
   T const& operator*() const;
@@ -139,15 +134,15 @@ art::Handle<T>::Handle(GroupQueryResult const& gqr)
   if (gqr.succeeded()) {
     auto const wrapperPtr = dynamic_cast<Wrapper<T> const*>(
       gqr.result()->uniqueProduct(TypeID{typeid(Wrapper<T>)}));
-    if (wrapperPtr == nullptr) {
+    if (wrapperPtr != nullptr) {
+      prod_ = wrapperPtr->product();
+    } else {
       Exception e{errors::LogicError};
       e << "Product retrieval via Handle<T> succeeded for product:\n"
         << prov_.productDescription()
         << "but an attempt to interpret it as an object of type '"
         << cet::demangle_symbol(typeid(T).name()) << "' failed.\n";
       whyFailed_ = std::make_shared<art::Exception const>(std::move(e));
-    } else {
-      prod_ = wrapperPtr->product();
     }
   }
 }
@@ -165,13 +160,12 @@ template <class T>
 T const*
 art::Handle<T>::product() const
 {
-  if (failedToGet())
+  if (failedToGet()) {
     throw *whyFailed_;
-
+  }
   if (prod_ == nullptr)
     throw Exception(art::errors::NullPointerError)
-      << "Attempt to de-reference product that points to 'nullptr'";
-
+      << "Attempt to de-reference product that points to 'nullptr'.\n";
   return prod_;
 }
 
@@ -258,11 +252,13 @@ public:
   typedef T element_type;
   class HandleTag {};
 
+  ~ValidHandle() = default;
   ValidHandle() = delete;
   explicit ValidHandle(T const* prod, Provenance prov);
-
   ValidHandle(ValidHandle const&) = default;
+  ValidHandle(ValidHandle&&) = default;
   ValidHandle& operator=(ValidHandle const&) & = default;
+  ValidHandle& operator=(ValidHandle&&) & = default;
 
   // pointer behaviors
   operator T const*() const; // conversion to T const*
@@ -279,8 +275,9 @@ public:
 
   // mutators
   void swap(ValidHandle<T>& other);
-  // No clear() function, because a ValidHandle may not have an invalid
-  // state, and that is what clear() would obtain.
+
+  // No clear() function, because a ValidHandle does not have an invalid
+  // state, and that is what the result of clear() would have to be.
 
 private:
   T const* prod_;
@@ -291,9 +288,10 @@ template <class T>
 art::ValidHandle<T>::ValidHandle(T const* prod, Provenance prov)
   : prod_{prod}, prov_{prov}
 {
-  if (prod == nullptr)
+  if (prod == nullptr) {
     throw Exception(art::errors::NullPointerError)
       << "Attempt to create ValidHandle with null pointer";
+  }
 }
 
 template <class T>

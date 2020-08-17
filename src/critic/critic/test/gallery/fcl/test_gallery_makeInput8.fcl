@@ -1,0 +1,22 @@
+process_name: PROD4
+
+source: {
+  module_type: RootInput
+  fileNames: [ "test_gallery7.root" ]
+}
+
+physics: {
+  filters: {
+    f1: {
+      module_type: CriticFailEverything
+    }
+  }
+  p1: [ f1 ]
+  e1: [ output1 ]
+}
+
+outputs.output1: {
+  module_type: RootOutput
+  fileName: "test_gallery8.root"
+  SelectEvents: [p1]
+}

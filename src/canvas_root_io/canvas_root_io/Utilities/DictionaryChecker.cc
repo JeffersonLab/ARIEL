@@ -1,9 +1,12 @@
 #include "canvas_root_io/Utilities/DictionaryChecker.h"
+// vim: set sw=2 expandtab :
+
 #include "canvas/Utilities/DebugMacros.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas_root_io/Utilities/TypeTools.h"
 #include "canvas_root_io/Utilities/TypeWithDict.h"
 #include "cetlib_except/demangle.h"
+#include "hep_concurrency/RecursiveMutex.h"
 
 #include "TBaseClass.h"
 #include "TClass.h"
@@ -18,25 +21,75 @@
 #include <regex>
 #include <sstream>
 
+using namespace std;
+
 namespace {
 
+  struct DictionaryAction {
+    DictionaryAction(string name_stem, vector<size_t> args_to_check={})
+      :
+      name_stem(move(name_stem)),
+      args_to_check(move(args_to_check))
+      {
+      }
+    string name_stem;
+    vector<size_t> args_to_check;
+  };
+
+  using NameActionTable = vector<DictionaryAction>;
+
+  NameActionTable const noTopLevelDictionaryNames {
+    { "art::BranchType"s },
+    { "unique_ptr<"s, {0} },
+    { "array<"s, {0} },
+    { "string"s }
+  };
+
+  NameActionTable const noBaseCheckNames {
+    { "bitset"s },
+    { "pair<"s, {0,1} },
+    { "deque<"s, {0} },
+    { "forward_list<"s, {0} },
+    { "list<"s, {0} },
+    { "u16string"s }, // FIXME: Check ROOT's handling of this.
+    { "u32string"s }, // FIXME: Check ROOT's handling of this.
+    { "wstring"s }, // FIXME: Check ROOT's handling of this.
+    { "basic_string<"s, {0} },
+    { "vector<"s, {0} }, // FIXME: Should check Allocator.
+    { "map<"s, {0,1} }, // FIXME: Should check Compare and Allocator.
+    { "multimap<"s, {0,1} }, // FIXME: Should check Compare and Allocator.
+      // FIXME: Should check Hash, Pred, and Allocator.
+    { "unordered_map<"s, {0,1} },
+      // FIXME: Should check Hash, Pred, and Allocator.
+    { "unordered_multimap<"s, {0,1} },
+    { "set<"s, {0} }, // FIXME: Should check Compare and Allocator.
+    { "multiset<"s, {0} }, // FIXME: Should check Compare and Allocator.
+      // FIXME: Should check Hash, Pred, and Allocator.
+    { "unordered_set<"s, {0} },
+      // FIXME: Should check Hash, Pred, and Allocator.
+    { "unordered_multiset<"s, {0} },
+    { "queue<"s, {0} }, // FIXME: Should check Container.
+    { "priority_queue<"s, {0} }, // FIXME: Should check Container and Compare.
+    { "stack<"s, {0} } // FIXME: Should check Container.
+  };
+
   bool
-  match_from_begin(std::string const& test, std::string const& ref)
+  match_from_begin(string const& test, string const& ref)
   {
     return test.size() < ref.size() ? false :
-                                      test.compare(0, ref.size(), ref) == 0;
+      test.compare(0, ref.size(), ref) == 0;
   }
 
   bool
-  match_from_end(std::string const& test, std::string const& ref)
+  match_from_end(string const& test, string const& ref)
   {
     return test.size() < ref.size() ?
-             false :
-             test.compare(test.size() - ref.size(), ref.size(), ref) == 0;
+                         false :
+      test.compare(test.size() - ref.size(), ref.size(), ref) == 0;
   }
 
   void
-  erase_if_match_from_begin(std::string& test, std::string const& ref)
+  erase_if_match_from_begin(string& test, string const& ref)
   {
     if (match_from_begin(test, ref)) {
       test.erase(0, ref.size());
@@ -44,31 +97,62 @@ namespace {
   }
 
   void
-  erase_if_match_from_end(std::string& test, std::string const& ref)
+  erase_if_match_from_end(string& test, string const& ref)
   {
     if (match_from_end(test, ref)) {
       test.erase(test.size() - ref.size());
     }
   }
+
+  template<typename FUNC>
+  bool
+  dictionaryActionForName(string const & name,
+                          NameActionTable const & actionTable,
+                          FUNC dictionaryArgChecker) {
+    bool result = false;
+    auto const i =
+      find_if(cbegin(actionTable),
+              cend(actionTable),
+              [&name](auto const &nameAction) {
+                return match_from_begin(name, nameAction.name_stem);
+              });
+    if (i != cend(actionTable)) {
+      for_each(cbegin(i->args_to_check),
+               cend(i->args_to_check),
+               dictionaryArgChecker);
+      result = true;
+    }
+    return result;
+  }
+} // unnamed namespace
+
+void
+art::root::DictionaryChecker::checkDictionariesForArg_(string const& name,
+                                                       size_t const index,
+                                                       size_t const level)
+{
+  auto const arg = name_of_template_arg(name, index);
+  if (arg.empty()) {
+    throw Exception(errors::LogicError, "checkDictionaries: ")
+      << "Could not get template arg #" << index
+      << " from: " << name << '\n';
+  }
+  checkDictionaries(arg, true, level + 2);
 }
 
 void
-art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
+art::root::DictionaryChecker::checkDictionaries(string const& name_orig,
                                                 bool const recursive,
-                                                std::size_t const level)
+                                                size_t const level)
 {
-  using namespace std;
   string name;
   TClassEdit::GetNormalizedName(name, name_orig);
-
-  erase_if_match_from_begin(name, "std::");  // Strip leading std::
+  erase_if_match_from_begin(name, "");       // Strip leading
   erase_if_match_from_begin(name, "const "); // Strip leading const
   erase_if_match_from_end(name, "const ");   // Strip trailing const
   erase_if_match_from_end(name, "&&");       // Strip trailing r-value reference
   erase_if_match_from_end(name, "&");        // Strip trailing l-value reference
-
   // FIXME: What about volatile & restrict?
-
   // Strip trailing *.
   {
     auto pos = name.size();
@@ -81,28 +165,26 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
     }
     name.erase(pos);
   }
-
   if (name.empty()) {
     return;
   }
-
-  // Special cases
-  // -- enumerations are awkward in ROOT; they do not require
-  //    definitions
-  if (match_from_begin(name, "art::BranchType")) {
+  // Special cases for action on certain names are described in tables
+  // in the unnamed namespace. This lambda wraps the appropriate extra
+  // boilerplate required to allow the table reader to carry out checks
+  // on template arguments if indicated.
+  auto const doActionFromTable =
+    [this, &name, level](auto const & actionTable) {
+    return
+    dictionaryActionForName(name,
+                            actionTable,
+                            [this, &name, level](size_t const index) {
+                              checkDictionariesForArg_(name, index, level);
+                            });
+  };
+  // Special cases.
+  if (doActionFromTable(noTopLevelDictionaryNames)) {
     return;
   }
-
-  // Cases that ROOT transparently supports
-  if (match_from_begin(name, "unique_ptr<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "array<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-
   {
     auto I = checked_names_.find(name);
     if (I != checked_names_.end()) {
@@ -114,27 +196,23 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
   if (name == "void") {
     return;
   }
-
   if (match_from_end(name, "::(anonymous)")) {
     return;
   }
-
   TypeWithDict ty{name};
   if (ty) {
     switch (ty.category()) {
-      case TypeWithDict::Category::NONE: {
-        throw Exception(errors::LogicError, "checkDictionaries: ")
-          << "Type category of name is NONE: " << name << '\n';
-      }
-      case TypeWithDict::Category::CLASSTYPE:
-        break; // Continue below.
-      case TypeWithDict::Category::ENUMTYPE:
-        return;
-      case TypeWithDict::Category::BASICTYPE:
-        return;
+    case TypeWithDict::Category::NONE:
+      throw Exception(errors::LogicError, "checkDictionaries: ")
+        << "Type category of name is NONE: " << name << '\n';
+    case TypeWithDict::Category::CLASSTYPE:
+      break; // Continue below.
+    case TypeWithDict::Category::ENUMTYPE:
+      return;
+    case TypeWithDict::Category::BASICTYPE:
+      return;
     }
   }
-
   auto cl = TClass::GetClass(name.c_str());
   if (cl == nullptr) {
     missing_types_.insert(name);
@@ -167,110 +245,10 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
   if (!recursive) {
     return;
   }
-
-  if (match_from_begin(name, "array<")) {
-    checkDictionariesForArg_(name, 0, level);
+  // Classes that should not have bases checked.
+  if (doActionFromTable(noBaseCheckNames)) {
     return;
   }
-  if (match_from_begin(name, "deque<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "forward_list<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "list<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "string")) {
-    // Ignore, root has special handling for this.
-    return;
-  }
-  if (match_from_begin(name, "u16string")) {
-    // Ignore, root has special handling for this.
-    // FIXME: It does not!
-    return;
-  }
-  if (match_from_begin(name, "u32string")) {
-    // Ignore, root has special handling for this.
-    // FIXME: It does not!
-    return;
-  }
-  if (match_from_begin(name, "wstring")) {
-    // Ignore, root has special handling for this.
-    // FIXME: It does not!
-    return;
-  }
-  if (match_from_begin(name, "basic_string<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "vector<")) {
-    checkDictionariesForArg_(name, 0, level);
-    return;
-  }
-  if (match_from_begin(name, "map<")) {
-    checkDictionariesForArg_(name, 0, level);
-    checkDictionariesForArg_(name, 1, level);
-    // FIXME: Should check Compare, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "multimap<")) {
-    checkDictionariesForArg_(name, 0, level);
-    checkDictionariesForArg_(name, 1, level);
-    // FIXME: Should check Compare, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "unordered_map<")) {
-    checkDictionariesForArg_(name, 0, level);
-    checkDictionariesForArg_(name, 1, level);
-    // FIXME: Should check Hash, Pred, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "unordered_multimap<")) {
-    checkDictionariesForArg_(name, 0, level);
-    checkDictionariesForArg_(name, 1, level);
-    // FIXME: Should check Hash, Pred, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "set<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Compare, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "multiset<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Compare, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "unordered_set<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Hash, Pred, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "unordered_multiset<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Hash, Pred, and Allocator too!
-    return;
-  }
-  if (match_from_begin(name, "queue<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Container too!
-    return;
-  }
-  if (match_from_begin(name, "priority_queue<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Container, and Compare too!
-    return;
-  }
-  if (match_from_begin(name, "stack<")) {
-    checkDictionariesForArg_(name, 0, level);
-    // FIXME: Should check Container too!
-    return;
-  }
-
   // Check dictionaries for base classes
   auto* bases = cl->GetListOfBases();
   if (bases == nullptr) {
@@ -288,7 +266,6 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
     }
     checkDictionaries(bc->GetName(), true, level + 2);
   }
-
   // Check dictionaries for data members
   auto* data_members = cl->GetListOfDataMembers();
   if (data_members == nullptr) {
@@ -296,7 +273,6 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
       << "Retrieving list of data members for type '" << name
       << "' returned a nullptr.";
   }
-
   for (auto obj : *data_members) {
     auto dm = dynamic_cast<TDataMember*>(obj);
     if (dm == nullptr) {
@@ -305,7 +281,6 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
         << name << "'"
         << "could not be cast to a TDataMember pointer.";
     }
-
     if (!dm->IsPersistent()) {
       // The data member comment in the header file starts with '!'.
       continue;
@@ -334,22 +309,24 @@ art::root::DictionaryChecker::checkDictionaries(std::string const& name_orig,
   }
 }
 
-std::vector<std::string>
+vector<string>
 art::root::DictionaryChecker::typesMissingDictionaries()
 {
-  std::vector<std::string> result;
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
+  vector<string> result;
   for (auto const& mt : missing_types_) {
     result.emplace_back(cet::demangle_symbol(mt));
   }
-  resetMissingTypes_();
-  std::sort(result.begin(), result.end());
+  set<string> tmp;
+  swap(tmp, missing_types_);
+  sort(result.begin(), result.end());
   return result;
 }
 
 void
 art::root::DictionaryChecker::reportMissingDictionaries()
 {
-  using namespace std;
+  hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
   if (missing_types_.empty()) {
     return;
   }
@@ -360,29 +337,9 @@ art::root::DictionaryChecker::reportMissingDictionaries()
   throw Exception(errors::DictionaryNotFound)
     << "No dictionary found for the following classes:\n\n"
     << ostr.str()
-    << "\nMost likely they were never generated, but it may be that they "
-       "were generated in the wrong package.\n"
-       "\n"
-       "Please add (or move) the specification\n"
-       "\n"
-       "     <class name=\"MyClassName\"/>\n"
-       "\n"
-       "to the appropriate classes_def.xml file.\n"
-       "\n"
-       "Also, if this class has any transient members,\n"
-       "you need to specify them in classes_def.xml.";
-}
-
-void
-art::root::DictionaryChecker::checkDictionariesForArg_(std::string const& name,
-                                                       std::size_t const index,
-                                                       std::size_t const level)
-{
-  auto const arg = name_of_template_arg(name, index);
-  if (arg.empty()) {
-    throw Exception(errors::LogicError, "checkDictionaries: ")
-      << "Could not get " << (index == 0 ? "first" : "second")
-      << " template arg from: " << name << '\n';
-  }
-  checkDictionaries(arg, true, level + 2);
+    << "\nMost likely they were never generated, but it may be that they were "
+    "generated in the wrong package.\n\nPlease add (or move) the "
+    "specification\n\n     <class name=\"MyClassName\"/>\n\nto the "
+    "appropriate classes_def.xml file.\n\nAlso, if this class has any "
+    "transient members,\nyou need to specify them in classes_def.xml.";
 }

@@ -7,11 +7,13 @@
 
 #include <cmath>
 
-double tex::phi_norm( double arg ){
-  static double twopi = 2.0*M_PI;
-  if ( arg < 0.      ) {
+double
+tex::phi_norm(double arg)
+{
+  static double twopi = 2.0 * M_PI;
+  if (arg < 0.) {
     arg += twopi;
-  } else if ( arg >= twopi ){
+  } else if (arg >= twopi) {
     arg -= twopi;
   }
   return arg;

@@ -64,8 +64,9 @@ namespace {
   {
     BranchKey components;
     std::smatch ruleMatch;
-    static std::regex const re("(keep|drop)\\s+(\\*|(?:[^_]*)_(?:[^_]*)_(?:[^_]"
-                               "*)_(?:[^_\\s]*))(?:\\s+(.*))?");
+    static std::regex const re(
+      "(keep|drop)\\s+(\\*|(?:[^_]*)_(?:[^_]*)_(?:[^_]*)"
+      "_(?:[^_\\s]*))(?:\\s+(.*))?");
     boost::trim(s); // Removing leading / trailing whitespace.
     if (!std::regex_match(s, ruleMatch, re)) { // Failed preliminary check.
       throw Exception(errors::Configuration)
@@ -137,7 +138,8 @@ namespace {
     }
     return components;
   }
-}
+
+} // namespace
 
 GroupSelectorRules::Rule::Rule(string const& s,
                                string const& parameterName,

@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
 parent	art_workbook	v0_01_00
-defaultqual	s47:e14
+defaultqual	s69:e17
 
 # These optional lines define the installed directories where headers,
 # libraries, and executables will be found.
@@ -30,63 +30,66 @@ toyExperiment   v0_01_03   s41
 toyExperiment   v0_01_03   s40
 toyExperiment   v0_01_02   s39
 toyExperiment   v0_01_00   s38
-cetbuildtools	v5_06_06   -    only_for_build
+toyExperiment   v0_03_19   s69
+cetbuildtools	v7_04_00   -    only_for_build
 end_product_list
 
 # -nq- here means there is no qualifier
 qualifier	toyExperiment	notes
-s47:e14:debug	 s47:e14:debug
-s47:e14:prof	 s47:e14:prof
+s47:e14:debug    s47:e14:debug
+s47:e14:prof     s47:e14:prof
 s47:nu:e14:debug s47:nu:e14:debug
-s47:nu:e14:prof	 s47:nu:e14:prof
-s47:e10:debug	 s47:e10:debug
-s47:e10:prof	 s47:e10:prof
+s47:nu:e14:prof  s47:nu:e14:prof
+s47:e10:debug    s47:e10:debug
+s47:e10:prof     s47:e10:prof
 s47:nu:e10:debug s47:nu:e10:debug
-s47:nu:e10:prof	 s47:nu:e10:prof
-s46:e14:debug	 s46:e14:debug
-s46:e14:prof	 s46:e14:prof
+s47:nu:e10:prof  s47:nu:e10:prof
+s46:e14:debug    s46:e14:debug
+s46:e14:prof     s46:e14:prof
 s46:nu:e14:debug s46:nu:e14:debug
-s46:nu:e14:prof	 s46:nu:e14:prof
-s46:e10:debug	 s46:e10:debug
-s46:e10:prof	 s46:e10:prof
+s46:nu:e14:prof  s46:nu:e14:prof
+s46:e10:debug    s46:e10:debug
+s46:e10:prof     s46:e10:prof
 s46:nu:e10:debug s46:nu:e10:debug
-s46:nu:e10:prof	 s46:nu:e10:prof
-s45:e14:debug	 s45:e14:debug
-s45:e14:prof	 s45:e14:prof
+s46:nu:e10:prof  s46:nu:e10:prof
+s45:e14:debug    s45:e14:debug
+s45:e14:prof     s45:e14:prof
 s45:nu:e14:debug s45:nu:e14:debug
-s45:nu:e14:prof	 s45:nu:e14:prof
-s45:e10:debug	 s45:e10:debug
-s45:e10:prof	 s45:e10:prof
+s45:nu:e14:prof  s45:nu:e14:prof
+s45:e10:debug    s45:e10:debug
+s45:e10:prof     s45:e10:prof
 s45:nu:e10:debug s45:nu:e10:debug
-s45:nu:e10:prof	 s45:nu:e10:prof
-s44:e10:debug	 s44:e10:debug
-s44:e10:prof	 s44:e10:prof
+s45:nu:e10:prof  s45:nu:e10:prof
+s44:e10:debug    s44:e10:debug
+s44:e10:prof     s44:e10:prof
 s44:nu:e10:debug s44:nu:e10:debug
-s44:nu:e10:prof	 s44:nu:e10:prof
-s43:e10:debug	 s43:e10:debug
-s43:e10:prof	 s43:e10:prof
+s44:nu:e10:prof  s44:nu:e10:prof
+s43:e10:debug    s43:e10:debug
+s43:e10:prof     s43:e10:prof
 s43:nu:e10:debug s43:nu:e10:debug
-s43:nu:e10:prof	 s43:nu:e10:prof
-s42:e10:debug	 s42:e10:debug
-s42:e10:prof	 s42:e10:prof
+s43:nu:e10:prof  s43:nu:e10:prof
+s42:e10:debug    s42:e10:debug
+s42:e10:prof     s42:e10:prof
 s42:nu:e10:debug s42:nu:e10:debug
-s42:nu:e10:prof	 s42:nu:e10:prof
-s41:e10:debug	 s41:e10:debug
-s41:e10:prof	 s41:e10:prof
+s42:nu:e10:prof  s42:nu:e10:prof
+s41:e10:debug    s41:e10:debug
+s41:e10:prof     s41:e10:prof
 s41:nu:e10:debug s41:nu:e10:debug
-s41:nu:e10:prof	 s41:nu:e10:prof
-s40:e10:debug	 s40:e10:debug
-s40:e10:prof	 s40:e10:prof
+s41:nu:e10:prof  s41:nu:e10:prof
+s40:e10:debug    s40:e10:debug
+s40:e10:prof     s40:e10:prof
 s40:nu:e10:debug s40:nu:e10:debug
-s40:nu:e10:prof	 s40:nu:e10:prof
-s39:e10:debug	 s39:e10:debug
-s39:e10:prof	 s39:e10:prof
+s40:nu:e10:prof  s40:nu:e10:prof
+s39:e10:debug    s39:e10:debug
+s39:e10:prof     s39:e10:prof
 s39:nu:e10:debug s39:nu:e10:debug
-s39:nu:e10:prof	 s39:nu:e10:prof
-s38:e10:debug	 s38:e10:debug
-s38:e10:prof	 s38:e10:prof
+s39:nu:e10:prof  s39:nu:e10:prof
+s38:e10:debug    s38:e10:debug
+s38:e10:prof     s38:e10:prof
 s38:nu:e10:debug s38:nu:e10:debug
-s38:nu:e10:prof	 s38:nu:e10:prof
+s38:nu:e10:prof  s38:nu:e10:prof
+s69:e17:debug    s69:e17:debug
+s69:e17:prof     s69:e17:prof
 end_qualifier_list
 
 # table_fragment_begin

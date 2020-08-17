@@ -12,7 +12,18 @@
 //
 // where a Run item type with an ID number of 1 is started, a SubRun
 // item type with an ID number of 2 is started, and Event item types
-// with ID numbers of 1 and 2 are then processed.
+// with ID numbers of 1 and 2 are then processed.  Special characters
+// are also allowed for testing rarer circumstances the framework must
+// support:
+//
+//   r:f // Provide 'flush' value to indicate run closure
+//   s:t // Throw an exception during readSubRun
+//
+// N.B. For the purposes of this input source, an input specification
+// of 'r:t' corresponds to assigning a run number value of
+// art::IDNumber<art::Level::Run>::flush_value() - 1, which is used to
+// determine whether readRun should throw an exception.
+// ==============================================================
 
 #include "art/Framework/Core/FileBlock.h"
 #include "art/Framework/Core/InputSource.h"
@@ -22,18 +33,44 @@
 #include "art/Framework/Principal/OpenRangeSetHandler.h"
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/FileFormatVersion.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "canvas/Persistency/Provenance/ProcessConfiguration.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
+#include <fstream>
 #include <string>
 #include <vector>
 
 namespace {
+  std::uint32_t
+  flush_value(char const level)
+  {
+    switch (level) {
+      case 'r':
+        return art::IDNumber<art::Level::Run>::flush_value();
+      case 's':
+        return art::IDNumber<art::Level::SubRun>::flush_value();
+      case 'e':
+        return art::IDNumber<art::Level::Event>::flush_value();
+      default:
+        throw art::Exception{art::errors::Configuration}
+          << "Action specifying flush or throw value does not correspond to "
+             "'r', 's', "
+             "or 'e'.\n";
+    }
+  }
+
+  std::uint32_t
+  throw_value(char const level)
+  {
+    return flush_value(level) - 1;
+  }
+
   std::uint32_t
   number(std::string const& action)
   {
@@ -47,26 +84,25 @@ namespace {
     if (symbol.empty()) {
       throw art::Exception{art::errors::Configuration}
         << "The symbol for \"" << action << "\" is empty.\n"
-        << "Please provide a positive number, or the character 'f'.\n";
+        << "Please provide a positive number, or the character 'f' or 't'.\n";
     }
 
-    // For flush values -- r:f, s:f, or e:f
+    // For flush/throw values -- r:f, s:f, or e:f
     if (std::isalpha(symbol[0])) {
-      if (symbol[0] != 'f') {
+      if (symbol.size() != 1ull) {
         throw art::Exception{art::errors::Configuration}
-          << "The character specified for a symbol must be 'f'.\n";
+          << "There must be only one character after the colon in \"" << action
+          << "\".\n"
+          << "Please either the character 'f' or 't'.\n";
       }
-      switch (level[0]) {
-        case 'r':
-          return art::IDNumber<art::Level::Run>::flush_value();
-        case 's':
-          return art::IDNumber<art::Level::SubRun>::flush_value();
-        case 'e':
-          return art::IDNumber<art::Level::Event>::flush_value();
+      switch (symbol[0]) {
+        case 'f':
+          return flush_value(level[0]);
+        case 't':
+          return throw_value(level[0]);
         default:
           throw art::Exception{art::errors::Configuration}
-            << "Action specifying flush value does not correspond to 'r', 's', "
-               "or 'e'.\n";
+            << "The character specified for a symbol must be 'f' or 't'.\n";
       }
     }
 
@@ -74,12 +110,13 @@ namespace {
     return std::stoul(action.substr(2)); // (e.g.) e:14 - start at "14"
   }
 
-  inline auto
+  constexpr auto
   nullTimestamp()
   {
     return art::Timestamp{};
   }
-}
+
+} // namespace
 
 namespace arttest {
 
@@ -88,7 +125,7 @@ namespace arttest {
     EventProcessorTestSource(fhicl::ParameterSet const& ps,
                              art::InputSourceDescription& isd)
       : InputSource{isd.moduleDescription}
-      , isd_{isd}
+      , pc_{isd.moduleDescription.processConfiguration()}
       , fileNames_{ps.get<std::vector<std::string>>("fileNames")}
     {}
 
@@ -149,29 +186,43 @@ namespace arttest {
     std::unique_ptr<art::RunPrincipal>
     readRun() override
     {
+      if (run_.run() == throw_value('r')) {
+        throw art::Exception{
+          art::errors::FileReadError,
+          "There was an exception while reading a run from the input file."};
+      }
+
       art::RunAuxiliary const aux{run_, nullTimestamp(), nullTimestamp()};
-      auto rp = std::make_unique<art::RunPrincipal>(
-        aux, isd_.moduleDescription.processConfiguration(), nullptr);
+      auto rp = std::make_unique<art::RunPrincipal>(aux, pc_, nullptr);
       return rp;
     }
 
     std::unique_ptr<art::SubRunPrincipal>
     readSubRun(cet::exempt_ptr<art::RunPrincipal const> rp) override
     {
+      if (subRun_.subRun() == throw_value('s')) {
+        throw art::Exception{
+          art::errors::FileReadError,
+          "There was an exception while reading a subrun from the input file."};
+      }
+
       art::SubRunAuxiliary const aux{subRun_, nullTimestamp(), nullTimestamp()};
-      auto srp = std::make_unique<art::SubRunPrincipal>(
-        aux, isd_.moduleDescription.processConfiguration(), nullptr);
+      auto srp = std::make_unique<art::SubRunPrincipal>(aux, pc_, nullptr);
       srp->setRunPrincipal(rp);
       return srp;
     }
 
-    using art::InputSource::readEvent;
     std::unique_ptr<art::EventPrincipal>
     readEvent(cet::exempt_ptr<art::SubRunPrincipal const> srp) override
     {
+      if (event_.event() == throw_value('e')) {
+        throw art::Exception{
+          art::errors::FileReadError,
+          "There was an exception while reading an event from the input file."};
+      }
+
       art::EventAuxiliary const aux{event_, nullTimestamp(), true};
-      auto ep = std::make_unique<art::EventPrincipal>(
-        aux, isd_.moduleDescription.processConfiguration(), nullptr);
+      auto ep = std::make_unique<art::EventPrincipal>(aux, pc_, nullptr);
       ep->setSubRunPrincipal(srp);
       return ep;
     }
@@ -189,7 +240,7 @@ namespace arttest {
     }
 
   private:
-    art::InputSourceDescription const isd_;
+    art::ProcessConfiguration const pc_;
     std::ifstream inputFile_{};
     std::string currentName_{};
     std::vector<std::string> fileNames_{};
@@ -197,6 +248,7 @@ namespace arttest {
     art::SubRunID subRun_{};
     art::EventID event_{};
   };
-}
+
+} // namespace arttest
 
 DEFINE_ART_INPUT_SOURCE(arttest::EventProcessorTestSource)

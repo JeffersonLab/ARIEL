@@ -38,7 +38,7 @@ namespace cet {
 
     template <typename OSTREAM,
               typename =
-                std::enable_if_t<std::is_base_of<std::ostream, OSTREAM>::value>>
+                std::enable_if_t<std::is_base_of_v<std::ostream, OSTREAM>>>
     class ostream_owner : public ostream_handle_base {
     public:
       ostream_owner(OSTREAM&& os) : os_(std::move(os)) {}

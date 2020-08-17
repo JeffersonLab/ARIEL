@@ -64,8 +64,7 @@
 
 */
 
-#include "boost/any.hpp"
-
+#include <any>
 #include <string>
 
 namespace fhicl {
@@ -77,7 +76,7 @@ namespace fhicl {
     virtual ~ParameterSetWalker() noexcept = default;
 
     using key_t = std::string;
-    using any_t = boost::any;
+    using any_t = std::any;
 
     void
     do_enter_table(key_t const& k, any_t const& a)
@@ -101,9 +100,9 @@ namespace fhicl {
       before_action(k, a, ps);
     }
     void
-    do_after_action()
+    do_after_action(key_t const& k)
     {
-      after_action();
+      after_action(k);
     }
 
     void
@@ -134,7 +133,7 @@ namespace fhicl {
     before_action(key_t const&, any_t const&, ParameterSet const*)
     {}
     virtual void
-    after_action()
+    after_action(key_t const&)
     {}
   };
 

@@ -1,6 +1,6 @@
 #include "art/Framework/Art/detail/get_LibraryInfoCollection.h"
 #include "art/Framework/Art/detail/PluginSymbolResolvers.h"
-#include "art/Framework/Art/detail/ServiceNames.h"
+#include "art/Framework/EventProcessor/Scheduler.h"
 #include "art/Utilities/PluginSuffixes.h"
 #include "cetlib/LibraryManager.h"
 #include "messagefacility/MessageLogger/MFConfig.h"
@@ -19,6 +19,7 @@ namespace {
 
   std::string const regex_prefix{"([-A-Za-z0-9]*_)*"};
   std::regex const slash{"/"};
+  std::regex const artPrefix{R"(\S*art/.*)"};
 
   inline std::string
   plugin_suffix(std::size_t const sz)
@@ -74,8 +75,7 @@ namespace {
   inline std::string
   getProvider(std::string const& fullSpec)
   {
-    return std::regex_search(fullSpec, std::regex{R"(\S*art/.*)"}) ? "art" :
-                                                                     "user";
+    return std::regex_search(fullSpec, artPrefix) ? "art" : "user";
   }
 
   inline std::vector<std::string>
@@ -84,6 +84,26 @@ namespace {
     std::vector<std::string> result;
     lm.getLoadableLibraries(result);
     return result;
+  }
+
+  bool
+  scheduler_included(std::string const& spec, LibraryInfoCollection& result)
+  {
+    bool const print_only_message = (spec == "scheduler");
+    bool const print_available_services = (spec == dflt_spec_pattern());
+
+    if (print_only_message || print_available_services) {
+      result.emplace(
+        "[ none ]",
+        std::make_pair("scheduler", ""),
+        "[ none ]",
+        std::make_unique<fhicl::WrappedTable<art::Scheduler::Config>>(
+          fhicl::Name{"scheduler"}),
+        "art",
+        "");
+      return true;
+    }
+    return false;
   }
 
   bool
@@ -112,34 +132,36 @@ namespace {
   using Suffixes = art::Suffixes;
 
   std::string
-  fhicl_name(suffix_type const st)
+  fhicl_name(std::string const& suffix)
   {
-    switch (st) {
-      case suffix_type::module:
-        return "<module_label>";
-      case suffix_type::plugin:
-        return "<plugin_label>";
-      case suffix_type::tool:
-        return "<tool_label>";
-      case suffix_type::source:
-        return "source";
-      case suffix_type::mfPlugin:
-        return "<destination_label>";
-      case suffix_type::mfStatsPlugin:
-        return "<statistics_destination_label>";
-      default:
-        throw art::Exception(art::errors::LogicError)
-          << "The '" << Suffixes::get(st)
-          << "' suffix is not supported for function: " << __func__ << '\n';
+    if (suffix == art::Suffixes::module()) {
+      return "<module_label>";
     }
+    if (suffix == art::Suffixes::plugin()) {
+      return "<plugin_label>";
+    }
+    if (suffix == art::Suffixes::tool()) {
+      return "<tool_label>";
+    }
+    if (suffix == art::Suffixes::source()) {
+      return "source";
+    }
+    if (suffix == art::Suffixes::mfPlugin()) {
+      return "<destination_label>";
+    }
+    if (suffix == art::Suffixes::mfStatsPlugin()) {
+      return "<statistics_destination_label>";
+    }
+    return "<name>";
   }
 
-  template <suffix_type st>
   LibraryInfoCollection
-  getCollection(std::string const& spec, bool const verbose)
+  collection_for_plugins(std::string const& suffix,
+                         std::string const& spec,
+                         bool const verbose)
   {
     LibraryInfoCollection result;
-    LibraryManager const lm{Suffixes::get(st), pattern(spec)};
+    LibraryManager const lm{suffix, pattern(spec)};
     std::size_t i{};
     auto const& libs = getLibraries(lm);
     auto const sz = libs.size();
@@ -152,29 +174,23 @@ namespace {
 
       result.emplace(lib,
                      libspecs,
-                     getFilePath<st>(lm, spec),
-                     getAllowedConfiguration<st>(lm, spec, fhicl_name(st)),
+                     getFilePath(lm, spec),
+                     getAllowedConfiguration(lm, spec, fhicl_name(suffix)),
                      getProvider(spec),
-                     getType<st>(lm, spec));
+                     getType(lm, spec));
 
       status_bar.print_progress(++i);
     }
     return result;
   }
 
-  template <>
   LibraryInfoCollection
-  getCollection<suffix_type::service>(std::string const& spec,
-                                      bool const verbose)
+  collection_for_services(std::string const& spec, bool const verbose)
   {
     // These services are not configurable by users.
-    std::set<std::string> const systemServicesToIgnore{
-      "CurrentModule", "ScheduleContext", "TriggerNamesService"};
+    std::set<std::string> const systemServicesToIgnore{"TriggerNamesService"};
 
-    std::string const& pSpec = ServiceNames::libname(spec);
-
-    LibraryManager const lm{Suffixes::get(suffix_type::service),
-                            pattern(pSpec)};
+    LibraryManager const lm{Suffixes::service(), pattern(spec)};
     auto libs = getLibraries(lm);
 
     // Remove libraries that should be ignored
@@ -195,19 +211,20 @@ namespace {
     std::size_t i{};
     for (auto const& lib : libs) {
       auto const& libspecs = lm.getSpecsByPath(lib);
-      std::string const& spec = libspecs.first;
+      std::string const& shortspec = libspecs.first;
       std::string const& fullspec = libspecs.second;
-      auto const& fclname = ServiceNames::fclname(spec);
 
-      result.emplace(
-        lib,
-        std::make_pair(fclname, fullspec),
-        getFilePath<suffix_type::service>(lm, spec), // full specs may be empty
-        getAllowedConfiguration<suffix_type::service>(
-          lm, spec, fclname), // for user-defined servicxes
-        getProvider(fullspec),
-        getType<suffix_type::service>(lm, libspecs.second));
+      result.emplace(lib,
+                     std::make_pair(shortspec, fullspec),
+                     getFilePath(lm, shortspec), // full specs may be empty
+                     getAllowedConfiguration(
+                       lm, shortspec, shortspec), // for user-defined servicxes
+                     getProvider(fullspec),
+                     getType(lm, fullspec));
 
+      status_bar.print_progress(++i);
+    }
+    if (scheduler_included(spec, result)) {
       status_bar.print_progress(++i);
     }
     if (messagefacility_included(spec, result)) {
@@ -220,26 +237,12 @@ namespace {
 } // namespace
 
 LibraryInfoCollection
-art::detail::get_LibraryInfoCollection(suffix_type const st,
+art::detail::get_LibraryInfoCollection(std::string const& suffix,
                                        std::string const& pattern,
                                        bool const verbose)
 {
-  switch (st) {
-    case suffix_type::module:
-      return getCollection<suffix_type::module>(pattern, verbose);
-    case suffix_type::service:
-      return getCollection<suffix_type::service>(pattern, verbose);
-    case suffix_type::source:
-      return getCollection<suffix_type::source>(pattern, verbose);
-    case suffix_type::plugin:
-      return getCollection<suffix_type::plugin>(pattern, verbose);
-    case suffix_type::tool:
-      return getCollection<suffix_type::tool>(pattern, verbose);
-    case suffix_type::mfPlugin:
-      return getCollection<suffix_type::mfPlugin>(pattern, verbose);
-    case suffix_type::mfStatsPlugin:
-      return getCollection<suffix_type::mfStatsPlugin>(pattern, verbose);
-      // No default - allow compiler to warn if missing suffix_type.
+  if (suffix == art::Suffixes::service()) {
+    return collection_for_services(pattern, verbose);
   }
-  return {};
+  return collection_for_plugins(suffix, pattern, verbose);
 }

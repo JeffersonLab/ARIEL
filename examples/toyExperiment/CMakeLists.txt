@@ -6,10 +6,8 @@
 #  buildtool -f[T]l
 # ======================================================================
 
-# use cmake 2.8 or later
-cmake_minimum_required (VERSION 2.8)
-
-project(toyexperiment)
+cmake_minimum_required (VERSION 3.12...3.14 FATAL_ERROR)
+project(toyexperiment LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 SET(CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION})
@@ -29,17 +27,21 @@ cet_set_compiler_flags(DIAGS VIGILANT WERROR NO_UNDEFINED EXTRA_FLAGS -pedantic)
 
 cet_report_compiler_flags()
 
+check_ups_version(art "$ENV{ART_VERSION}" v3_02_00 PRODUCT_OLDER_VAR OLDER_THAN_v30200)
+
 # Versions are specified in the ups/product_deps file
+
 find_ups_product(art)
+find_ups_product(canvas_root_io)
 find_ups_product(messagefacility)
 find_ups_product(clhep)
 find_ups_product(cetbuildtools)
 find_ups_root()
 find_ups_boost()
 
-check_ups_version(art "$ENV{ART_VERSION}" v2_08_00 PRODUCT_OLDER_VAR GET_PRODUCT_ID_WITH_EVENT)
-if (GET_PRODUCT_ID_WITH_EVENT)
-  add_definitions(-DGET_PRODUCT_ID_WITH_EVENT)
+if (NOT OLDER_THAN_v30200)
+  find_ups_product(art_root_io)
+  add_definitions(-DART_ROOT_IO)
 endif()
 
 message(STATUS "Project is ${product} ${version} ${qualifier}")

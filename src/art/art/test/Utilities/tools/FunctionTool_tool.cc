@@ -6,6 +6,6 @@ namespace arttest {
   {
     return i + 1;
   }
-}
+} // namespace arttest
 
 DEFINE_ART_FUNCTION_TOOL(arttest::addOne, "addOne")

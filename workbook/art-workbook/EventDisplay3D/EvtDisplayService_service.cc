@@ -1,5 +1,5 @@
 //
-// - Event display service used with the EventDisplay3D module to start up the 
+// - Event display service used with the EventDisplay3D module to start up the
 //   TApplication and allow forward, backward, and jump-to navigation of events
 //   in the root input file.  This is a very much simplified version based on
 //   Nova's event display service by Mark Messier.
@@ -22,7 +22,7 @@ namespace tex
 {
 
   EvtDisplayService::EvtDisplayService(fhicl::ParameterSet const& pset,
-			     art::ActivityRegistry& reg):
+                             art::ActivityRegistry& reg):
     ensureTApp_()
   {
     (void)pset;
@@ -33,14 +33,14 @@ namespace tex
   //......................................................................
 
   void EvtDisplayService::postBeginJobWorkers(art::InputSource* input_source,
-					 std::vector<art::Worker*> const&) 
+                                         std::vector<art::Worker*> const&)
   {
     fInputSource = input_source;
   }
 
   //......................................................................
 
-  void EvtDisplayService::postProcessEvent(art::Event const& evt )
+  void EvtDisplayService::postProcessEvent(art::Event const& evt, art::ScheduleContext)
   {
     if(gEve){
       gEve->Redraw3D(kFALSE,kTRUE);
@@ -49,7 +49,7 @@ namespace tex
       gApplication->SetReturnFromRun(kFALSE);
       gApplication->Terminate(0);
     }
-    
+
     gApplication->Run(kTRUE);
     if(!gEve){
       gApplication->SetReturnFromRun(kFALSE);
@@ -59,7 +59,7 @@ namespace tex
     art::RootInput* rootInput = dynamic_cast<art::RootInput*>(fInputSource);
     if(!rootInput){
       throw cet::exception("EvtDisplayService")
-	<< "Random access for the EvtDisplay requires a RootInput source for proper operation.\n";
+        << "Random access for the EvtDisplay requires a RootInput source for proper operation.\n";
     }
 
     // Figure out where to go in the input stream from here
@@ -102,9 +102,9 @@ namespace tex
     }
     default: {
       throw art::Exception(art::errors::LogicError)
-	<< "EvtDisplayService in unhandled state "
-	<< NavState::Which()
-	<< ".\n";
+        << "EvtDisplayService in unhandled state "
+        << NavState::Which()
+        << ".\n";
     }
     }
 

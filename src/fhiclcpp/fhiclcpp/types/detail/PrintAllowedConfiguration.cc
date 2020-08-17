@@ -1,5 +1,6 @@
 #include "fhiclcpp/types/detail/PrintAllowedConfiguration.h"
 #include "cetlib/container_algorithms.h"
+#include "cetlib/split_by_regex.h"
 #include "cetlib/trim.h"
 #include "fhiclcpp/detail/printing_helpers.h"
 #include "fhiclcpp/types/detail/AtomBase.h"
@@ -10,7 +11,11 @@
 #include <iomanip>
 #include <regex>
 
+using namespace fhicl::detail;
+
 namespace {
+
+  std::regex const reNewLine{"\n"};
 
   inline bool
   is_sequence_element(std::string const& k)
@@ -18,8 +23,6 @@ namespace {
     auto pos = k.find_last_of("]");
     return pos != std::string::npos && pos == k.size() - 1;
   }
-
-  using namespace fhicl::detail;
 
   struct maybeName {
 
@@ -121,7 +124,7 @@ PrintAllowedConfiguration::before_action(ParameterBase const& p)
     if (!p.comment().empty()) {
       if (!p.is_conditional())
         buffer_ << non_whitespace(indent_(), indent_.size()) << '\n';
-      for (auto const& line : cet::split_by_regex(p.comment(), "\n"))
+      for (auto const& line : cet::split_by_regex(p.comment(), reNewLine))
         buffer_ << indent_() << "## " << line << '\n';
     }
   }

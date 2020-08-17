@@ -29,6 +29,7 @@ namespace {
       i += incrementBy_;
     }
   };
-}
+
+} // namespace
 
 DEFINE_ART_CLASS_TOOL(AddNumber)

@@ -21,7 +21,7 @@ using table_t = intermediate_table::table_t;
 using ps_atom_t = ParameterSet::ps_atom_t; // same as atom_t!
 using ps_sequence_t = ParameterSet::ps_sequence_t;
 
-boost::any
+std::any
 fhicl::detail::encode(extended_value const& xval)
 {
   switch (xval.tag) {
@@ -41,7 +41,7 @@ fhicl::detail::encode(extended_value const& xval)
       sequence_t const& seq = sequence_t(xval);
       for (sequence_t::const_iterator it = seq.begin(), e = seq.end(); it != e;
            ++it)
-        result.push_back(boost::any(encode(*it)));
+        result.push_back(std::any(encode(*it)));
       return result;
     }
 

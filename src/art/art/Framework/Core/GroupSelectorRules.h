@@ -20,7 +20,7 @@ namespace art {
   // forward declarations:
   class BranchDescription;
   class GroupSelector;
-}
+} // namespace art
 
 // ----------------------------------------------------------------------
 

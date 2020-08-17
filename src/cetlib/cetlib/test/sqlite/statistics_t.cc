@@ -1,3 +1,5 @@
+// vim: set sw=2 expandtab :
+
 #include "cetlib/sqlite/ConnectionFactory.h"
 #include "cetlib/sqlite/Ntuple.h"
 #include "cetlib/sqlite/statistics.h"
@@ -5,6 +7,8 @@
 #include <array>
 #include <cassert>
 #include <iostream>
+#include <memory>
+#include <string>
 
 namespace {
 
@@ -21,8 +25,8 @@ namespace {
            expected_values[quantity::min]);
     assert(cet::sqlite::max<unsigned>(db, table_name, column_name) ==
            expected_values[quantity::max]);
-    // Don't want to worry about floating-point tolerance now, so just
-    // cast everything to unsigned.
+    // Don't want to worry about floating-point tolerance now, so just cast
+    // everything to unsigned.
     assert(static_cast<unsigned>(cet::sqlite::mean(
              db, table_name, column_name)) == expected_values[quantity::mean]);
     assert(
@@ -40,11 +44,11 @@ int
 main()
 {
   ConnectionFactory cf;
-  auto c = cf.make(":memory:");
+  unique_ptr<Connection> c{cf.make_connection(":memory:")};
   std::string const table_name{"workers"};
   {
     Ntuple<string, int, int> workers{
-      c, table_name, {{"Name", "Age", "Experience"}}};
+      *c, table_name, {{"Name", "Age", "Experience"}}};
     workers.insert("Abby", 27, 5);
     workers.insert("Benny", 48, 10);
     workers.insert("Cassie", 52, 27);
@@ -52,7 +56,7 @@ main()
     workers.insert("Emily", 38, 19);
   }
   test_statistics_quantities(
-    c, table_name, "Age", {{27, 65, 46, 48, 12 /*.649...*/}});
+    *c, table_name, "Age", {{27, 65, 46, 48, 12 /*.649...*/}});
   test_statistics_quantities(
-    c, table_name, "Experience", {{5, 27, 15, 14, 7 /*.563...*/}});
+    *c, table_name, "Experience", {{5, 27, 15, 14, 7 /*.563...*/}});
 }

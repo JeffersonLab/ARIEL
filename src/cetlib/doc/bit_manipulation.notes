@@ -1,5 +1,0 @@
-## Multi-threading analysis of `cet::bit_manipulation`{.cpp}
-
-Various bit-manipulation facilities.  Almost entirely `constexpr`{.cpp}.
-
-No threading issues.
