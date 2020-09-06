@@ -1,32 +1,29 @@
-parent hep_concurrency v1_00_03
-defaultqual e15
+parent hep_concurrency v1_05_00
+defaultqual e19
 #
 incdir fq_dir include
 libdir fq_dir lib
 fcldir -
 
 # define product/version pairs
-product	version
-cppunit         v1_13_2c
-gcc		v6_4_0		e15
-gcc		v7_3_0		e17
-clang           v5_0_1          c2
-tbb             v2018_2a
-cetbuildtools	v7_04_00	-	only_for_build
+product		version		<format=2>
+cppunit         v1_15_1a
+gcc             v9_3_0          e20
+gcc             v8_2_0          e19
+clang           v7_0_0          c7
+tbb             v2020_2a
+cetbuildtools   v7_17_01        -       only_for_build
 end_product_list
 
 
 # Matrix of qualifiers versus dependent products
-qualifier	cppunit    gcc	clang	tbb        compiler	notes
-e15:debug	e15:debug  -nq-	-	e15:debug	gcc
-e15:opt		e15:opt    -nq-	-	e15:opt		gcc
-e15:prof	e15:prof   -nq-	-	e15:prof	gcc
-e17:debug	e17:debug  -nq-	-	e17:debug	gcc
-e17:opt		e17:opt    -nq-	-	e17:opt		gcc
-e17:prof	e17:prof   -nq-	-	e17:prof	gcc
-c2:debug	c2:debug   -	-nq-	c2:debug	clang
-c2:opt		c2:opt     -	-nq-	c2:opt		clang
-c2:prof		c2:prof    -	-nq-	c2:prof		clang
+qualifier       cppunit    gcc  clang   tbb         compiler     notes
+e20:debug       e20:debug  -nq- -       e20:debug   gcc
+e20:prof        e20:prof   -nq- -       e20:prof    gcc
+e19:debug       e19:debug  -nq- -       e19:debug   gcc
+e19:prof        e19:prof   -nq- -       e19:prof    gcc
+c7:debug        c7:debug   -    -nq-    c7:debug    clang
+c7:prof         c7:prof    -    -nq-    c7:prof     clang
 end_qualifier_list
 
 # Local Variables:

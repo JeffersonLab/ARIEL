@@ -18,7 +18,7 @@ namespace art {
   namespace test {
     class DummyResultsProducer;
   }
-}
+} // namespace art
 
 class art::test::DummyResultsProducer : public ResultsProducer {
 public:

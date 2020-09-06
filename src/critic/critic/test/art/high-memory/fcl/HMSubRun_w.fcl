@@ -1,0 +1,28 @@
+#include "HMParameters.fcl"
+
+process_name: HMSR
+
+source: {
+  module_type: EmptyEvent
+  maxEvents: 1
+}
+
+outputs: {
+  o1: {
+    module_type: RootOutput
+    fileName: "out.root"
+    compressionLevel: @local::hm.zero
+    saveMemoryObjectThreshold: @local::hm.twenty_five_MiB
+  }
+}
+
+services.MemoryTracker: { }
+
+physics: {
+  producers: {
+   srprod: { module_type: HMSubRunProdProducer }
+  }
+
+  p1: [ srprod ]
+  e1: [ o1 ]
+}

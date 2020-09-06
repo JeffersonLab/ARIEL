@@ -24,10 +24,13 @@ cet_test(PSetTest)
 cet_test(ParameterSet_t USE_BOOST_UNIT
   DATAFILES Sample.cfg
 )
+cet_test(printing_helpers_t)
 
 cet_test(get_sequence_elements_t USE_BOOST_UNIT
   DATAFILES Sample.cfg
 )
+
+cet_test(get_via_t USE_BOOST_UNIT)
 
 cet_test(equalTest USE_BOOST_UNIT)
 cet_test(failer DATAFILES test_config_fail.fcl)
@@ -43,7 +46,7 @@ cet_test(issue_0923_t.sh PREBUILT
 )
 cet_test(key_assembler_t USE_BOOST_UNIT)
 cet_test(parse_document_test USE_BOOST_UNIT)
-cet_test(parse_value_string_test)
+cet_test(parse_value_string_test USE_BOOST_UNIT)
 cet_test(to_indented_string_test USE_BOOST_UNIT)
 cet_test(to_indented_string_annotated_test
   DATAFILES
@@ -122,7 +125,10 @@ cet_test(seq_of_seq_t)
 
 cet_test(traits_t)
 
-cet_test(ParameterSetRegistry_t USE_BOOST_UNIT LIBRARIES pthread)
+find_package(Threads REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+
+cet_test(ParameterSetRegistry_t USE_BOOST_UNIT LIBRARIES Threads::Threads)
 
 cet_test(DatabaseSupport_t USE_BOOST_UNIT
          DATAFILES

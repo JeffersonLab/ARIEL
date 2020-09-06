@@ -45,6 +45,12 @@ namespace art {
     std::swap(*this, tmp);
   }
 
+  TClassStreamer*
+  ProductIDStreamer::Generate() const
+  {
+    return new ProductIDStreamer{*this};
+  }
+
   void
   ProductIDStreamer::operator()(TBuffer& R_b, void* objp)
   {
@@ -74,14 +80,14 @@ namespace art {
 
         // The process index is even more fiddly: in addition to
         // indexing starting at 1, it is an index into the
-        // BranchListIndexes list of the current event.  To translate
-        // to the correct BranchIDLists index, we should technically
-        // load the history for each event.  However, since we
-        // guarantee that process histories for older versions of art
-        // cannot be inconsistent, it is sufficient to provide a
-        // global translation from the process index to the
-        // BranchIDLists index.  The translation is that all empty
-        // BranchIDLists entries are not included in the
+        // BranchListIndexes list of the current event (which is no
+        // longer stored).  To translate to the correct BranchIDLists
+        // index, we should technically load the history for each
+        // event.  However, since we guarantee that process histories
+        // for older versions of art cannot be inconsistent, it is
+        // sufficient to provide a global translation from the process
+        // index to the BranchIDLists index.  The translation is that
+        // all empty BranchIDLists entries are not included in the
         // BranchListIndexes list--i.e. we merely need to skip each
         // process with an empty BranchIDList.
         auto const& data = *branchIDLists_;

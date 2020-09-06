@@ -7,7 +7,6 @@
 #include "fhiclcpp/parse.h"
 #include "cetlib/compiler_macros.h"
 
-#include "boost/any.hpp"
 #ifdef __ICC
 #pragma warning(push, disable : 780)
 #endif
@@ -42,7 +41,9 @@
 #include "fhiclcpp/tokens.h"
 
 #include "fhiclcpp/parse_shims.h"
+
 #include <algorithm>
+#include <any>
 #include <string>
 #include <vector>
 
@@ -82,7 +83,7 @@ using fhicl::TABLEID;
 namespace {
 
   void
-  check_protection(Protection p, extended_value& v, std::string name = "")
+  check_protection(Protection const p, extended_value& v, std::string name = "")
   {
     using std::max;
     if (v.protection == Protection::NONE) {
@@ -105,39 +106,36 @@ namespace {
           max(p, v.protection), subv, name + '[' + to_string(count) + ']');
       }
     } else if (v.tag == fhicl::TABLE) {
-      for (auto& kvp : table_t(v)) {
+      for (auto& [key, value] : table_t(v)) {
         std::string sname(name);
         if (!sname.empty()) {
           sname.append(".");
         }
-        sname.append(kvp.first);
-        check_protection(max(p, v.protection), kvp.second, std::move(sname));
+        sname.append(key);
+        check_protection(max(p, v.protection), value, std::move(sname));
       }
     }
   }
 
   void
-  check_protection(extended_value& v, std::string const name = "")
+  check_protection(extended_value& v, std::string name = "")
   {
     if (v.is_a(fhicl::SEQUENCE) || v.is_a(fhicl::TABLE)) {
       check_protection(v.protection, v, std::move(name));
     }
   }
 
-  extended_value&
-  set_protection(std::string const& name, binding_modifier m, extended_value& v)
+  void
+  set_protection(std::string const& name,
+                 binding_modifier const m,
+                 extended_value& v)
   {
-    switch (m) {
-      case binding_modifier::NONE:
-        break;
-      case binding_modifier::PROTECT_IGNORE:
-      case binding_modifier::PROTECT_ERROR:
-        auto p = static_cast<Protection>(m);
-        v.protection = p;
-        check_protection(v, name);
-        break;
+    if (m == binding_modifier::NONE) {
+      return;
     }
-    return v;
+
+    v.protection = static_cast<Protection>(m);
+    check_protection(v, name);
   }
 
   std::string
@@ -157,44 +155,47 @@ namespace {
   canon_num(std::string const& num)
   {
     std::string result;
-    if (!cet::canonical_number(num, result)) {
-      result = "####";
-    }
-    return result;
+    return cet::canonical_number(num, result) ?
+             result :
+             throw fhicl::exception(fhicl::error::parse_error)
+               << "The string '" << num
+               << "' is not representable as a canonical number.";
   }
 
   std::string
   canon_str(std::string const& str)
   {
     std::string result;
-    if (!cet::canonical_string(str, result)) {
-      result = "oops";
-    }
-    return result;
+    return cet::canonical_string(str, result) ?
+             result :
+             throw fhicl::exception(fhicl::error::parse_error)
+               << "The string " + str +
+                    " is not representable as a canonical string.\n"
+               << "It is likely you have an unescaped (or incorrectly escaped) "
+                  "character.";
   }
 
   void
-  rebool(bool& b, bool value)
+  rebool(bool& b, bool const value)
   {
     b = value;
   }
 
   extended_value
-  xvalue_vp(bool b, value_tag t, boost::any v)
+  xvalue_vp(bool const b, value_tag const t, std::any const v)
   {
-    return extended_value(b, t, v);
+    return extended_value{b, t, v};
   }
 
   template <typename FwdIter>
   extended_value
-  xvalue_dp(bool b,
-            value_tag t,
-            boost::any v,
-            FwdIter pos,
+  xvalue_dp(bool const b,
+            value_tag const t,
+            std::any const v,
+            FwdIter const pos,
             cet::includer const& s)
   {
-    std::string const src_info = s.src_whereis(pos);
-    return extended_value(b, t, v, src_info);
+    return extended_value{b, t, v, s.src_whereis(pos)};
   }
 
   complex_t
@@ -207,8 +208,8 @@ namespace {
   extended_value
   local_lookup(std::string const& name,
                intermediate_table const& tbl,
-               bool in_prolog,
-               FwdIter pos,
+               bool const in_prolog,
+               FwdIter const pos,
                cet::includer const& s) try {
     extended_value result = tbl.find(name);
     result.set_prolog(in_prolog);
@@ -225,7 +226,7 @@ namespace {
   database_lookup(std::string const&,
                   intermediate_table const&,
                   bool,
-                  FwdIter pos,
+                  FwdIter const pos,
                   cet::includer const& s)
   {
     throw fhicl::exception(fhicl::error::unimplemented, "Database lookup error")
@@ -236,44 +237,37 @@ namespace {
   template <typename FwdIter>
   void
   tbl_insert(std::string const& name,
-             binding_modifier m,
+             binding_modifier const m,
              extended_value& value,
              intermediate_table& t,
-             FwdIter pos,
-             cet::includer const& s)
-  {
-    try {
-      set_protection(name, m, value);
-      t.insert(name, value);
-    }
-    catch (fhicl::exception& e) {
-      throw fhicl::exception(
-        fhicl::error::parse_error, "Error in assignment:", e)
-        << " at " << s.highlighted_whereis(pos) << '\n';
-    }
+             FwdIter const pos,
+             cet::includer const& s) try {
+    set_protection(name, m, value);
+    t.insert(name, value);
+  }
+  catch (fhicl::exception& e) {
+    throw fhicl::exception(fhicl::error::parse_error, "Error in assignment:", e)
+      << " at " << s.highlighted_whereis(pos) << '\n';
   }
 
   template <typename FwdIter>
   void
   tbl_erase(std::string const& name,
             intermediate_table& t,
-            bool in_prolog,
-            FwdIter pos,
-            cet::includer const& s)
-  {
-    try {
-      t.erase(name, in_prolog);
-    }
-    catch (fhicl::exception& e) {
-      throw fhicl::exception(
-        fhicl::error::parse_error, "Error in erase attempt:", e)
-        << " at " << s.highlighted_whereis(pos) << '\n';
-    }
+            bool const in_prolog,
+            FwdIter const pos,
+            cet::includer const& s) try {
+    t.erase(name, in_prolog);
+  }
+  catch (fhicl::exception& e) {
+    throw fhicl::exception(
+      fhicl::error::parse_error, "Error in erase attempt:", e)
+      << " at " << s.highlighted_whereis(pos) << '\n';
   }
 
   void
   map_insert(std::string const& name,
-             binding_modifier m,
+             binding_modifier const m,
              extended_value& value,
              table_t& t)
   {
@@ -306,20 +300,16 @@ namespace {
   template <typename FwdIter>
   void
   map_insert_loc(std::string const& name,
-                 binding_modifier m,
+                 binding_modifier const m,
                  extended_value& value,
                  table_t& t,
-                 FwdIter pos,
-                 cet::includer const& s)
-  {
-    try {
-      map_insert(name, m, value, t);
-    }
-    catch (fhicl::exception& e) {
-      throw fhicl::exception(
-        fhicl::error::parse_error, "Error in assignment:", e)
-        << " at " << s.highlighted_whereis(pos) << '\n';
-    }
+                 FwdIter const pos,
+                 cet::includer const& s) try {
+    map_insert(name, m, value, t);
+  }
+  catch (fhicl::exception& e) {
+    throw fhicl::exception(fhicl::error::parse_error, "Error in assignment:", e)
+      << " at " << s.highlighted_whereis(pos) << '\n';
   }
 
   template <typename FwdIter>
@@ -331,23 +321,21 @@ namespace {
                         FwdIter pos,
                         cet::includer const& s)
   {
-    extended_value const& xval = local_lookup(name, tbl, false, pos, s);
+    extended_value const xval = local_lookup(name, tbl, false, pos, s);
     if (!xval.is_a(fhicl::TABLE)) {
       throw fhicl::exception(fhicl::error::type_mismatch, "@table::")
         << "key \"" << name << "\" does not refer to a table at "
         << s.highlighted_whereis(pos) << "\n";
     }
-    auto const& incoming = boost::any_cast<table_t const&>(xval.value);
-    for (auto incoming_item = incoming.cbegin(), e = incoming.cend();
-         incoming_item != e;
-         ++incoming_item) {
-      auto& element = t[incoming_item->first];
+    auto const& incoming = std::any_cast<table_t const&>(xval.value);
+    for (auto const& [name, value] : incoming) {
+      auto& element = t[name];
       if (!element.is_a(fhicl::UNKNOWN)) {
         // Already exists.
-        auto incoming_protection = incoming_item->second.protection;
+        auto const incoming_protection = value.protection;
         if (incoming_protection > element.protection) {
           throw fhicl::exception(fhicl::error::protection_violation)
-            << "@table::" << name << ": inserting name " << incoming_item->first
+            << "@table::" << name << ": inserting name " << name
             << " would increase protection from "
             << to_string(element.protection) << " to "
             << to_string(incoming_protection) << "\n(previous definition on "
@@ -360,14 +348,13 @@ namespace {
             continue;
           case Protection::PROTECT_ERROR:
             throw fhicl::exception(fhicl::error::protection_violation)
-              << "@table::" << name << ": inserting name "
-              << incoming_item->first
+              << "@table::" << name << ": inserting name " << name
               << "would violate protection on existing item"
               << "\n(previous definition on " << element.pretty_src_info()
               << ")\n";
         }
       }
-      element = incoming_item->second;
+      element = value;
       element.set_prolog(in_prolog);
       element.set_src_info(s.src_whereis(pos));
     }
@@ -377,7 +364,7 @@ namespace {
   void
   insert_table(std::string const& name,
                intermediate_table& tbl,
-               bool in_prolog,
+               bool const in_prolog,
                FwdIter pos,
                cet::includer const& s)
   {
@@ -387,15 +374,12 @@ namespace {
         << "key \"" << name << "\" does not refer to a table at "
         << s.highlighted_whereis(pos) << "\n";
     }
-    auto const& incoming = boost::any_cast<table_t const&>(xval.value);
-    for (auto incoming_item = incoming.cbegin(), e = incoming.cend();
-         incoming_item != e;
-         ++incoming_item) {
-      auto const& key = incoming_item->first;
-      auto element = incoming_item->second;
+    auto const& incoming = std::any_cast<table_t const&>(xval.value);
+    for (auto const& [name, value] : incoming) {
+      auto element = value;
       element.set_prolog(in_prolog);
       element.set_src_info(s.src_whereis(pos));
-      tbl.insert(key, std::move(element));
+      tbl.insert(name, std::move(element));
     }
   }
 
@@ -408,23 +392,15 @@ namespace {
                       FwdIter pos,
                       cet::includer const& s)
   {
-    extended_value xval = local_lookup(name, tbl, false, pos, s);
+    extended_value const xval = local_lookup(name, tbl, false, pos, s);
     if (!xval.is_a(fhicl::SEQUENCE)) {
       throw fhicl::exception(fhicl::error::type_mismatch, "@sequence::")
         << "key \"" << name << "\" does not refer to a sequence at "
         << s.highlighted_whereis(pos) << "\n";
     }
-    auto const& incoming = boost::any_cast<sequence_t const&>(xval.value);
-#if GCC_IS_AT_LEAST(4, 9, 0) ||                                                \
-  defined(__clang__) /* Compiler supports C++2011 signature for ranged         \
-                        vector::insert() */
+    auto const& incoming = std::any_cast<sequence_t const&>(xval.value);
     auto it = v.insert(v.end(), incoming.cbegin(), incoming.cend());
-#else
-    v.insert(v.end(), incoming.cbegin(), incoming.cend());
-    auto it = v.end() - incoming.size();
-#endif
-    int count = 0;
-    for (auto const e = v.end(); it != e; ++it, ++count) {
+    for (auto const e = v.end(); it != e; ++it) {
       using std::to_string;
       it->protection = Protection::NONE;
       it->set_prolog(in_prolog);
@@ -443,16 +419,17 @@ namespace {
   map_erase(std::string const& name, table_t& t)
   {
     auto const i = t.find(name);
-    if (i != t.end()) {
-      switch (i->second.protection) {
-        case Protection::NONE:
-          t.erase(name);
-        case Protection::PROTECT_IGNORE:
-          break;
-        case Protection::PROTECT_ERROR:
-          throw fhicl::exception(fhicl::error::protection_violation)
-            << "Unable to erase " << name << " due to protection.\n";
-      }
+    if (i == t.end())
+      return;
+
+    switch (i->second.protection) {
+      case Protection::NONE:
+        t.erase(name);
+      case Protection::PROTECT_IGNORE:
+        break;
+      case Protection::PROTECT_ERROR:
+        throw fhicl::exception(fhicl::error::protection_violation)
+          << "Unable to erase " << name << " due to protection.\n";
     }
   }
 
@@ -461,16 +438,13 @@ namespace {
   map_erase_loc(std::string const& name,
                 table_t& t,
                 FwdIter pos,
-                cet::includer const& s)
-  {
-    try {
-      map_erase(name, t);
-    }
-    catch (fhicl::exception& e) {
-      throw fhicl::exception(
-        fhicl::error::parse_error, "Error in erase attempt:", e)
-        << " at " << s.highlighted_whereis(pos) << '\n';
-    }
+                cet::includer const& s) try {
+    map_erase(name, t);
+  }
+  catch (fhicl::exception& e) {
+    throw fhicl::exception(
+      fhicl::error::parse_error, "Error in erase attempt:", e)
+      << " at " << s.highlighted_whereis(pos) << '\n';
   }
 
   // ----------------------------------------------------------------------
@@ -495,7 +469,7 @@ namespace {
     value_parser();
 
     // data member:
-    extended_value v;
+    extended_value v{};
 
     // parser rules:
     atom_token nil, boolean;
@@ -522,12 +496,12 @@ namespace {
     using value_token = typename val_parser::value_token;
     using nothing_token = qi::rule<FwdIter, void(), Skip>;
 
-    document_parser(cet::includer const& s);
+    explicit document_parser(cet::includer const& s);
 
     // data members:
-    bool in_prolog;
-    intermediate_table tbl;
-    val_parser vp;
+    bool in_prolog{false};
+    intermediate_table tbl{};
+    val_parser vp{};
 
     // parser rules:
     atom_token name, qualname, noskip_qualname, localref, dbref;
@@ -541,8 +515,7 @@ namespace {
   // ----------------------------------------------------------------------
 
   template <class FwdIter, class Skip>
-  value_parser<FwdIter, Skip>::value_parser()
-    : value_parser::base_type{value}, v()
+  value_parser<FwdIter, Skip>::value_parser() : value_parser::base_type{value}
   {
     nil =
       lexeme[(qi::string("@nil") >>
@@ -604,7 +577,7 @@ namespace {
 
   template <class FwdIter, class Skip>
   document_parser<FwdIter, Skip>::document_parser(cet::includer const& s)
-    : document_parser::base_type(document), in_prolog(false), tbl(), vp()
+    : document_parser::base_type{document}
   {
     using iter_t = cet::includer::const_iterator;
     name = fhicl::ass;
@@ -803,8 +776,8 @@ fhicl::parse_value_string(std::string const& s,
                           extended_value& result,
                           std::string& unparsed)
 {
-  typedef std::string::const_iterator iter_t;
-  typedef qi::rule<iter_t> ws_t;
+  using iter_t = std::string::const_iterator;
+  using ws_t = qi::rule<iter_t>;
   ws_t whitespace = space | lit('#') >> *(char_ - eol) >> eol |
                     lit("//") >> *(char_ - eol) >> eol;
   value_parser<iter_t, ws_t> p;
@@ -824,8 +797,8 @@ namespace {
   parse_document_(cet::includer s, intermediate_table& result)
   {
     using namespace std::string_literals;
-    typedef cet::includer::const_iterator iter_t;
-    typedef qi::rule<iter_t> ws_t;
+    using iter_t = cet::includer::const_iterator;
+    using ws_t = qi::rule<iter_t>;
     ws_t whitespace = space | lit('#') >> *(char_ - eol) >> eol |
                       lit("//") >> *(char_ - eol) >> eol;
     document_parser<iter_t, ws_t> p(s);
@@ -838,9 +811,9 @@ namespace {
     catch (qi::expectation_failure<iter_t> const& e) {
       begin = e.first;
     }
-    std::string unparsed(begin, end);
+    std::string const unparsed(begin, end);
     if (b && unparsed.empty()) {
-      result = p.tbl;
+      result = std::move(p.tbl);
     } else {
       auto e = fhicl::exception(fhicl::parse_error, "detected at or near")
                << s.highlighted_whereis(begin) << "\n";
@@ -857,8 +830,8 @@ fhicl::parse_document(std::string const& filename,
                       cet::filepath_maker& maker,
                       intermediate_table& result)
 {
-  parse_document_(cet::includer(filename, maker), result);
-} // parse_document()
+  parse_document_(cet::includer{filename, maker}, result);
+}
 
 void
 fhicl::parse_document(std::istream& is,
@@ -866,6 +839,6 @@ fhicl::parse_document(std::istream& is,
                       intermediate_table& result)
 {
   parse_document_(cet::includer(is, maker), result);
-} // parse_document()
+}
 
 // ======================================================================

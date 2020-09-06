@@ -1,0 +1,47 @@
+#!/bin/bash
+########################################################################
+# Run a command in the correct environment.
+########################################################################
+
+thisdir=$(cd "${BASH_SOURCE%/*}" && pwd -P)
+
+die() {
+  printf "FATAL ERROR: ${*}\n" 1>&2; exit 1
+}
+
+cmd=("$@")
+
+# Set and check ROOTSYS.
+[ -n "${ROOTSYS:="$(root-config --prefix >/dev/null 2>&1)"}" ] || \
+  die "no ROOTSYS to find ROOT"
+
+echo "INFO: Executing $cmd with ROOTSYS=${ROOTSYS}" 1>&2
+
+export ROOTSYS
+
+# Make sure ROOT is in PATH.
+type -t root.exe >/dev/null 2>&1 || PATH="$ROOTSYS/bin:$PATH"
+
+##################
+# Ensure the correct environment.
+export PYTHONPATH="$ROOTSYS/lib${PYTHONPATH:+:$PYTHONPATH}"
+[[ "$(root-config --arch)" == darwin* ]] && DY=DY
+export CETBUILDTOOLS_DIR="$(ls -d $thisdir/cetbuildtools/*)"
+export CETPKGSUPPORT_DIR="$(ls -d $thisdir/cetpkgsupport/*)"
+export CMAKE_PREFIX_PATH="${CETBUILDTOOLS_DIR}:${CETPKGSUPPORT_DIR}${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
+PATH="$PATH:${CETPKGSUPPORT_DIR}/bin:${CETBUILDTOOLS_DIR}/bin"
+export CETPKG_SOURCE="$thisdir"
+export CETPKG_BUILD="$(dirname "$thisdir")/${thisdir##*/}-build"
+eval ${DY}LD_LIBRARY_PATH="${CETPKG_BUILD}/lib:$ROOTSYS/lib\${${DY}LD_LIBRARY_PATH:+:\${${DY}LD_LIBRARY_PATH}}"; eval export ${DY}LD_LIBRARY_PATH
+export CETPKG_QUAL=e20:prof
+export CETPKG_TYPE=Prof
+export CETPKG_CC="$(root-config --cc)"
+export CETPKG_CXX="$(root-config --cxx)"
+export CETPKG_FC="$(root-config --f77)"
+##################
+
+# Execute the specified command.
+exec "${cmd[@]}"
+
+# If we reach here we failed.
+die "attempt to execute $cmd failed with status $?"

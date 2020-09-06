@@ -1,0 +1,3 @@
+#!/bin/bash
+
+(($(ls ../CheckFileName_disabled_w.d/*.root | wc -l) == "1"))

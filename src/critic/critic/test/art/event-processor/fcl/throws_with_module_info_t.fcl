@@ -1,0 +1,9 @@
+physics: {
+   analyzers: {
+      p1: {
+         module_type: ThrowingAnalyzer
+         throwAfter: 0
+      }
+   }
+   tp: [p1]
+}

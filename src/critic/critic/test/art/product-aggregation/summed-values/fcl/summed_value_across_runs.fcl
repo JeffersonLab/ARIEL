@@ -1,0 +1,21 @@
+source: {
+  module_type: EmptyEvent
+  numberEventsInRun: 1
+  maxEvents: 2
+}
+
+physics: {
+  producers: {
+    prod: {
+      module_type: ToyProductProducer
+    }
+  }
+  analyzers: {
+    shouldThrow: {
+      module_type: SummedValueAcrossRuns
+      inputTag: "prod"
+    }
+  }
+  tp: [prod]
+  ep: [shouldThrow]
+}

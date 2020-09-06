@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <forward_list>
+#include <list>
 #include <type_traits>
 
 using intvec_t = std::vector<int>;
@@ -27,19 +28,23 @@ main()
   shortvec_t const vs{10, 11, 20, 21, 30, 31};
   intvec_t const vtest{1, 1, 2, 2, 3, 3};
 
-  int k{};
+  unsigned k{};
 
   assns_abd_t assns;
   assns_ab_t a1;
 
   for (long unsigned int i = 0; i < 3; ++i) {
     auto p1 = art::Ptr<int>(viid, &vi[i], i);
+    // Test addMany with different types of containers
+    art::PtrVector<float> p2s;
+    std::list<short> data;
     for (long unsigned int j = 0; j < 2; ++j) {
-      auto p2 = art::Ptr<float>(vfid, &vf[k], k);
-      assns.addSingle(p1, p2, vs[k]);
-      a1.addSingle(p1, p2);
+      p2s.emplace_back(vfid, &vf[k], k);
+      data.push_back(vs[k]);
       ++k;
     }
+    assns.addMany(p1, p2s, data);
+    a1.addMany(p1, p2s);
   }
 
   // use of art::for_each_group

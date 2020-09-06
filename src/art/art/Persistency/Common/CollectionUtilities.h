@@ -144,7 +144,7 @@ namespace art {
         return mv.delta();
       }
     };
-  }
+  } // namespace detail
 
   // Append container in to container out.
   // I.
@@ -177,25 +177,23 @@ namespace art {
   void flattenCollections(std::vector<PtrVector<T> const*> const& in,
                           PtrVector<T>& out,
                           OFFSETS& offsets);
-}
+} // namespace art
 
 ////////////////////////////////////////////////////////////////////////
 // No user-serviceable parts below.
 ////////////////////////////////////////////////////////////////////////
 
-namespace art {
-  namespace detail {
-    // A. Verify a collection of PtrVector const*
-    template <typename T>
-    bool verifyPtrCollection(std::vector<art::PtrVector<T> const*> const& in);
+namespace art::detail {
+  // A. Verify a collection of PtrVector const*
+  template <typename T>
+  bool verifyPtrCollection(std::vector<art::PtrVector<T> const*> const& in);
 
-    // B. Verify a collection (including PtrVector) of Ptrs.
-    template <typename iterator>
-    bool verifyPtrCollection(iterator beg,
-                             iterator end,
-                             art::ProductID id = {},
-                             art::EDProductGetter const* getter = nullptr);
-  }
+  // B. Verify a collection (including PtrVector) of Ptrs.
+  template <typename iterator>
+  bool verifyPtrCollection(iterator beg,
+                           iterator end,
+                           art::ProductID id = {},
+                           art::EDProductGetter const* getter = nullptr);
 }
 
 // A.

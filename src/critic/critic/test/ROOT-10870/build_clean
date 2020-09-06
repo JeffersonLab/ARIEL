@@ -1,0 +1,5 @@
+#!/bin/bash
+
+thisdir=$(cd "${BASH_SOURCE%/*}" && pwd -P)
+rm -rf "${CETPKG_BUILD}"
+exec "${thisdir}/build"

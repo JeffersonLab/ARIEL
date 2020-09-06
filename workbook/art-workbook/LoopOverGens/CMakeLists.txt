@@ -4,6 +4,7 @@ art_make(
   EXCLUDE ${ROOT_MACROS_DO_NOT_BUILD}
   MODULE_LIBRARIES
     toyexperiment_mcdataproducts
+    art_Persistency_Provenance
     cetlib_except
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}
   )

@@ -24,7 +24,7 @@ namespace art {
     TypeLabel(TypeID const& itemtype,
               std::string const& instanceName,
               bool const supportsView,
-              bool const transient);
+              bool const transient = false);
 
     TypeLabel(TypeID const& itemtype,
               std::string const& instanceName,

@@ -58,40 +58,38 @@
 
 */
 
-#include "boost/any.hpp"
 #include "fhiclcpp/ParameterSetWalker.h"
 #include "fhiclcpp/coding.h"
 
+#include <any>
 #include <string>
 #include <vector>
 
-namespace fhicl {
-  namespace detail {
+namespace fhicl::detail {
 
-    using key_t = std::string;
-    using name_t = std::string;
+  using key_t = std::string;
+  using name_t = std::string;
 
-    class KeyAssembler : public ParameterSetWalker {
-    public:
-      std::vector<key_t> const&
-      result()
-      {
-        return keys_;
-      }
+  class KeyAssembler : public ParameterSetWalker {
+  public:
+    std::vector<key_t> const&
+    result()
+    {
+      return keys_;
+    }
 
-    private:
-      void enter_table(key_t const&, any_t const&) override;
-      void exit_table(key_t const&, any_t const&) override;
+  private:
+    void enter_table(key_t const&, std::any const&) override;
+    void exit_table(key_t const&, std::any const&) override;
 
-      void enter_sequence(key_t const&, any_t const&) override;
-      void atom(key_t const&, any_t const&) override;
+    void enter_sequence(key_t const&, std::any const&) override;
+    void atom(key_t const&, std::any const&) override;
 
-      std::string full_key_(name_t const&) const;
+    std::string full_key_(name_t const&) const;
 
-      std::vector<key_t> keys_{};
-      std::vector<name_t> name_stack_{};
-    };
-  }
+    std::vector<key_t> keys_{};
+    std::vector<name_t> name_stack_{};
+  };
 }
 
 #endif /* fhiclcpp_detail_KeyAssembler_h */

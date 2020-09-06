@@ -35,6 +35,7 @@ simple_plugin(EventProcessorTestOutput "module")
 # "message.fcl" line in the FHiCL).  Also, bare 'std::cout' statements
 # will not be suppressed.
 
+set(base_inputs_00 a)
 set(base_inputs_01 a)
 set(base_inputs_02 a b c d e f g h i j k l)
 set(base_inputs_03 a b c)
@@ -49,7 +50,7 @@ set(base_inputs_11 a b c)
 set(base_inputs_12 a b c)
 set(base_inputs_13 a b)
 
-foreach(TESTNUMBER 01 02 03 04 05 06 07 08 09 10 11 12 13)
+foreach(TESTNUMBER 00 01 02 03 04 05 06 07 08 09 10 11 12 13)
 
   # For each of the 'base_inputs' lists, we create two other lists;
   # one that appends ".txt" to the end of each letter--this is what
@@ -84,4 +85,14 @@ foreach(TESTNUMBER 01 02 03 04 05 06 07 08 09 10 11 12 13)
       TEST_PROPERTIES ENVIRONMENT PROC_DEBUG=1
       )
   endforeach()
+endforeach()
+
+foreach(LEVEL run subrun event)
+  cet_test(safe_throw_during_read_${LEVEL} HANDBUILT
+    TEST_EXEC art
+    TEST_ARGS --config safe_throw_during_read_file.fcl -s throw_during_read_${LEVEL}.txt
+    DATAFILES
+    fcl/safe_throw_during_read_file.fcl
+    inputs/throw_during_read_${LEVEL}.txt
+    TEST_PROPERTIES PASS_REGULAR_EXPRESSION "There was an exception while reading a.*from the input file\.")
 endforeach()

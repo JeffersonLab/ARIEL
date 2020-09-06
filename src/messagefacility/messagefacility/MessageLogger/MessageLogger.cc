@@ -3,9 +3,10 @@
 
 #include "cetlib/BasicPluginFactory.h"
 #include "cetlib/HorizontalRule.h"
+#include "cetlib/bold_fontify.h"
 #include "cetlib/container_algorithms.h"
 #include "cetlib/exempt_ptr.h"
-#include "cetlib/os_libpath.h"
+#include "cetlib/plugin_libpath.h"
 #include "cetlib/propagate_const.h"
 #include "cetlib/trim.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -19,7 +20,6 @@
 #include "messagefacility/MessageService/ELostreamOutput.h"
 #include "messagefacility/Utilities/ELseverityLevel.h"
 #include "messagefacility/Utilities/ErrorObj.h"
-#include "messagefacility/Utilities/bold_fontify.h"
 #include "messagefacility/Utilities/exception.h"
 
 #include <algorithm>
@@ -31,7 +31,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
-//#include <mutex>
+
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -47,17 +47,9 @@ using namespace std;
 using namespace std::string_literals;
 using namespace hep::concurrency;
 
-namespace mf {
-  namespace service {
-
-    namespace ELdestConfig {
-
-      enum dest_config { ORDINARY, STATISTICS };
-
-    } // namespace ELdestConfig
-
-  } // namespace service
-} // namespace mf
+namespace {
+  enum class destination_kind { ordinary, statistics };
+}
 
 namespace mf {
 
@@ -69,7 +61,7 @@ namespace mf {
       if (getenv("MF_PLUGIN_PATH") != nullptr) {
         return cet::search_path{"MF_PLUGIN_PATH"};
       }
-      return cet::search_path{cet::os_libpath()};
+      return cet::search_path{cet::plugin_libpath(), std::nothrow};
     }
 
     cet::BasicPluginFactory pluginFactory_{getPluginPath(), "mfPlugin"};
@@ -80,9 +72,6 @@ namespace mf {
     bool cleanSlateConfiguration_{true};
     atomic<bool> purgeMode_{false};
     atomic<int> count_{0};
-    // atomic<bool> messageBeingSent_{false};
-    // atomic<bool> waitingMessagesBusy_{false};
-    // mutex msgMutex_;
     RecursiveMutex msgMutex_{"MessageLogger::msgMutex_"};
     string hostname_;
     string hostaddr_;
@@ -135,18 +124,18 @@ namespace mf {
               hostaddr_ = addressBuffer;
             }
             // Use the address if it is not a loopback address.
-            if (!hostaddr_.empty() && hostaddr_.compare("127.0.0.1") &&
+            if (!empty(hostaddr_) && hostaddr_.compare("127.0.0.1") &&
                 hostaddr_.compare("::1")) {
               break;
             }
           }
-          if (hostaddr_.empty()) {
+          if (empty(hostaddr_)) {
             // Failed to find anything, use the loopback address.
             hostaddr_ = "127.0.0.1";
           }
         }
       }
-      if (!applicationName.empty()) {
+      if (!empty(applicationName)) {
         application_ = applicationName;
       } else {
         // get process name from '/proc/pid/cmdline'
@@ -169,10 +158,6 @@ namespace mf {
 
     // FIXME: Do not want to read from /proc/pid/cmdline if we do not have to!
     // static int globalsInitializer = initGlobalVars();
-
-  } // unnamed namespace
-
-  namespace {
 
     unique_ptr<service::ELdestination>
     makePlugin_(cet::BasicPluginFactory& plugin_factory,
@@ -207,7 +192,6 @@ namespace mf {
                                                      "      limit: -1"
                                                      "    }"
                                                      "  }"s;
-
     fhicl::ParameterSet
     default_destination_config()
     {
@@ -231,19 +215,19 @@ namespace mf {
       ErrorObj& msg,
       map<string const, unique_ptr<service::ELdestination>>& destinations)
     {
-      if (msg.xid().hostname().empty()) {
+      if (empty(msg.xid().hostname())) {
         msg.setHostName(GetHostName());
       }
-      if (msg.xid().hostaddr().empty()) {
+      if (empty(msg.xid().hostaddr())) {
         msg.setHostAddr(GetHostAddr());
       }
-      if (msg.xid().application().empty()) {
+      if (empty(msg.xid().application())) {
         msg.setApplication(GetApplicationName());
       }
       if (msg.xid().pid() == 0) {
         msg.setPID(GetPid());
       }
-      if (destinations.empty()) {
+      if (empty(destinations)) {
         cerr << "\nERROR LOGGED WITHOUT DESTINATION!\nAttaching destination "
                 "\"cerr\" by default\n\n";
         destinations.emplace(
@@ -258,7 +242,7 @@ namespace mf {
 
     void
     makeDestinations(fhicl::ParameterSet const& dests,
-                     service::ELdestConfig::dest_config const configuration)
+                     destination_kind const configuration)
     {
       set<string> ids;
       vector<string> config_errors;
@@ -273,7 +257,7 @@ namespace mf {
           throw Exception(errors::Configuration)
             << "No 'type' specified for destination '" << psetname << "'.\n";
         }
-        if (configuration == service::ELdestConfig::STATISTICS) {
+        if (configuration == destination_kind::statistics) {
           if ((dest_type != "cout"s) && (dest_type != "cerr"s) &&
               (dest_type != "file"s)) {
             throw mf::Exception{mf::errors::Configuration}
@@ -291,9 +275,8 @@ namespace mf {
         }
         if (!ids.emplace(outputId).second) {
           // We have a duplicate.
-          if (configuration == service::ELdestConfig::STATISTICS) {
+          if (configuration == destination_kind::statistics) {
             throw mf::Exception{mf::errors::Configuration}
-              << "\n"
               << " Output identifier: \"" << outputId << "\""
               << " already specified within ordinary/statistics block in FHiCL "
                  "file"
@@ -302,11 +285,11 @@ namespace mf {
         }
         auto iter_id_dest = destinations_.find(outputId);
         if (iter_id_dest != destinations_.end()) {
-          string const hrule{"\n==============================================="
-                             "============================= \n"};
+          constexpr cet::HorizontalRule rule{76};
+          string const hrule{'\n' + rule('=') + '\n'};
           ostringstream except_msg;
           except_msg << hrule << "\n    Duplicate name for a ";
-          if (configuration == service::ELdestConfig::ORDINARY) {
+          if (configuration == destination_kind::ordinary) {
             except_msg << "MessageLogger";
           } else {
             except_msg << "MessageLogger Statistics";
@@ -326,22 +309,21 @@ namespace mf {
           continue;
         }
         string const& libspec = dest_type;
-        auto& plugin_factory =
-          (configuration == service::ELdestConfig::STATISTICS) ?
-            pluginStatsFactory_ :
-            pluginFactory_;
+        auto& plugin_factory = (configuration == destination_kind::statistics) ?
+                                 pluginStatsFactory_ :
+                                 pluginFactory_;
         try {
           destinations_[outputId] =
             makePlugin_(plugin_factory, libspec, psetname, dest_pset);
         }
         catch (fhicl::detail::validationException const& e) {
           string msg{"Configuration error for destination: " +
-                     detail::bold_fontify(psetname) + "\n\n"};
+                     cet::bold_fontify(psetname) + "\n\n"};
           msg += e.what();
           config_errors.push_back(move(msg));
         }
       }
-      if (!config_errors.empty()) {
+      if (!empty(config_errors)) {
         string msg{"\nThe following messagefacility destinations have "
                    "configuration errors:\n\n"};
         constexpr cet::HorizontalRule rule{60};
@@ -388,10 +370,10 @@ namespace mf {
                                     "}\n"};
         fhicl::make_ParameterSet(default_config, default_statistics_config);
       }
-      makeDestinations(ordinaryDests, service::ELdestConfig::ORDINARY);
+      makeDestinations(ordinaryDests, destination_kind::ordinary);
       auto statDests = dest_psets.get<fhicl::ParameterSet>(
         "statistics", default_statistics_config);
-      makeDestinations(statDests, service::ELdestConfig::STATISTICS);
+      makeDestinations(statDests, destination_kind::statistics);
     }
 
     void
@@ -402,39 +384,6 @@ namespace mf {
         delete msg;
         return;
       }
-      // bool expected = false;
-      // while (!messageBeingSent_.compare_exchange_strong(expected, true)) {
-      //  // Some other thread is already processing a message,
-      //  // so if the queue is not being emptied right now, append
-      //  // this message to the queue and return, otherwise, wait
-      //  // for the empty cycle to finish, and retry.
-      //  bool waiting_expected = false;
-      //  if (waitingMessagesBusy_.compare_exchange_strong(waiting_expected,
-      //  true)) {
-      //    // The thread which is already processing messages has not
-      //    // begun emptying the waiting message queue yet, we can add
-      //    // our message to the queue and return.
-      //    waitingMessages_.push(msg);
-      //    waitingMessagesBusy_.store(false);
-      //    return;
-      //  }
-      //  waiting_expected = false;
-      //  // The thread which is already processing messages has begun
-      //  // to empty the waiting message queue, let him do that by spin
-      //  // waiting, with a hardware pause of about 40 cycles between spins.
-      //  while (!waitingMessagesBusy_.compare_exchange_strong(waiting_expected,
-      //  true)) {
-      //    asm volatile("pause\n" : : : "memory");
-      //    waiting_expected = false;
-      //  }
-      //  waitingMessagesBusy_.store(false);
-      //  // Other guy has finished emptying the queue and released
-      //  // messageBeingSent_ too. We may now compete with other threads
-      //  // to set messageBeingSent_. If we fail, we will try to queue
-      //  // the message again.
-      //  expected = false;
-      //}
-      // lock_guard<mutex> blocker(msgMutex_);
       RecursiveMutexSentry sentry{msgMutex_, __func__};
       // Ok, no other thread active, process the current message.
       try {
@@ -458,76 +407,22 @@ namespace mf {
                 "longer be processing messages. (entering purge mode)\n";
         purgeMode_ = true;
       }
-      //// process any waiting messages
-      // unique_ptr<ErrorObj> waiting_msgHolder;
-      // ErrorObj* waiting_msg = nullptr;
-      //// Force any other threads sending messages which want to add
-      //// their message to the queue to spin wait while we empty it.
-      ////waitingMessagesBusy_.store(true);
-      // bool waiting_expected = false;
-      //// The thread which is already processing messages has begun
-      //// to empty the waiting message queue, let him do that by spin
-      //// waiting, with a hardware pause of about 40 cycles between spins.
-      // while (!waitingMessagesBusy_.compare_exchange_strong(waiting_expected,
-      // true)) {
-      //  asm volatile("pause\n" : : : "memory");
-      //  waiting_expected = false;
-      //}
-      // while (waitingMessages_.try_pop(waiting_msg)) {
-      //  if (purgeMode_) {
-      //    delete waiting_msg;
-      //    waiting_msg = nullptr;
-      //    continue;
-      //  }
-      //  try {
-      //    waiting_msgHolder.reset(waiting_msg);
-      //    waiting_msg->setReactedTo(false);
-      //    sendMsgToDests(*waiting_msg, destinations_);
-      //  }
-      //  catch (cet::exception const& e) {
-      //    ++count_;
-      //    cerr << "MessageLoggerScribe caught " << count_ << "
-      //    cet::exceptions, text = \n" << e.what() << "\n"; if (count_ > 25) {
-      //      cerr << "MessageLogger will no longer be processing messages due
-      //      to errors (entering purge mode).\n"; purgeMode_ = true;
-      //    }
-      //  }
-      //  catch (...) {
-      //    cerr << "MessageLoggerScribe caught an unknown exception and will no
-      //    longer be processing messages. (entering purge mode)\n"; purgeMode_
-      //    = true;
-      //  }
-      //}
-      //// At this point we have sent our message and emptied the
-      //// queue. Now allow other threads to send messages.
-      // messageBeingSent_.store(false);
-      //// And also allow those threads that are spinning waiting
-      //// for the queue to empty to proceed to compete with the
-      //// other threads to send or queue their message.
-      //// Note: If we did this before allowing other senders then
-      //// the threads waiting for the queue to empty, might simply
-      //// queue their messages and if there are no other senders
-      //// for a while their messages might pend for a long time.
-      // waitingMessagesBusy_.store(false);
     }
 
     void
-    summarize()
-    {
-      try {
-        for (auto& destid_and_dest : destinations_) {
-          auto& dest = *destid_and_dest.second;
-          dest.summary();
-        }
+    summarize() try {
+      for (auto& destid_and_dest : destinations_) {
+        auto& dest = *destid_and_dest.second;
+        dest.summary();
       }
-      catch (cet::exception const& e) {
-        cerr << "MessageLoggerScribe caught exception during summarize:\n"
-             << e.what() << "\n";
-      }
-      catch (...) {
-        cerr << "MessageLoggerScribe caught unknown exception type during "
-                "summarize. (Ignored)\n";
-      }
+    }
+    catch (cet::exception const& e) {
+      cerr << "MessageLoggerScribe caught exception during summarize:\n"
+           << e.what() << "\n";
+    }
+    catch (...) {
+      cerr << "MessageLoggerScribe caught unknown exception type during "
+              "summarize. (Ignored)\n";
     }
 
   } // unnamed namespace
@@ -593,7 +488,7 @@ namespace mf {
     }
     catch (fhicl::detail::validationException const& e) {
       string msg{"\nConfiguration error for destination: " +
-                 detail::bold_fontify("cerr_early") + "\n\n"};
+                 cet::bold_fontify("cerr_early") + "\n\n"};
       msg += e.what();
       throw Exception(errors::Configuration) << msg;
     }
@@ -617,18 +512,6 @@ namespace mf {
   EndMessageFacility()
   {
     isStarted.store(false);
-    // If there are any waiting messages, finish them off.
-    // FIXME: The code has been changed to make this case impossible, remove!
-    // FIXME: We need to disable sending any more while we are tying to empty
-    // the queue!
-    // ErrorObj* msg = nullptr;
-    // while (waitingMessages_.try_pop(msg)) {
-    //  if (!purgeMode_) {
-    //    msg->setReactedTo(false);
-    //    sendMsgToDests(*msg, destinations_);
-    //  }
-    //  delete msg;
-    //}
     // FIXME: The finish() call in all known uses does nothing, the destination
     // dtor can probably handle this, remove!
     // map<string, cet::propagate_const<unique_ptr<service::ELdestination>>>
@@ -660,7 +543,7 @@ namespace mf {
 
   // Note: Call this from single-threaded mode only!
   void
-  SetPid(long pid)
+  SetPid(long const pid)
   {
     pid_ = pid;
   }

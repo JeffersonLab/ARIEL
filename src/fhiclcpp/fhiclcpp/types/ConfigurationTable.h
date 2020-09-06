@@ -1,5 +1,5 @@
-#ifndef fhicl_Utilities_ConfigurationTable_h
-#define fhicl_Utilities_ConfigurationTable_h
+#ifndef fhiclcpp_types_ConfigurationTable_h
+#define fhiclcpp_types_ConfigurationTable_h
 
 #include "cetlib/exempt_ptr.h"
 #include "fhiclcpp/types/Table.h"
@@ -55,4 +55,4 @@ namespace fhicl {
 // Local variables:
 // mode: c++
 // End:
-#endif /* fhicl_Utilities_ConfigurationTable_h */
+#endif /* fhiclcpp_types_ConfigurationTable_h */

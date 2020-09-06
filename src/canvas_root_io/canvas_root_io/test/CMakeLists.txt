@@ -6,6 +6,6 @@ include(CetTest)
 # re-initialize the test environment.
 cet_test_env("FHICL_FILE_PATH=.")
 
-# build Persistency libraries
 add_subdirectory(Aggregate)
 add_subdirectory(Utilities)
+add_subdirectory(io-rules-regression)

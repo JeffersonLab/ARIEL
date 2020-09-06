@@ -22,7 +22,6 @@ cet::demangle_symbol(std::string const& symbol)
   return demangle_symbol(symbol.c_str());
 }
 
-#undef DEMANGLE_MSG
 #endif /* cetlib_except_demangle_h */
 
 // Local Variables:

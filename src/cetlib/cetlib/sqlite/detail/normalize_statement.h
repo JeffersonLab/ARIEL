@@ -14,13 +14,9 @@
 
 #include <string>
 
-namespace cet {
-  namespace sqlite {
-    namespace detail {
-      void normalize_statement(std::string& to_replace);
-      std::string normalized_statement(std::string to_replace);
-    }
-  }
+namespace cet::sqlite::detail {
+  void normalize_statement(std::string& to_replace);
+  std::string normalized_statement(std::string to_replace);
 }
 
 #endif /* cetlib_sqlite_detail_normalize_statement_h */

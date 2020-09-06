@@ -9,7 +9,8 @@
 #include <sstream>
 
 std::string
-tex::eventIDToString( art::EventID const& id ){
+tex::eventIDToString(art::EventID const& id)
+{
   std::ostringstream os;
   os << id;
   return os.str();

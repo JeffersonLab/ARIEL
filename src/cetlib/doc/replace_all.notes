@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/replace_all.{h,cc}
-% Chris Green.
-% 2016-10-13 (on commit 889f6a2).
-
-* Function `cet::replace_all()`{.cpp} edits an `std::string`{.cpp} in place by reference, referring also to other input strings by const reference. Simultaneous access to the non-`const`{.cpp} input string, or non-`const`{.cpp} access to the `const`{.cpp} input strings would be problematic.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

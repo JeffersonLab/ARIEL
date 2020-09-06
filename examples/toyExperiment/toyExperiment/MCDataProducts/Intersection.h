@@ -18,28 +18,35 @@ namespace tex {
   class Intersection {
 
   public:
-
     Intersection();
 
-    Intersection( int                            shell,
-                 art::Ptr<GenParticle> const&   genTrack,
-                 CLHEP::Hep3Vector const&       position
-               );
+    Intersection(int shell,
+                 art::Ptr<GenParticle> const& genTrack,
+                 CLHEP::Hep3Vector const& position);
 
-    int                          shell()    const { return _shell;    }
-    art::Ptr<GenParticle> const& genTrack() const { return _genTrack; }
-    CLHEP::Hep3Vector const&     position() const { return _position; }
+    int
+    shell() const
+    {
+      return _shell;
+    }
+    art::Ptr<GenParticle> const&
+    genTrack() const
+    {
+      return _genTrack;
+    }
+    CLHEP::Hep3Vector const&
+    position() const
+    {
+      return _position;
+    }
 
-    private:
-
-    int                   _shell;
+  private:
+    int _shell;
     art::Ptr<GenParticle> _genTrack;
-    CLHEP::Hep3Vector     _position;
-
+    CLHEP::Hep3Vector _position;
   };
 
-  std::ostream& operator<<(std::ostream& ost,
-                           const Intersection& hit );
+  std::ostream& operator<<(std::ostream& ost, const Intersection& hit);
 
 }
 

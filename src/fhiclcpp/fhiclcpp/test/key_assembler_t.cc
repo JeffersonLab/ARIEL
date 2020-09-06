@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE (KeyAssembler test)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/make_ParameterSet.h"
@@ -31,7 +30,7 @@ BOOST_AUTO_TEST_CASE(t1)
   ParameterSet pset;
   make_ParameterSet(tbl, pset);
   auto const keys = pset.get_all_keys();
-  std::set<std::string> sorted_keys{keys.begin(), keys.end()};
+  std::set<std::string> const sorted_keys{keys.begin(), keys.end()};
 
   auto const ref = {"p1",
                     "p3",
@@ -47,9 +46,8 @@ BOOST_AUTO_TEST_CASE(t1)
                     "p3.g[0].h1",
                     "p3.g[1]",
                     "p3.g[1].h2"};
-  std::set<std::string> sorted_ref{ref.begin(), ref.end()};
-
-  CET_CHECK_EQUAL_COLLECTIONS(sorted_keys, sorted_ref);
+  std::set<std::string> const sorted_ref{ref.begin(), ref.end()};
+  BOOST_TEST(sorted_keys == sorted_ref);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

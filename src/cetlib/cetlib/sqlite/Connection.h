@@ -1,5 +1,6 @@
 #ifndef cetlib_sqlite_Connection_h
 #define cetlib_sqlite_Connection_h
+// vim: set sw=2 expandtab :
 
 // ====================================================================
 // A Connection is an RAII-motivated class that automatically handles
@@ -18,88 +19,87 @@
 
 #include "cetlib/sqlite/Transaction.h"
 #include "cetlib/sqlite/detail/bind_parameters.h"
+#include "hep_concurrency/RecursiveMutex.h"
+#include "hep_concurrency/tsan.h"
 #include "sqlite3.h"
 
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
-namespace cet {
-  namespace sqlite {
+namespace cet::sqlite {
 
-    class Connection {
-    public:
-      // It is permitted to create an invalid Connection object
-      // through default construction.  However, any connections to an
-      // SQLite database must be retrieved through the
-      // ConnectionFactory.
-      explicit Connection() = default;
-      ~Connection() noexcept;
+  class Connection {
+    friend class ConnectionFactory;
 
-      sqlite3*
-      get() const
-      {
-        return db_;
-      }
-      operator sqlite3*() { return db_; }
+  public:
+    ~Connection() noexcept;
+    // It is permitted to create an invalid Connection object
+    // through default construction.  However, any connections to an
+    // SQLite database must be retrieved through the
+    // ConnectionFactory.
+    explicit Connection() = default;
+    Connection(Connection const&) = delete;
+    Connection(Connection&&) = delete;
+    Connection& operator=(Connection const&) = delete;
+    Connection& operator=(Connection&&) = delete;
 
-      template <std::size_t NColumns, typename Row>
-      int flush_no_throw(std::vector<Row> const& buffer,
-                         sqlite3_stmt*& insertStmt);
-
-      // Non-copyable
-      Connection(Connection const&) = delete;
-      Connection& operator=(Connection const&) = delete;
-
-      Connection(Connection&&) noexcept;
-      Connection& operator=(Connection&&) noexcept;
-
-    private:
-      template <typename DatabaseOpenPolicy>
-      explicit Connection(std::string const& file_name,
-                          std::shared_ptr<std::mutex> m,
-                          DatabaseOpenPolicy);
-      friend class ConnectionFactory;
-
-      sqlite3* db_{nullptr};
-      std::shared_ptr<std::mutex> m_{
-        nullptr}; // Shared with other connections to the same database
-    };
-
-  } // namespace sqlite
-} // cet
-
-template <typename DatabaseOpenPolicy>
-cet::sqlite::Connection::Connection(std::string const& file_name,
-                                    std::shared_ptr<std::mutex> m,
-                                    DatabaseOpenPolicy policy)
-  : m_{m}
-{
-  // No lock necessary since the c'tor is called in a protected
-  // environment.
-  db_ = policy.open(file_name);
-}
-
-template <std::size_t NColumns, typename Row>
-int
-cet::sqlite::Connection::flush_no_throw(std::vector<Row> const& buffer,
-                                        sqlite3_stmt*& insertStmt)
-{
-  // Guard against concurrent updates to the same database.
-  std::lock_guard<decltype((*m_))> hold{*m_};
-  sqlite::Transaction txn{db_};
-  for (auto const& r : buffer) {
-    sqlite::detail::bind_parameters<Row, NColumns>::bind(insertStmt, r);
-    int const rc{sqlite3_step(insertStmt)};
-    if (rc != SQLITE_DONE) {
-      return rc;
+  public:
+    sqlite3*
+    get() const
+    {
+      return db_;
     }
-    sqlite3_reset(insertStmt);
+    operator sqlite3*() { return db_; }
+    template <std::size_t NColumns, typename Row>
+    int flush_no_throw(std::vector<Row> const& buffer,
+                       sqlite3_stmt*& insertStmt);
+
+  private:
+    template <typename DatabaseOpenPolicy>
+    explicit Connection(std::string const& filename,
+                        std::shared_ptr<hep::concurrency::RecursiveMutex>,
+                        DatabaseOpenPolicy);
+
+  private:
+    sqlite3* db_{nullptr};
+    // Shared with other connections to the same database
+    std::shared_ptr<hep::concurrency::RecursiveMutex> mutex_{nullptr};
+  };
+
+  template <typename DatabaseOpenPolicy>
+  Connection::Connection(
+    std::string const& filename,
+    std::shared_ptr<hep::concurrency::RecursiveMutex> spmutex,
+    DatabaseOpenPolicy policy)
+    : mutex_{spmutex}
+  {
+    // No lock necessary since the c'tor is called in a protected
+    // environment.
+    db_ = policy.open(filename);
   }
-  txn.commit();
-  return SQLITE_DONE;
-}
+
+  template <std::size_t NColumns, typename Row>
+  int
+  Connection::flush_no_throw(std::vector<Row> const& buffer,
+                             sqlite3_stmt*& insertStmt)
+  {
+    // Guard against concurrent updates to the same database.
+    hep::concurrency::RecursiveMutexSentry sentry{*mutex_, __func__};
+    sqlite::Transaction txn{db_};
+    for (auto const& r : buffer) {
+      sqlite::detail::bind_parameters<Row, NColumns>::bind(insertStmt, r);
+      int const rc{sqlite3_step(insertStmt)};
+      if (rc != SQLITE_DONE) {
+        return rc;
+      }
+      sqlite3_reset(insertStmt);
+    }
+    txn.commit();
+    return SQLITE_DONE;
+  }
+
+} // namespace cet::sqlite
 
 #endif /* cetlib_sqlite_Connection_h */
 

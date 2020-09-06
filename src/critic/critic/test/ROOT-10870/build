@@ -1,0 +1,35 @@
+#!/bin/bash
+
+thisdir=$(cd "${BASH_SOURCE%/*}" && pwd -P)
+
+die() {
+  printf "FATAL ERROR: ${*}\n" 1>&2; exit 1
+}
+
+mkdir -p "$CETPKG_BUILD" || \
+  die "unable to make build directory $CETPKG_BUILD"
+
+# Needed by cetbuildtools.
+! [ -f "$CETPKG_BUILD/cetpkg_variable_report" ] || \
+[ "$thisdir/build" -nt "$CETPKG_BUILD/cetpkg_variable_report" ] || \
+[ "$CETPKG_SOURCE/ups/product_deps" -nt \
+  "$CETPKG_BUILD/cetpkg_variable_report" ] && \
+  cat >"$CETPKG_BUILD/cetpkg_variable_report" <<EOF || true
+
+CETPKG_NAME             r10870
+CETPKG_DEFAULT_VERSION  none
+CETPKG_VERSION          0.00.01
+CETPKG_QUAL             $CETPKG_QUAL
+CETPKG_TYPE             $CETPKG_TYPE
+CETPKG_SOURCE           $CETPKG_SOURCE
+CETPKG_BUILD            $CETPKG_BUILD
+CETPKG_CC               $CETPKG_CC
+CETPKG_CXX              $CETPKG_CXX
+CETPKG_FC               $CETPKG_FC
+EOF
+
+cd "$CETPKG_BUILD" || \
+  die "unable to cd to build directory $CETPKG_BUILD"
+
+env CETPKG_CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC} \
+  buildtool -fv

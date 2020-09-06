@@ -35,14 +35,14 @@ Prettifier::before_action(key_t const& key,
 //==========================================================================
 
 void
-Prettifier::enter_table(std::string const& key, boost::any const&)
+Prettifier::enter_table(std::string const& key, std::any const&)
 {
   buffer_ << indent_() << table::printed_prefix(key) << maybe_nl_(table_size_);
   indent_.push();
 }
 
 void
-Prettifier::exit_table(std::string const& key, boost::any const&)
+Prettifier::exit_table(std::string const& key, std::any const&)
 {
   indent_.pop();
   buffer_ << maybe_indent_(table_size_) << table::closing_brace()
@@ -52,7 +52,7 @@ Prettifier::exit_table(std::string const& key, boost::any const&)
 //==========================================================================
 
 void
-Prettifier::enter_sequence(std::string const& key, boost::any const& a)
+Prettifier::enter_sequence(std::string const& key, std::any const& a)
 {
   push_size_(a);
   buffer_ << indent_() << sequence::printed_prefix(key) << maybe_nl_(seq_size_);
@@ -60,7 +60,7 @@ Prettifier::enter_sequence(std::string const& key, boost::any const& a)
 }
 
 void
-Prettifier::exit_sequence(std::string const& key, boost::any const&)
+Prettifier::exit_sequence(std::string const& key, std::any const&)
 {
   // FIXME: To support a printout like:
   //
@@ -81,7 +81,7 @@ Prettifier::exit_sequence(std::string const& key, boost::any const&)
 //==========================================================================
 
 void
-Prettifier::atom(std::string const& key, boost::any const& a)
+Prettifier::atom(std::string const& key, std::any const& a)
 {
   buffer_ << indent_() << atom::printed_prefix(key) << atom::value(a)
           << printed_suffix(key, seq_size_) << nl();
@@ -90,9 +90,9 @@ Prettifier::atom(std::string const& key, boost::any const& a)
 //=========================================================================
 
 void
-Prettifier::push_size_(boost::any const& a)
+Prettifier::push_size_(std::any const& a)
 {
-  sequence_sizes_.emplace(boost::any_cast<ps_sequence_t>(a).size());
+  sequence_sizes_.emplace(std::any_cast<ps_sequence_t>(a).size());
   seq_size_ = sequence_sizes_.top();
 }
 

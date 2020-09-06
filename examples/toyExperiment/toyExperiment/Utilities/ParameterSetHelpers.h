@@ -13,15 +13,20 @@
 //    position : [ 1.1, 2.2, 3.3 ]
 //
 
-#include <string>
 #include "fhiclcpp/ParameterSet.h"
+#include <string>
 
-namespace CLHEP { class Hep3Vector; }
+namespace CLHEP {
+  class Hep3Vector;
+}
 
 namespace fhicl {
 
   // Converting a FHiCL sequence of doubles to a CLHEP::Hep3Vector
-  template<> bool ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const;
+  template <>
+  bool ParameterSet::get_if_present<CLHEP::Hep3Vector>(
+    std::string const& key,
+    CLHEP::Hep3Vector& value) const;
 
 }
 

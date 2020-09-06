@@ -19,15 +19,10 @@
 namespace tex {
 
   // Uses safesqrt to compute sin(theta).
-  CLHEP::Hep3Vector polar3Vector( double r,
-                                  double cz,
-                                  double phi );
+  CLHEP::Hep3Vector polar3Vector(double r, double cz, double phi);
 
   // Uses sqrtOrThrow to compute sin(theta).
-  CLHEP::Hep3Vector polar3Vector( double r,
-                                  double cz,
-                                  double phi,
-                                  double eps );
+  CLHEP::Hep3Vector polar3Vector(double r, double cz, double phi, double eps);
 }
 
 #endif /* Utilities_polar3Vector_h */

@@ -68,22 +68,19 @@ namespace cet {
 
 // ======================================================================
 
-namespace cet {
-  namespace detail {
+namespace cet::detail {
 
-    template <
-      class D,
-      bool = std::is_base_of<cet::exception, std::remove_reference_t<D>>::value>
-    struct enable_if_an_exception {
-      using type = D&&;
-    };
+  template <
+    class D,
+    bool = std::is_base_of<cet::exception, std::remove_reference_t<D>>::value>
+  struct enable_if_an_exception {
+    using type = D&&;
+  };
 
-    template <class D>
-    struct enable_if_an_exception<D, false> {
-    };
+  template <class D>
+  struct enable_if_an_exception<D, false> {};
 
-  } // detail
-} // cet
+} // cet::detail
 
 // ======================================================================
 
@@ -104,16 +101,12 @@ namespace cet {
               std::string const& message,
               exception const& another);
 
-    exception(exception const& other);
-
-    // Unfortunately, move-semantics aren't available for std::ostream
-    // objects in GCC 4.9.3.  We therefore have to define our own
-    // move-c'tor.  This should be removed once we migrate to a
-    // compiler that supports move-semantics on streams.
-    //
-    // It is possible for an exception to be thrown from this
-    // contructor, so cannot declare noexcept.
-    exception(exception&&);
+    // The 'noexcept' keyword is applied to the copy c'tor to indicate
+    // that if an exception escapes the copy constructor call, then an
+    // immediate std::terminate() will be invoked.  Such a
+    // circumstance would likely be a symptom of memory exhaustion, in
+    // which case program recovery is incredibly unlikely.
+    exception(exception const& other) noexcept;
 
     virtual ~exception() noexcept = default;
 

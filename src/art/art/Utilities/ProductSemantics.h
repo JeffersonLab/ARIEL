@@ -50,7 +50,8 @@ namespace art {
   {
     return RangedFragmentSemantic<Level::SubRun>{rs};
   }
-}
+
+} // namespace art
 
 #endif /* art_Utilities_ProductSemantics_h */
 

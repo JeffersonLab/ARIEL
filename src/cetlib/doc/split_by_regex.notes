@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/split_by_regex.{h,cc}
-% Chris Green.
-% 2016-10-13 (on commit 889f6a2).
-
-* `cet::split_by_regex()`{.cpp} operates on an `std::string const &`{.cpp} and returns its answer in the form of an `std::vector<std::string>`{.cpp} by value, without threading implications beyond those of possibly acessing the input string while being altered simultanoeously elsewhere, which is the province of the caller.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

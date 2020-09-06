@@ -5,7 +5,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/ModuleContext.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/PathContext.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -23,7 +25,7 @@ using namespace std::string_literals;
 
 namespace art {
 
-  MFStatusUpdater::~MFStatusUpdater() {}
+  MFStatusUpdater::~MFStatusUpdater() noexcept = default;
 
   MFStatusUpdater::MFStatusUpdater(ActivityRegistry& areg)
   {
@@ -94,9 +96,9 @@ namespace art {
     mf::SetIteration("SourceConstruction"s);
   }
 
-  MFSU_0_ARG_UPDATER_DEFN(PreSourceEvent) { mf::SetModuleName("SourceEvent"s); }
+  MFSU_1_ARG_UPDATER_DEFN(PreSourceEvent) { mf::SetModuleName("SourceEvent"s); }
 
-  MFSU_1_ARG_UPDATER_DEFN(PostSourceEvent)
+  MFSU_2_ARG_UPDATER_DEFN(PostSourceEvent)
   {
     mf::SetModuleName("PostSourceEvent"s);
   }
@@ -129,7 +131,7 @@ namespace art {
     mf::SetModuleName("PostCloseFile"s);
   }
 
-  MFSU_1_ARG_UPDATER_DEFN(PreProcessEvent)
+  MFSU_2_ARG_UPDATER_DEFN(PreProcessEvent)
   {
     mf::SetModuleName("ProcessEvent"s);
     std::ostringstream os;
@@ -137,7 +139,7 @@ namespace art {
     mf::SetIteration(os.str());
   }
 
-  MFSU_1_ARG_UPDATER_DEFN(PostProcessEvent)
+  MFSU_2_ARG_UPDATER_DEFN(PostProcessEvent)
   {
     mf::SetModuleName("PostProcessEvent"s);
   }
@@ -190,12 +192,12 @@ namespace art {
 
   MFSU_1_ARG_UPDATER_DEFN(PreProcessPath)
   {
-    mf::SetModuleName("ProcessPath "s + arg1);
+    mf::SetModuleName("ProcessPath "s + arg1.pathName());
   }
 
   MFSU_2_ARG_UPDATER_DEFN(PostProcessPath)
   {
-    mf::SetModuleName("PostProcessPath "s + arg1);
+    mf::SetModuleName("PostProcessPath "s + arg1.pathName());
   }
 
   MFSU_1_ARG_UPDATER_DEFN(PrePathBeginRun)

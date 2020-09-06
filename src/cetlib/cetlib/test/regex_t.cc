@@ -1,7 +1,7 @@
 #ifdef STANDALONE_TEST
 #include <cassert>
-#define BOOST_REQUIRE assert
-#define BOOST_CHECK assert
+#define BOOST_TEST_REQUIRE assert
+#define BOOST_TEST assert
 #else
 #define BOOST_TEST_MODULE (regex test)
 #include "cetlib/LibraryManager.h"
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(pluginRegex)
 #endif
   {
     std::ifstream inFile("regex.txt");
-    BOOST_REQUIRE(inFile);
+    BOOST_TEST_REQUIRE(static_cast<bool>(inFile));
 #ifdef STANDALONE_TEST
     std::string const pattern_stem = {"(?:[A-Za-z0-9\\-]*_)*[A-Za-z0-9]+_"};
 #else
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(pluginRegex)
                        ", type " + subs[2].str() + ")") :
                       "")
                 << std::endl;
-      BOOST_CHECK(result);
+      BOOST_TEST(result);
     }
   }
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(pluginRegex)
     };
 
     for (auto const& test : tests)
-      BOOST_CHECK(verify_match(test));
+      BOOST_TEST(verify_match(test));
   }
 
 #ifndef STANDALONE_TEST
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(pluginRegex)
     };
 
     for (auto const& test : tests)
-      BOOST_CHECK(verify_match(test));
+      BOOST_TEST(verify_match(test));
   }
 
 #ifdef STANDALONE_TEST

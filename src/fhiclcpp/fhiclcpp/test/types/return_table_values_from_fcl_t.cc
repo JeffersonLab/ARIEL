@@ -30,7 +30,7 @@ using namespace std;
 
 namespace {
 
-  double const tolerance = std::numeric_limits<double>::epsilon();
+  constexpr auto tolerance = std::numeric_limits<double>::epsilon();
 
   struct RefS {
 
@@ -51,7 +51,7 @@ namespace {
     bool flag_;
   };
 
-  std::ostream& operator<<[[gnu::unused]](std::ostream& os, RefS const& refs)
+  std::ostream& operator<< [[maybe_unused]](std::ostream& os, RefS const& refs)
   {
     os << " Atom: " << refs.i_ << " Sequence: [ " << refs.sj_ << ", "
        << refs.sk_ << " ]"
@@ -76,7 +76,7 @@ namespace {
     }
   };
 
-  std::ostream& operator<<[[gnu::unused]](std::ostream& os, S const& s)
+  std::ostream& operator<< [[maybe_unused]](std::ostream& os, S const& s)
   {
     os << " Atom: " << s.atom() << " Sequence: [ " << s.sequence(0) << ", "
        << s.sequence(1) << " ]"
@@ -113,7 +113,7 @@ BOOST_FIXTURE_TEST_SUITE(values_from_fcl, Fixture)
 BOOST_AUTO_TEST_CASE(table_t)
 {
   RefS ref(4, 3, 6, 8, "something", false);
-  BOOST_CHECK_EQUAL(config().table(), ref);
+  BOOST_TEST(config().table() == ref);
 }
 
 // [15] Sequence< Table<S> >
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(table_in_seq_t)
   auto it = ref.begin();
 
   for (auto const& table : config().vecOfTable())
-    BOOST_CHECK_EQUAL(table, *it++);
+    BOOST_TEST(table == *it++);
 }
 
 // [16] Sequence< Table<S>,2 >
@@ -135,16 +135,16 @@ BOOST_AUTO_TEST_CASE(table_in_seq_2_t)
   auto it = ref.begin();
 
   for (auto const& table : config().arrOfTable())
-    BOOST_CHECK_EQUAL(table, *it++);
+    BOOST_TEST(table == *it++);
 }
 
 // [17] Tuple< Table<S>, U... >
 BOOST_AUTO_TEST_CASE(table_in_tuple_t)
 {
   RefS ref{3, 13, 103, 3, "tup0", true};
-  BOOST_CHECK_EQUAL(config().tupWithTable.get<0>(), ref);
-  BOOST_CHECK_EQUAL(config().tupWithTable.get<1>(), 981);
-  BOOST_CHECK_CLOSE_FRACTION(config().tupWithTable.get<2>(), 581.1, tolerance);
+  BOOST_TEST(config().tupWithTable.get<0>() == ref);
+  BOOST_TEST(config().tupWithTable.get<1>() == 981);
+  BOOST_TEST(config().tupWithTable.get<2>() == 581.1, tolerance);
 }
 
 // [18] Tuple< Sequence< Table<S> >, U... >
@@ -153,10 +153,9 @@ BOOST_AUTO_TEST_CASE(vec_table_in_tuple_t)
   auto ref = {RefS{4, 14, 104, 4, "tup0", true}};
   auto it = ref.begin();
   for (auto const& table : config().tupWithVecTable.get<0>())
-    BOOST_CHECK_EQUAL(table, *it++);
-  BOOST_CHECK_EQUAL(config().tupWithVecTable.get<1>(), 345);
-  BOOST_CHECK_CLOSE_FRACTION(
-    config().tupWithVecTable.get<2>(), 234.14, tolerance);
+    BOOST_TEST(table == *it++);
+  BOOST_TEST(config().tupWithVecTable.get<1>() == 345);
+  BOOST_TEST(config().tupWithVecTable.get<2>() == 234.14, tolerance);
 }
 
 // [19] Tuple< Sequence< Table<S>, SZ >, U... >
@@ -167,10 +166,9 @@ BOOST_AUTO_TEST_CASE(arr_table_in_tuple_t)
   auto it = ref.begin();
 
   for (auto const& table : config().tupWithArrTable.get<0>())
-    BOOST_CHECK_EQUAL(table, *it++);
-  BOOST_CHECK_EQUAL(config().tupWithArrTable.get<1>(), 789);
-  BOOST_CHECK_CLOSE_FRACTION(
-    config().tupWithArrTable.get<2>(), 17.06, tolerance);
+    BOOST_TEST(table == *it++);
+  BOOST_TEST(config().tupWithArrTable.get<1>() == 789);
+  BOOST_TEST(config().tupWithArrTable.get<2>() == 17.06, tolerance);
 }
 
 // [20] Sequence< Tuple< Table<S>, U... > >
@@ -179,9 +177,9 @@ BOOST_AUTO_TEST_CASE(tup_table_in_vec_t)
   auto ref = RefS{7, 17, 107, 7, "tup0", true};
 
   for (auto const& tup : config().vecWithTupTable()) {
-    BOOST_CHECK_EQUAL(std::get<0>(tup), ref);
-    BOOST_CHECK_EQUAL(std::get<1>(tup), 4);
-    BOOST_CHECK_CLOSE_FRACTION(std::get<2>(tup), 1.0004, tolerance);
+    BOOST_TEST(std::get<0>(tup) == ref);
+    BOOST_TEST(std::get<1>(tup) == 4);
+    BOOST_TEST(std::get<2>(tup) == 1.0004, tolerance);
   }
 }
 
@@ -198,9 +196,9 @@ BOOST_AUTO_TEST_CASE(tup_table_in_arr_t)
   auto it_ds = ref_ds.begin();
 
   for (auto const& tup : config().arrWithTupTable()) {
-    BOOST_CHECK_EQUAL(std::get<0>(tup), *it_ts++);
-    BOOST_CHECK_EQUAL(std::get<1>(tup), *it_is++);
-    BOOST_CHECK_CLOSE_FRACTION(std::get<2>(tup), *it_ds++, tolerance);
+    BOOST_TEST(std::get<0>(tup) == *it_ts++);
+    BOOST_TEST(std::get<1>(tup) == *it_is++);
+    BOOST_TEST(std::get<2>(tup) == *it_ds++, tolerance);
   }
 }
 
@@ -208,7 +206,7 @@ BOOST_AUTO_TEST_CASE(tup_table_in_arr_t)
 BOOST_AUTO_TEST_CASE(tableFragment_t)
 {
   auto ref = RefS{10, 20, 200, 10, "tup", false};
-  BOOST_CHECK_EQUAL(config().tFragment(), ref);
+  BOOST_TEST(config().tFragment() == ref);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

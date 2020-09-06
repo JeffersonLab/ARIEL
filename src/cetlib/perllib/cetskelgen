@@ -47,6 +47,8 @@ use FileHandle;
 use Getopt::Long;
 use Pod::Usage;
 use Text::ParseWords;
+use Term::ANSIColor;
+use Term::ANSIColor qw(:constants);
 
 Getopt::Long::Configure(qw(no_ignore_case bundling require_order));
 
@@ -254,7 +256,7 @@ sub help_types {
     help_type($plugin_type);
   }
   print STDERR
-    "For information on required and optional functions for each type,\n",
+    "\nFor information on required and optional functions for each type,\n",
       "use --help-type <type>\n";
   exit(2);
 }
@@ -265,10 +267,13 @@ sub help_type {
   $plugin_type = lc $plugin_type;
   check_plugin_type($plugin_type);
   my $plugin = $plugin_types{$plugin_type};
-  print STDERR "* $plugin_type from ",
-    plugin_product($plugin, "Unknown"), " version ",
-      plugin_version($plugin, "Unknown"), " (",
-        plugin_source($plugin, "Unknown"), ")\n";
+  print STDERR "\n* ";
+  print STDERR BOLD "$plugin_type", RESET;
+  print " from ",
+      plugin_product($plugin, "Unknown"), " version ",
+      plugin_version($plugin, "Unknown"), "\n";
+  # Cut down on visual clutter and don't print source file
+  #, " (", plugin_source($plugin, "Unknown"), ")\n";
   print STDERR grep( { s&(^|\n)(?!$)&${1}${indent}&g if $_; }
                     plugin_usage($plugin) || ());
   if ($verbose) {
@@ -734,10 +739,10 @@ EOF
   if (not plugin_canMoveOrCopy($plugin, 0)) {
     print $fh <<EOF;
 ${indent}// Plugins should not be copied or assigned.
-${indent}${class_name}(${class_name} const &) = delete;
-${indent}${class_name}(${class_name} &&) = delete;
-${indent}${class_name} & operator = (${class_name} const &) = delete;
-${indent}${class_name} & operator = (${class_name} &&) = delete;
+${indent}${class_name}(${class_name} const&) = delete;
+${indent}${class_name}(${class_name}&&) = delete;
+${indent}${class_name}& operator=(${class_name} const&) = delete;
+${indent}${class_name}& operator=(${class_name}&&) = delete;
 
 EOF
   }
@@ -848,9 +853,9 @@ sub class_impl($$\@\@) {
       join(", ", @{$constructor->{args}}),
         ")\n";
     if (exists $constructor->{initializers}) {
-      print $fh "  :\n",
-        join(",\n", map { "  $_" } @{$constructor->{initializers}}),
-          "  // ,\n // More initializers here.\n{";
+      print $fh "  : ",
+        join("\n  ,", map { "$_" } @{$constructor->{initializers}}),
+          "  // ,\n  // More initializers here.\n{";
     } else {
       print $fh <<EOF;
 // :
@@ -862,9 +867,11 @@ EOF
       my $comment;
       my $ctype = ref($constructor->{comment});
       if (not $ctype) {
-        $comment = $constructor->{comment}
+        $comment = $constructor->{comment};
       } elsif ($ctype eq "ARRAY") {
-        $comment = join("\n", chomp @{$constructor->{comment}});;
+        my @comments = @{$constructor->{comment}};
+        chomp(@comments);
+        $comment = join("\n", @comments);
       } else {
         printf STDERR <<EOF, $plugin;
 LOGIC ERROR: A member of %s's constructor() hash has an unexpected
@@ -872,7 +879,7 @@ LOGIC ERROR: A member of %s's constructor() hash has an unexpected
 EOF
         exit(1);
       }
-      print $fh map({ s&^\s*//\s?&// &; "${indent}// $_\n"; } split(/\n/, $comment));
+      print $fh map({ s&^\s*//\s?&// &; "\n${indent}// $_"; } split(/\n/, $comment)), "\n";
     }
     print $fh <<EOF;
 }
@@ -921,7 +928,7 @@ B<cetskelgen> B<--help-types>
 
 B<cetskelgen> B<--help-type> I<plugin-type>
 
-B<cetskelgen> [I<optons>] [--] [I<plugin-type>[:I<plugin-option>[,I<plugin-option>]+]] I<qualified-name>
+B<cetskelgen> [I<options>] [--] [I<plugin-type>[:I<plugin-option>[,I<plugin-option>]+]] I<qualified-name>
 
 I<Options>: B<--all-entries|-A> |
          B<--boilerplate|-b> I<file> |
@@ -1037,7 +1044,7 @@ member function or member data depending on the presence of
 parentheses. For example,
 
 -e beginJob -e endJob -e reconfigure
--e "bool doPrivateStuff(T1 const &t1, T2 const &t2)"
+-e "bool doPrivateStuff(T1 const& t1, T2 const& t2)"
 -e "std::vector<int> privateData_"
 
 =item B<--force>
@@ -1046,7 +1053,7 @@ parentheses. For example,
 
 Force overwrite of existing files; the default is to not overwrite.
 
-=item B<guard> I<header-guard-spec>
+=item B<--guard> I<header-guard-spec>
 
 The specification for the header guard. '%' format specifiers are
 honored, as are the Perl-regex directives \U, \L and \E. Ignored unless
@@ -1104,7 +1111,7 @@ one-file philosophy in this case:
 
 The only communication with a plugin should be via the run, the subrun
 and/or the event. Having the class definition in the same file as its
-implmenetation helps enforce this.
+implementation helps enforce this.
 
 =item 2.
 

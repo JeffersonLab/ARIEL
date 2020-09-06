@@ -11,7 +11,7 @@
 
 namespace tex {
 
-  double dphi( double phi1, double phi2 );
+  double dphi(double phi1, double phi2);
 
 }
 

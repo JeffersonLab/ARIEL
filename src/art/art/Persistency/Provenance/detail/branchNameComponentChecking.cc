@@ -40,7 +40,7 @@ namespace {
     }
     return result;
   }
-}
+} // namespace
 
 art::BranchKey
 art::detail::splitToComponents(std::string const& branchName,

@@ -1,38 +1,56 @@
 #ifndef art_Framework_Principal_Actions_h
 #define art_Framework_Principal_Actions_h
+// vim: set sw=2 expandtab :
 
-#include "art/Framework/Principal/fwd.h"
+#include "art/Framework/Principal/ActionCodes.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include <map>
 #include <string>
-
-namespace fhicl {
-  class ParameterSet;
-}
+#include <vector>
 
 namespace art {
   namespace actions {
     char const* actionName(ActionCodes code);
-  } // actions
-}
+  }
 
-class art::ActionTable {
-public:
-  ActionTable();
-  explicit ActionTable(fhicl::ParameterSet const&);
+  class ActionTable {
+  public:
+    ~ActionTable();
+    ActionTable();
 
-  void add(std::string const& category, actions::ActionCodes code);
-  actions::ActionCodes find(std::string const& category) const;
+    struct Config {
+      using Name = fhicl::Name;
+      fhicl::Atom<bool> defaultExceptions{Name{"defaultExceptions"}, true};
+      fhicl::Sequence<std::string> ignoreCompletely{Name{"IgnoreCompletely"},
+                                                    {}};
+      fhicl::Sequence<std::string> rethrow{Name{"Rethrow"}, {}};
+      fhicl::Sequence<std::string> skipEvent{Name{"SkipEvent"}, {}};
+      fhicl::Sequence<std::string> failModule{Name{"FailModule"}, {}};
+      fhicl::Sequence<std::string> failPath{Name{"FailPath"}, {}};
+    };
 
-private:
-  using ActionMap = std::map<std::string, actions::ActionCodes>;
+    explicit ActionTable(Config const&);
 
-  void addDefaults_();
-  void install_(actions::ActionCodes code,
-                fhicl::ParameterSet const& scheduler);
+    ActionTable(ActionTable const&) = delete;
+    ActionTable(ActionTable&&) = delete;
+    ActionTable& operator=(ActionTable const&) = delete;
+    ActionTable& operator=(ActionTable&&) = delete;
 
-  ActionMap map_;
-};
+    // Accessors
+    actions::ActionCodes find(std::string const& category) const;
+
+    // Modifiers
+    void add(std::string const& category, actions::ActionCodes);
+
+  private:
+    void addDefaults_();
+    void install_(actions::ActionCodes, std::vector<std::string> const&);
+
+    std::map<std::string, actions::ActionCodes> map_{};
+  };
+} // namespace art
 
 #endif /* art_Framework_Principal_Actions_h */
 

@@ -12,35 +12,39 @@
 
 #include "toyExperiment/RecoDataProducts/DetectorStatusRecord.h"
 
-#include <vector>
 #include <ostream>
+#include <vector>
 
 namespace tex {
 
   class DetectorStatus {
 
   public:
+    DetectorStatus();
 
-    DetectorStatus( );
+    DetectorStatus(size_t n);
 
-    DetectorStatus( size_t n);
+    void addRecord(DetectorStatusRecord const& record);
 
-    void addRecord( DetectorStatusRecord const& record );
+    size_t
+    size() const
+    {
+      return _records.size();
+    }
 
-    size_t size() const { return _records.size(); }
+    DetectorStatusRecord const&
+    record(size_t id) const
+    {
+      return _records.at(id);
+    }
 
-    DetectorStatusRecord const& record( size_t id ) const { return _records.at(id); }
-
-    void printAll( std::ostream& ost) const;
+    void printAll(std::ostream& ost) const;
 
   private:
-
     std::vector<DetectorStatusRecord> _records;
-
   };
 
-  std::ostream& operator<<(std::ostream& ost,
-                           const tex::DetectorStatus& d );
+  std::ostream& operator<<(std::ostream& ost, const tex::DetectorStatus& d);
 
 }
 

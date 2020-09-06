@@ -1,0 +1,14 @@
+physics: {
+   producers: {
+      legacy: {
+         module_type: VerifyTransitionsLegacy
+      }
+      shared: {
+         module_type: VerifyTransitionsShared
+      }
+      replicated: {
+         module_type: VerifyTransitionsReplicated
+      }
+   }
+   tp: [legacy, shared, replicated]
+}

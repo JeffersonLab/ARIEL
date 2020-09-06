@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "cetlib/search_path.h"
+#include <memory>
 #include <string>
 
 namespace cet {
@@ -33,6 +34,7 @@ namespace cet {
   class filepath_lookup_nonabsolute;
   class filepath_lookup_after1;
   class filepath_first_absolute_or_lookup_with_dot;
+  class lookup_policy_selector;
 }
 
 // ----------------------------------------------------------------------
@@ -103,6 +105,42 @@ private:
   cet::search_path first_paths;
   cet::search_path after_paths;
 }; // filepath_first_absolute_or_lookup_with_dot
+
+// ----------------------------------------------------------------------
+
+class cet::lookup_policy_selector {
+public:
+  std::unique_ptr<filepath_maker> select(std::string const& spec,
+                                         std::string paths) const;
+  std::string help_message() const;
+
+private:
+  static constexpr auto
+  none() noexcept
+  {
+    return "none";
+  }
+  static constexpr auto
+  all() noexcept
+  {
+    return "all";
+  }
+  static constexpr auto
+  nonabsolute() noexcept
+  {
+    return "nonabsolute";
+  }
+  static constexpr auto
+  after1() noexcept
+  {
+    return "after1";
+  }
+  static constexpr auto
+  permissive() noexcept
+  {
+    return "permissive";
+  }
+};
 
 // ======================================================================
 

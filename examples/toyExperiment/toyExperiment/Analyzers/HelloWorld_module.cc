@@ -13,22 +13,21 @@ namespace tex {
   class HelloWorld : public art::EDAnalyzer {
 
   public:
-
-    explicit HelloWorld(fhicl::ParameterSet const& );
+    explicit HelloWorld(fhicl::ParameterSet const&);
 
     void analyze(art::Event const& event) override;
-
   };
 
 }
 
-tex::HelloWorld::HelloWorld(fhicl::ParameterSet const& pset):
-  art::EDAnalyzer(pset){
-}
+tex::HelloWorld::HelloWorld(fhicl::ParameterSet const& pset)
+  : art::EDAnalyzer(pset)
+{}
 
-void tex::HelloWorld::analyze(art::Event const& event){
-  std::cout << "Hello World! This event has the id: "
-            << event.id()
+void
+tex::HelloWorld::analyze(art::Event const& event)
+{
+  std::cout << "Hello World! This event has the id: " << event.id()
             << std::endl;
 }
 

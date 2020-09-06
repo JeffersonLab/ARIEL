@@ -20,7 +20,7 @@ namespace art {
 
 class art::RunID {
 public:
-  constexpr RunID();
+  constexpr RunID() noexcept;
   explicit RunID(RunNumber_t i);
 
   RunNumber_t run() const;
@@ -33,7 +33,7 @@ public:
 
   static RunID maxRun();
   static RunID firstRun();
-  static constexpr RunID flushRun();
+  static constexpr RunID flushRun() noexcept;
 
   // Comparison operators.
   bool operator==(RunID const& other) const;
@@ -46,16 +46,17 @@ public:
   friend std::ostream& operator<<(std::ostream& os, RunID const& iID);
 
 private:
-  struct FlushFlag {
-  };
+  struct FlushFlag {};
 
-  explicit constexpr RunID(FlushFlag);
+  explicit constexpr RunID(FlushFlag) noexcept;
 
   RunNumber_t inRangeOrInvalid(RunNumber_t r);
   RunNumber_t run_;
 };
 
-inline constexpr art::RunID::RunID() : run_(IDNumber<Level::Run>::invalid()) {}
+inline constexpr art::RunID::RunID() noexcept
+  : run_(IDNumber<Level::Run>::invalid())
+{}
 
 inline art::RunID::RunID(RunNumber_t i) : run_(inRangeOrInvalid(i)) {}
 
@@ -118,7 +119,7 @@ art::RunID::firstRun()
 }
 
 inline constexpr art::RunID
-art::RunID::flushRun()
+art::RunID::flushRun() noexcept
 {
   return RunID(FlushFlag());
 }
@@ -177,7 +178,7 @@ art::RunID::inRangeOrInvalid(RunNumber_t r)
   }
 }
 
-inline constexpr art::RunID::RunID(FlushFlag)
+inline constexpr art::RunID::RunID(FlushFlag) noexcept
   : run_{IDNumber<Level::Run>::flush_value()}
 {}
 

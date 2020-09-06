@@ -30,7 +30,7 @@ namespace {
   require_type_as(T& t)
   {
     auto rt = t();
-    BOOST_CHECK((std::is_same<R, decltype(rt)>::value));
+    BOOST_TEST((std::is_same_v<R, decltype(rt)>));
   }
 }
 

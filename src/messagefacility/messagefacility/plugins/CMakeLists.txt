@@ -3,8 +3,7 @@ include(BasicPlugin)
 set(mf_plugin_libraries
   MF_MessageLogger
   fhiclcpp
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY})
+  Boost::filesystem)
 
 # ordinary destination plugins
 basic_plugin(cout mfPlugin ${mf_plugin_libraries})

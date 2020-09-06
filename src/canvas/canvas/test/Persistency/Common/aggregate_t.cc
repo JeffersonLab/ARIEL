@@ -7,7 +7,6 @@
 
 #include "canvas/test/Persistency/Common/MockRun.h"
 #include "cetlib/map_vector.h"
-#include "cetlib/test_macros.h"
 
 #include <map>
 #include <memory>
@@ -18,14 +17,6 @@
 
 using namespace std::string_literals;
 using arttest::MockRun;
-
-// The MockRun::get() function returns by value, and not reference.
-// Using the bare CET_CHECK_EQUAL_COLLECTIONS will therefore cause
-// much woe since two calls will be made to Run::get.  The solution is
-// to make a copy (as is done in AGGREGATE_CHECK_EQUAL_COLLECTIONS).
-#define AGGREGATE_CHECK_EQUAL_COLLECTIONS(test, ref)                           \
-  auto t = test;                                                               \
-  CET_CHECK_EQUAL_COLLECTIONS(t, ref)
 
 namespace {
 
@@ -83,15 +74,15 @@ BOOST_AUTO_TEST_CASE(class_type)
   r1.put<HoursPerWorker>(HoursPerWorker{"Sam", 12});
   r1.put<HoursPerWorker>(HoursPerWorker{"Sam", 14});
   auto sam = r1.get<HoursPerWorker>();
-  BOOST_CHECK_EQUAL(sam.name_, "Sam");
-  BOOST_CHECK_EQUAL(sam.hours_, 26u);
+  BOOST_TEST(sam.name_ == "Sam");
+  BOOST_TEST(sam.hours_ == 26u);
 
   MockRun r2;
   r2.put<HoursPerWorker>(HoursPerWorker{"John", 8});
   r2.put<HoursPerWorker>(HoursPerWorker{"Jim", 10});
   auto john = r2.get<HoursPerWorker>();
-  BOOST_CHECK_EQUAL(john.name_, "John");
-  BOOST_CHECK_EQUAL(john.hours_, 8u);
+  BOOST_TEST(john.name_ == "John");
+  BOOST_TEST(john.hours_ == 8u);
 }
 
 BOOST_AUTO_TEST_CASE(numbers)
@@ -109,7 +100,7 @@ BOOST_AUTO_TEST_CASE(vector)
   r.put<nums_t>(nums_t{1, 3, 5});
   r.put<nums_t>(nums_t{2, 4, 6});
   auto ref = {1, 3, 5, 2, 4, 6};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<nums_t>(), ref);
+  BOOST_TEST(r.get<nums_t>() == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(list)
@@ -119,7 +110,7 @@ BOOST_AUTO_TEST_CASE(list)
   r.put<chars_t>(chars_t{'a', 'b', 'c'});
   r.put<chars_t>(chars_t{'y', 'z'});
   auto ref = {'a', 'b', 'c', 'y', 'z'};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<chars_t>(), ref);
+  BOOST_TEST(r.get<chars_t>() == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(deque)
@@ -129,7 +120,7 @@ BOOST_AUTO_TEST_CASE(deque)
   r.put<nums_t>(nums_t{0, 5, 8});
   r.put<nums_t>(nums_t{1, 2, 4});
   std::initializer_list<unsigned> const ref{0u, 5u, 8u, 1u, 2u, 4u};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<nums_t>(), ref);
+  BOOST_TEST(r.get<nums_t>() == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(array)
@@ -139,7 +130,7 @@ BOOST_AUTO_TEST_CASE(array)
   r.put<histo_t>(histo_t{{1, 4, 7}});
   r.put<histo_t>(histo_t{{-1, 6, 92}});
   auto ref = {0, 10, 99};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<histo_t>(), ref);
+  BOOST_TEST(r.get<histo_t>() == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(map)
@@ -155,7 +146,7 @@ BOOST_AUTO_TEST_CASE(map)
                      {"Gregory", 0},
                      {"Jennifer", 28},
                      {"Josephine", 9}};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<map_t>(), people);
+  BOOST_TEST(r.get<map_t>() == people);
 }
 
 BOOST_AUTO_TEST_CASE(multimap)
@@ -172,7 +163,7 @@ BOOST_AUTO_TEST_CASE(multimap)
                      {"Gregory", 47},
                      {"Jennifer", 28},
                      {"Josephine", 9}};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<map_t>(), people);
+  BOOST_TEST(r.get<map_t>() == people);
 }
 
 BOOST_AUTO_TEST_CASE(set)
@@ -182,7 +173,7 @@ BOOST_AUTO_TEST_CASE(set)
   r.put<set_t>(set_t{"Brahms", "Beethoven"});
   r.put<set_t>(set_t{"Bach", "Brahms"});
   set_t const composers{"Bach", "Beethoven", "Brahms"};
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<set_t>(), composers);
+  BOOST_TEST(r.get<set_t>() == composers);
 }
 
 BOOST_AUTO_TEST_CASE(pair)
@@ -192,7 +183,7 @@ BOOST_AUTO_TEST_CASE(pair)
   r.put<pair_t>(pair_t{0u, 14.});
   r.put<pair_t>(pair_t{6u, 20.});
   auto result = r.get<pair_t>();
-  BOOST_CHECK_EQUAL(result.first, 6u);
+  BOOST_TEST(result.first == 6u);
   BOOST_CHECK_CLOSE_FRACTION(result.second, 34., tolerance);
 }
 
@@ -203,8 +194,8 @@ BOOST_AUTO_TEST_CASE(tuple)
   r.put<tuple_t>(tuple_t{"run1"s, 3, 1.2});
   r.put<tuple_t>(tuple_t{"run2"s, 74, 2.9});
   auto result = r.get<tuple_t>();
-  BOOST_CHECK_EQUAL(std::get<A>(result).name_, "run1");
-  BOOST_CHECK_EQUAL(std::get<unsigned>(result), 77u);
+  BOOST_TEST(std::get<A>(result).name_ == "run1");
+  BOOST_TEST(std::get<unsigned>(result) == 77u);
   BOOST_CHECK_CLOSE_FRACTION(std::get<double>(result), 4.1, tolerance);
 }
 
@@ -234,7 +225,7 @@ BOOST_AUTO_TEST_CASE(map_vector)
   ref.insert({key_type{11}, "eleven"});
   ref.insert({key_type{13}, "thirteen"});
 
-  AGGREGATE_CHECK_EQUAL_COLLECTIONS(r.get<mv_t>(), ref);
+  BOOST_TEST(r.get<mv_t>() == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(string1)
@@ -253,7 +244,7 @@ BOOST_AUTO_TEST_CASE(string2)
   MockRun r;
   r.put<std::string>("howdy");
   r.put<std::string>("howdy");
-  BOOST_CHECK_EQUAL(r.get<std::string>(), "howdy");
+  BOOST_TEST(r.get<std::string>() == "howdy");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

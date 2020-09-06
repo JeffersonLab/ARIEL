@@ -1,7 +1,0 @@
-
-It is unsafe for two different threads to use hard_cast(src, dest)
-with the same dest concurrently.
-
-It would seem that the void* arguments could all be marked as 'void
-const* const', but that is perhaps overkill.
-

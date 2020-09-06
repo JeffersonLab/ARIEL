@@ -1,9 +1,0 @@
-% Multi-threading report for cetlib/no_delete.h
-% Chris Green.
-% 2016-10-13 (on commit 110a927).
-
-* `struct cet::no_delete` has no data members and a single `operator ()`{.cpp} returning void with an empty body.
-
-<!-- Local Variables: -->
-<!-- mode: markdown -->
-<!-- End: -->

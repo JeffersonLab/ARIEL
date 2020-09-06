@@ -1,0 +1,46 @@
+process_name: PROD2EXTRA
+
+services:
+{
+  scheduler:
+  {
+    wantSummary: false
+  }
+}
+
+source:
+{
+  module_type: RootInput
+  fileNames: [ "test_gallery2.root" ]
+}
+
+physics:
+{
+  producers:
+  {
+    m7:
+    {
+      module_type: GalleryTestProducer
+      value1: 712
+      value2: 722
+      value3: 732
+      string1: s712
+      string2: s722
+      string3: s732
+    }
+  }
+  p1: [ m7 ]
+  e1: [ output1 ]
+
+  trigger_paths: [ p1 ]
+  end_paths: [ e1 ]
+}
+
+outputs:
+{
+  output1:
+  {
+    module_type: RootOutput
+    fileName: "test_gallery6.root"
+  }
+}

@@ -62,13 +62,13 @@ BOOST_AUTO_TEST_CASE(GoodTuple1)
   std::vector<std::string> const ref3{"U"s, "V"s, "W"s};
   auto validatedConfig = validateConfig(good);
   auto const& pars = validatedConfig().nested().pars();
-  BOOST_TEST_REQUIRE(pars.size() == 2);
+  BOOST_TEST_REQUIRE(pars.size() == 2ull);
   BOOST_TEST_REQUIRE(std::get<0>(pars[0]) == "A"s);
   BOOST_TEST_REQUIRE(std::get<1>(pars[0]) == ref1);
   BOOST_TEST_REQUIRE(std::get<0>(pars[1]) == "X"s);
   BOOST_TEST_REQUIRE(std::get<1>(pars[1]) == ref2);
   auto const& defaultedPars = validatedConfig().nestedWithDef().pars();
-  BOOST_TEST_REQUIRE(defaultedPars.size() == 1);
+  BOOST_TEST_REQUIRE(defaultedPars.size() == 1ull);
   BOOST_TEST_REQUIRE(std::get<0>(defaultedPars[0]) == "T"s);
   BOOST_TEST_REQUIRE(std::get<1>(defaultedPars[0]) == ref3);
 }
@@ -83,13 +83,13 @@ BOOST_AUTO_TEST_CASE(GoodTuple2)
   std::vector<std::string> const ref4{"S"s};
   auto validatedConfig = validateConfig(good);
   auto const& pars = validatedConfig().nested().pars();
-  BOOST_TEST_REQUIRE(pars.size() == 2);
+  BOOST_TEST_REQUIRE(pars.size() == 2ull);
   BOOST_TEST_REQUIRE(std::get<0>(pars[0]) == "A"s);
   BOOST_TEST_REQUIRE(std::get<1>(pars[0]) == ref1);
   BOOST_TEST_REQUIRE(std::get<0>(pars[1]) == "X"s);
   BOOST_TEST_REQUIRE(std::get<1>(pars[1]) == ref2);
   auto const& defaultedPars = validatedConfig().nestedWithDef().pars();
-  BOOST_TEST_REQUIRE(defaultedPars.size() == 2);
+  BOOST_TEST_REQUIRE(defaultedPars.size() == 2ull);
   BOOST_TEST_REQUIRE(std::get<0>(defaultedPars[0]) == "M"s);
   BOOST_TEST_REQUIRE(std::get<1>(defaultedPars[0]) == ref3);
   BOOST_TEST_REQUIRE(std::get<0>(defaultedPars[1]) == "R"s);

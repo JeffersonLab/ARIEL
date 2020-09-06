@@ -22,7 +22,7 @@ namespace art {
         UNAVAILABLE = 503
       };
     }
-  }
+  } // namespace detail
 
   // Enum values must be scoped, eg FileDeliveryStatus::OK.
   using detail::FTS::FileTransferStatus;
@@ -30,7 +30,7 @@ namespace art {
   // Translate enum to string;
   std::string translateFileTransferStatus(FileTransferStatus stat);
 
-} // end of art namespace
+} // namespace art
 
 #endif /* art_Framework_Services_FileServiceInterfaces_FileTransferStatus_h */
 

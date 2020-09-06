@@ -1,0 +1,84 @@
+process_name: PROD3
+
+services:
+{
+  scheduler:
+  {
+    wantSummary: false
+  }
+}
+
+source:
+{
+  module_type: RootInput
+  fileNames: [ "test_gallery2.root" ]
+}
+
+physics:
+{
+  producers:
+  {
+    m1:
+    {
+      module_type: GalleryTestProducer
+      value1: 113
+      value2: 123
+      value3: 133
+      string1: s113
+      string2: s123
+      string3: s133
+    }
+    m2:
+    {
+      module_type: GalleryTestProducer
+      value1: 213
+      value2: 223
+      value3: 233
+      string1: s213
+      string2: s223
+      string3: s233
+    }
+    m5:
+    {
+      module_type: GalleryTestProducer
+      value1: -1
+      value2: -1
+      value3: -1
+      string1: noPut
+      string2: noPut
+      string3: noPut
+      errorOnFailureToPut: false
+    }
+    m7:
+    {
+      module_type: GalleryTestProducer
+      value1: -1
+      value2: -1
+      value3: -1
+      string1: noPut
+      string2: noPut
+      string3: noPut
+      errorOnFailureToPut: false
+    }
+    ptr1:
+    {
+      module_type: GalleryPtrTestProducer
+      produceAssnStringInt: true
+      produceAssnIntString: false
+    }
+  }
+  p1: [ m1, m2, m5, m7, ptr1 ]
+  e1: [ output1 ]
+
+  trigger_paths: [ p1 ]
+  end_paths: [ e1 ]
+}
+
+outputs:
+{
+  output1:
+  {
+    module_type: RootOutput
+    fileName: "test_gallery3.root"
+  }
+}

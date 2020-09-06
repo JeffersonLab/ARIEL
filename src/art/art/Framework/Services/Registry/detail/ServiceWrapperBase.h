@@ -1,44 +1,35 @@
 #ifndef art_Framework_Services_Registry_detail_ServiceWrapperBase_h
 #define art_Framework_Services_Registry_detail_ServiceWrapperBase_h
-
-////////////////////////////////////////////////////////////////////////
-// ServiceWrapperBase
-//
-// Base class through which the framework manages the lifetime of
-// ServiceWrapper<T> objects.
-//
-////////////////////////////////////////////////////////////////////////
+// vim: set sw=2 expandtab :
 
 #include "canvas/Persistency/Provenance/BranchDescription.h"
 
 #include <memory>
 
 namespace art {
-  namespace detail {
-    class ServiceWrapperBase;
-    using WrapperBase_ptr = std::shared_ptr<detail::ServiceWrapperBase>;
-  }
-  class MasterProductRegistry;
   class ModuleDescription;
   class ProducingServiceSignals;
-}
+  namespace detail {
 
-class art::detail::ServiceWrapperBase {
-public:
-  explicit ServiceWrapperBase() = default;
+    class ServiceWrapperBase {
+    public:
+      virtual ~ServiceWrapperBase() = default;
+      explicit ServiceWrapperBase() = default;
 
-  // Noncopyable
-  ServiceWrapperBase(ServiceWrapperBase const&) = delete;
-  ServiceWrapperBase& operator=(ServiceWrapperBase const&) = delete;
+      ServiceWrapperBase(ServiceWrapperBase const&) = delete;
+      ServiceWrapperBase(ServiceWrapperBase&&) = delete;
+      ServiceWrapperBase& operator=(ServiceWrapperBase const&) = delete;
+      ServiceWrapperBase& operator=(ServiceWrapperBase&&) = delete;
 
-  virtual void registerProducts(MasterProductRegistry&,
-                                ProductDescriptions&,
-                                ProducingServiceSignals&,
-                                ModuleDescription const&) = 0;
+      virtual void registerProducts(ProductDescriptions&,
+                                    ProducingServiceSignals&,
+                                    ModuleDescription const&) = 0;
+    };
 
-  virtual ~ServiceWrapperBase() = default;
+    using WrapperBase_ptr = std::shared_ptr<ServiceWrapperBase>;
 
-}; // ServiceWrapperBase
+  } // namespace detail
+} // namespace art
 
 #endif /* art_Framework_Services_Registry_detail_ServiceWrapperBase_h */
 

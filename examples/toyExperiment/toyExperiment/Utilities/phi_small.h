@@ -8,7 +8,7 @@
 
 namespace tex {
 
-  double phi_small( double arg );
+  double phi_small(double arg);
 
 }
 

@@ -38,16 +38,17 @@ public:
 
   // Find and call the makePlugin() function in the plugin library.
   template <typename RESULT_TYPE, typename... ARGS>
-  std::enable_if_t<!std::is_function<RESULT_TYPE>::value, RESULT_TYPE>
-  makePlugin(std::string const& libspec, ARGS&&... args);
+  std::enable_if_t<!std::is_function_v<RESULT_TYPE>, RESULT_TYPE> makePlugin(
+    std::string const& libspec,
+    ARGS&&... args) const;
 
   template <typename FUNCTION_TYPE>
-  std::enable_if_t<std::is_function<FUNCTION_TYPE>::value,
+  std::enable_if_t<std::is_function_v<FUNCTION_TYPE>,
                    std::function<FUNCTION_TYPE>>
-  makePlugin(std::string const& libspec);
+  makePlugin(std::string const& libspec) const;
 
   // Find and call the pluginType() function in the plugin library.
-  std::string pluginType(std::string const& libspec);
+  std::string pluginType(std::string const& libspec) const;
 
 private:
   std::string const makerName_;
@@ -55,22 +56,23 @@ private:
 };
 
 inline std::string
-cet::BasicPluginFactory::pluginType(std::string const& libspec)
+cet::BasicPluginFactory::pluginType(std::string const& libspec) const
 {
   return call<std::string>(libspec, pluginTypeFuncName_);
 }
 
 template <typename RESULT_TYPE, typename... ARGS>
-inline std::enable_if_t<!std::is_function<RESULT_TYPE>::value, RESULT_TYPE>
-cet::BasicPluginFactory::makePlugin(std::string const& libspec, ARGS&&... args)
+inline std::enable_if_t<!std::is_function_v<RESULT_TYPE>, RESULT_TYPE>
+cet::BasicPluginFactory::makePlugin(std::string const& libspec,
+                                    ARGS&&... args) const
 {
   return call<RESULT_TYPE>(libspec, makerName_, std::forward<ARGS>(args)...);
 }
 
 template <typename FUNCTION_TYPE>
-inline std::enable_if_t<std::is_function<FUNCTION_TYPE>::value,
+inline std::enable_if_t<std::is_function_v<FUNCTION_TYPE>,
                         std::function<FUNCTION_TYPE>>
-cet::BasicPluginFactory::makePlugin(std::string const& libspec)
+cet::BasicPluginFactory::makePlugin(std::string const& libspec) const
 {
   return find<FUNCTION_TYPE>(libspec, makerName_);
 }

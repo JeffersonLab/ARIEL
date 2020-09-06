@@ -23,75 +23,71 @@
 
 #include <string>
 
-namespace cet {
-  namespace sqlite {
-    namespace detail {
+namespace cet::sqlite::detail {
 
-      template <typename T>
-      inline auto
-      convertTo(std::string const& arg)
-      {
-        return arg;
-      }
+  template <typename T>
+  inline auto
+  convertTo(std::string const& arg)
+  {
+    return arg;
+  }
 
-      template <>
-      inline auto
-      convertTo<int>(std::string const& arg)
-      {
-        return std::stoi(arg);
-      }
-      template <>
-      inline auto
-      convertTo<long>(std::string const& arg)
-      {
-        return std::stol(arg);
-      }
-      template <>
-      inline auto
-      convertTo<long long>(std::string const& arg)
-      {
-        return std::stoll(arg);
-      }
-      template <>
-      inline auto
-      convertTo<unsigned>(std::string const& arg)
-      {
-        return std::stoul(arg);
-      }
-      template <>
-      inline auto
-      convertTo<unsigned long>(std::string const& arg)
-      {
-        return std::stoul(arg);
-      }
-      template <>
-      inline auto
-      convertTo<unsigned long long>(std::string const& arg)
-      {
-        return std::stoull(arg);
-      }
-      template <>
-      inline auto
-      convertTo<float>(std::string const& arg)
-      {
-        return std::stof(arg);
-      }
-      template <>
-      inline auto
-      convertTo<double>(std::string const& arg)
-      {
-        return std::stod(arg);
-      }
-      template <>
-      inline auto
-      convertTo<long double>(std::string const& arg)
-      {
-        return std::stold(arg);
-      }
+  template <>
+  inline auto
+  convertTo<int>(std::string const& arg)
+  {
+    return std::stoi(arg);
+  }
+  template <>
+  inline auto
+  convertTo<long>(std::string const& arg)
+  {
+    return std::stol(arg);
+  }
+  template <>
+  inline auto
+  convertTo<long long>(std::string const& arg)
+  {
+    return std::stoll(arg);
+  }
+  template <>
+  inline auto
+  convertTo<unsigned>(std::string const& arg)
+  {
+    return std::stoul(arg);
+  }
+  template <>
+  inline auto
+  convertTo<unsigned long>(std::string const& arg)
+  {
+    return std::stoul(arg);
+  }
+  template <>
+  inline auto
+  convertTo<unsigned long long>(std::string const& arg)
+  {
+    return std::stoull(arg);
+  }
+  template <>
+  inline auto
+  convertTo<float>(std::string const& arg)
+  {
+    return std::stof(arg);
+  }
+  template <>
+  inline auto
+  convertTo<double>(std::string const& arg)
+  {
+    return std::stod(arg);
+  }
+  template <>
+  inline auto
+  convertTo<long double>(std::string const& arg)
+  {
+    return std::stold(arg);
+  }
 
-    } // detail
-  }   // sqlite
-} // cet
+} // cet::sqlite::detail
 
 #endif /* cetlib_sqlite_detail_convert_h */
 

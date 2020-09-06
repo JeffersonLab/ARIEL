@@ -1,15 +1,9 @@
 # ======================================================================
 #  toy experiment main build file.
-#
-#  cd .../path/to/build/directory
-#  source .../path/to/art_hough/ups/setup_for_development
-#  buildtool -f[T]l
 # ======================================================================
 
-# use cmake 2.8 or later
-cmake_minimum_required (VERSION 2.8)
-
-project(toyexperiment)
+cmake_minimum_required (VERSION 3.12...3.14 FATAL_ERROR)
+project(toyexperiment LANGUAGES CXX)
 
 find_package(cetbuildtools REQUIRED)
 
@@ -20,8 +14,12 @@ cet_set_compiler_flags(DIAGS VIGILANT WERROR NO_UNDEFINED EXTRA_FLAGS -pedantic)
 
 cet_report_compiler_flags()
 
+check_ups_version(art "${art_UPS_VERSION}" v3_02_00 PRODUCT_OLDER_VAR OLDER_THAN_v30200)
+
 # Versions are specified in the ups/product_deps file
+
 find_ups_product(art)
+find_ups_product(canvas_root_io)
 find_ups_product(messagefacility)
 find_ups_product(clhep)
 find_ups_product(cetbuildtools)
@@ -31,9 +29,9 @@ find_ups_boost()
 # define CLHEP
 cet_find_library(CLHEP  NAMES CLHEP   PATHS ENV CLHEP_LIB_DIR NO_DEFAULT_PATH)
 
-check_ups_version(art "${art_UPS_VERSION}" v2_08_00 PRODUCT_OLDER_VAR GET_PRODUCT_ID_WITH_EVENT)
-if (GET_PRODUCT_ID_WITH_EVENT)
-  add_definitions(-DGET_PRODUCT_ID_WITH_EVENT)
+if (NOT OLDER_THAN_v30200)
+  find_ups_product(art_root_io)
+  add_definitions(-DART_ROOT_IO)
 endif()
 
 message(STATUS "Project is ${product} ${version} ${qualifier}")

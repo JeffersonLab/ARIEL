@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(filepath_maker_t)
   cet::filepath_maker maker{};
   auto const files = {"a.txt", "./b.txt", "/c/d.txt"};
   for (auto const& filename : files) {
-    BOOST_CHECK_EQUAL(filename, maker(filename));
+    BOOST_TEST(filename == maker(filename));
   }
 }
 
@@ -71,12 +71,12 @@ BOOST_AUTO_TEST_CASE(filepath_lookup_t1)
     bfs::path const p1{fullPath1};
     bfs::path const p2{fullPath2};
     bfs::path const p3{fullPath3};
-    BOOST_CHECK(bfs::equivalent(p1, p2));
-    BOOST_CHECK(bfs::equivalent(p1, p3));
+    BOOST_TEST(bfs::equivalent(p1, p2));
+    BOOST_TEST(bfs::equivalent(p1, p3));
     // Check that operator() has created an absolute filepath.
-    BOOST_CHECK(cet::is_absolute_filepath(fullPath1));
-    BOOST_CHECK(cet::is_absolute_filepath(fullPath2));
-    BOOST_CHECK(cet::is_absolute_filepath(fullPath3));
+    BOOST_TEST(cet::is_absolute_filepath(fullPath1));
+    BOOST_TEST(cet::is_absolute_filepath(fullPath2));
+    BOOST_TEST(cet::is_absolute_filepath(fullPath3));
     // Now check that the file *cannot* be accessed via its absolute filepath.
     check_exception(maker, current_nested_dir() + '/' + filename);
   }
@@ -100,10 +100,10 @@ BOOST_AUTO_TEST_CASE(filepath_lookup_nonabsolute_t)
     auto const fullPath2 = maker(current_nested_dir() + '/' + filename);
     bfs::path const p1{fullPath1};
     bfs::path const p2{fullPath2};
-    BOOST_CHECK(bfs::equivalent(p1, p2));
+    BOOST_TEST(bfs::equivalent(p1, p2));
     // Check that operator() has created an absolute filepath.
-    BOOST_CHECK(cet::is_absolute_filepath(fullPath1));
-    BOOST_CHECK(cet::is_absolute_filepath(fullPath2));
+    BOOST_TEST(cet::is_absolute_filepath(fullPath1));
+    BOOST_TEST(cet::is_absolute_filepath(fullPath2));
   }
 
   // Check that we cannot access a file in the current source
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(filepath_lookup_after1_t1)
   // For the first file, the maker returns whatever you give it.
   // There is no checking to see if the file actually exists.
   auto const file = maker("a.txt");
-  BOOST_CHECK(!cet::file_exists(file));
+  BOOST_TEST(!cet::file_exists(file));
 }
 
 BOOST_AUTO_TEST_CASE(filepath_lookup_after1_t2)
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(filepath_first_absolute_or_lookup_with_dot_t1)
   cet::filepath_first_absolute_or_lookup_with_dot maker{cet::getenv(path)};
   // The first file is permitted to be relative the path.
   auto const file = maker("a.txt");
-  BOOST_CHECK(cet::file_exists(file));
+  BOOST_TEST(cet::file_exists(file));
 }
 
 BOOST_AUTO_TEST_CASE(filepath_first_absolute_or_lookup_with_dot_t2)

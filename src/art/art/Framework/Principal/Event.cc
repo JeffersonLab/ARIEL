@@ -1,11 +1,5 @@
-// ======================================================================
-//
-// Event - This is the primary interface for accessing EDProducts from a
-//         single collision and inserting new derived products.
-//
-// ======================================================================
-
 #include "art/Framework/Principal/Event.h"
+// vim: set sw=2 expandtab :
 
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -20,50 +14,29 @@ using namespace fhicl;
 namespace art {
 
   namespace {
-    // It only makes sense to track parents when putting a product
-    // onto the event.  That requires a non-const Event object.
+
+    // It only makes sense to track parents when putting a product onto
+    // the event.  That requires a non-const Event object.
     constexpr bool
     record_parents(Event*)
     {
       return true;
     }
-    [[gnu::unused]] constexpr bool
-    record_parents(Event const*)
-    {
-      return false;
-    }
 
-    SubRun*
-    newSubRun(EventPrincipal const& ep,
-              ModuleDescription const& md,
-              cet::exempt_ptr<Consumer> consumer)
-    {
-      return ep.subRunPrincipalExemptPtr() ?
-               new SubRun{ep.subRunPrincipal(), md, consumer} :
-               nullptr;
-    }
-  }
+  } // unnamed namespace
 
-  Event::Event(EventPrincipal const& ep,
-               ModuleDescription const& md,
-               cet::exempt_ptr<Consumer> consumer,
-               RangeSet const&)
-    : Event{ep, md, consumer}
+  Event::~Event() = default;
+
+  Event::Event(EventPrincipal const& ep, ModuleContext const& mc)
+    : DataViewImpl{InEvent, ep, mc, record_parents(this), RangeSet::invalid()}
+    , subRun_{ep.subRunPrincipalPtr() ? new SubRun{ep.subRunPrincipal(), mc} :
+                                        nullptr}
   {}
 
-  Event::Event(EventPrincipal const& ep,
-               ModuleDescription const& md,
-               cet::exempt_ptr<Consumer> consumer)
-    : DataViewImpl{ep, md, InEvent, record_parents(this), consumer}
-    , aux_{ep.aux()}
-    , subRun_{newSubRun(ep, md, consumer)}
-    , eventPrincipal_{ep}
-  {}
-
-  EDProductGetter const*
-  Event::productGetter(ProductID const pid) const
+  EventID
+  Event::id() const
   {
-    return eventPrincipal_.productGetter(pid);
+    return DataViewImpl::eventID();
   }
 
   SubRun const&
@@ -82,61 +55,4 @@ namespace art {
     return getSubRun().getRun();
   }
 
-  History const&
-  Event::history() const
-  {
-    return eventPrincipal_.history();
-  }
-
-  ProcessHistoryID const&
-  Event::processHistoryID() const
-  {
-    return eventPrincipal_.history().processHistoryID();
-  }
-
-  bool
-  Event::getProcessParameterSet(string const& processName,
-                                ParameterSet& ps) const
-  {
-    // Get the ProcessHistory for this event.
-    ProcessHistory ph;
-    if (!ProcessHistoryRegistry::get(processHistoryID(), ph)) {
-      throw Exception(errors::NotFound)
-        << "ProcessHistoryID " << processHistoryID()
-        << " is claimed to describe " << id()
-        << "\nbut is not found in the ProcessHistoryRegistry.\n"
-           "This file is malformed.\n";
-    }
-
-    ProcessConfiguration config;
-    bool const process_found{
-      ph.getConfigurationForProcess(processName, config)};
-    if (process_found) {
-      ParameterSetRegistry::get(config.parameterSetID(), ps);
-    }
-    return process_found;
-  }
-
-  void
-  Event::commit(EventPrincipal& ep,
-                bool const checkProducts,
-                std::set<TypeLabel> const& expectedProducts)
-  {
-    // Check addresses only since type of 'ep' will hopefully change to
-    // Principal&.
-    assert(&ep == &eventPrincipal_);
-    checkPutProducts(checkProducts, expectedProducts, putProducts());
-
-    auto const& parents = retrievedProductIDs();
-    for (auto& elem : putProducts()) {
-      auto const& pd = elem.second.pd;
-      auto productProvenancePtr = make_unique<ProductProvenance const>(
-        pd.productID(), productstatus::present(), parents);
-      ep.put(std::move(elem.second.prod), pd, std::move(productProvenancePtr));
-    };
-
-    // the cleanup is all or none
-    putProducts().clear();
-  }
-
-} // art
+} // namespace art

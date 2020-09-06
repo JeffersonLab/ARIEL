@@ -25,30 +25,17 @@ namespace arttest {
 class arttest::PMTestProducer : public art::EDProducer {
 public:
   explicit PMTestProducer(fhicl::ParameterSet const& p);
-  virtual ~PMTestProducer();
-
-  void produce(art::Event& e) override;
 
 private:
-  // Declare member data here.
+  void produce(art::Event&) override;
 };
 
 arttest::PMTestProducer::PMTestProducer(fhicl::ParameterSet const& p)
-// :
-// Initialize member data here.
-{
-  // Call appropriate Produces<>() functions here.
-}
-
-arttest::PMTestProducer::~PMTestProducer()
-{
-  // Clean up dynamic memory and other resources here.
-}
+  : EDProducer{p}
+{}
 
 void
-arttest::PMTestProducer::produce(art::Event& e)
-{
-  // Implementation of required member function here.
-}
+arttest::PMTestProducer::produce(art::Event&)
+{}
 
 DEFINE_ART_MODULE(arttest::PMTestProducer)

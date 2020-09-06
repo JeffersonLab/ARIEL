@@ -1,0 +1,21 @@
+
+File catalog metadata from file ../SAM_metadataFromInput_02.d/out.root:
+
+ 1: file_type            "Pescadero"
+ 2: art.process_name     "SAMMetadataPassthrough2"
+ 3: art.run_type         "MCChallenge"
+ 4: data_tier            "Peachy"
+ 5: data_stream          "o1"
+ 6: file_format          "artroot"
+ 7: start_time           "<date-time>"
+ 8: end_time             "<date-time>"
+ 9: runs                 [ [ 1, 0, "MCChallenge" ] ]
+10: event_count          1
+11: first_event          1
+12: last_event           1
+13: parents              [ "out.root" ]
+14: art.first_event      [ 1, 0, 1 ]
+15: art.last_event       [ 1, 0, 1 ]
+16: art.file_format_era  "ART_2011a"
+17: art.file_format_version 13
+<separator (-)>

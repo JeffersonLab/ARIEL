@@ -12,3 +12,7 @@ namespace fhicl {
 }
 
 #endif /* fhiclcpp_types_MaybeUseFunction_h */
+
+// Local Variables:
+// mode: c++
+// End:

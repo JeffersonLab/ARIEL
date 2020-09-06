@@ -40,28 +40,28 @@ namespace fhicl {
       {}
 
       auto
-      begin() const
+      begin() const noexcept
       {
         return holder_.cbegin();
       }
       auto
-      end() const
+      end() const noexcept
       {
         return holder_.cend();
       }
       auto
-      cbegin() const
+      cbegin() const noexcept
       {
         return holder_.cbegin();
       }
       auto
-      cend() const
+      cend() const noexcept
       {
         return holder_.cend();
       }
 
     private:
-      std::vector<T> holder_;
+      std::vector<T> const holder_;
     };
   }
 
@@ -74,10 +74,9 @@ namespace fhicl {
   class Sequence final : public detail::SequenceBase,
                          private detail::RegisterIfTableMember {
   public:
-    static_assert(!tt::is_table_fragment<T>::value, NO_NESTED_TABLE_FRAGMENTS);
-    static_assert(!tt::is_optional_parameter<T>::value, NO_OPTIONAL_TYPES);
-    static_assert(!tt::is_delegated_parameter<T>::value,
-                  NO_DELEGATED_PARAMETERS);
+    static_assert(!tt::is_table_fragment_v<T>, NO_NESTED_TABLE_FRAGMENTS);
+    static_assert(!tt::is_optional_parameter_v<T>, NO_OPTIONAL_TYPES);
+    static_assert(!tt::is_delegated_parameter_v<T>, NO_DELEGATED_PARAMETERS);
 
     using default_type =
       sequence_detail::ValueHolder<typename tt::fhicl_type<T>::default_type>;
@@ -110,7 +109,7 @@ namespace fhicl {
     }
 
     auto
-    operator()(std::size_t i) const
+    operator()(std::size_t const i) const
     {
       return (*value_.at(i))();
     }
@@ -119,7 +118,7 @@ namespace fhicl {
     ftype value_;
 
     std::size_t
-    get_size() const override
+    get_size() const noexcept override
     {
       return value_.size();
     }
@@ -156,10 +155,9 @@ namespace fhicl {
   class Sequence<T, -1ull> final : public detail::SequenceBase,
                                    private detail::RegisterIfTableMember {
   public:
-    static_assert(!tt::is_table_fragment<T>::value, NO_NESTED_TABLE_FRAGMENTS);
-    static_assert(!tt::is_optional_parameter<T>::value, NO_OPTIONAL_TYPES);
-    static_assert(!tt::is_delegated_parameter<T>::value,
-                  NO_DELEGATED_PARAMETERS);
+    static_assert(!tt::is_table_fragment_v<T>, NO_NESTED_TABLE_FRAGMENTS);
+    static_assert(!tt::is_optional_parameter_v<T>, NO_OPTIONAL_TYPES);
+    static_assert(!tt::is_delegated_parameter_v<T>, NO_DELEGATED_PARAMETERS);
 
     using default_type = std::vector<typename tt::fhicl_type<T>::default_type>;
     using ftype = std::vector<std::shared_ptr<tt::fhicl_type<T>>>;
@@ -192,7 +190,7 @@ namespace fhicl {
     }
 
     auto
-    operator()(std::size_t i) const
+    operator()(std::size_t const i) const
     {
       return (*value_.at(i))();
     }
@@ -223,14 +221,13 @@ namespace fhicl {
         }
 
         for (auto i = value_.size(); i != n; ++i) {
-          value_.emplace_back(
-            new tt::fhicl_type<T>{Name::sequence_element(key_fragment, i)});
+          value_.push_back(std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(key_fragment, i)));
         }
       }
     }
 
     std::size_t
-    get_size() const override
+    get_size() const noexcept override
     {
       return value_.size();
     }
@@ -255,7 +252,195 @@ namespace fhicl {
   };
 }
 
-#include "fhiclcpp/types/detail/Sequence.icc"
+#include "cetlib/container_algorithms.h"
+#include "cetlib_except/demangle.h"
+#include "fhiclcpp/detail/printing_helpers.h"
+#include "fhiclcpp/type_traits.h"
+#include "fhiclcpp/types/detail/TableMemberRegistry.h"
+#include "fhiclcpp/types/detail/ostream_helpers.h"
+#include "fhiclcpp/types/detail/type_traits_error_msgs.h"
+
+#include <iostream>
+#include <string>
+
+namespace fhicl {
+
+  //==================================================================
+  // e.g. Sequence<int,4> ====> std::array<int,4>
+  //
+
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name) : Sequence{std::move(name), Comment("")}
+  {}
+
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name, Comment&& comment)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::REQUIRED,
+                   par_type::SEQ_ARRAY,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    for (std::size_t i{}; i != N; ++i) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i));
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name,
+                           Comment&& comment,
+                           std::function<bool()> maybeUse)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::REQUIRED_CONDITIONAL,
+                   par_type::SEQ_ARRAY,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    for (std::size_t i{}; i != N; ++i) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i));
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  // c'tors that support defaults
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name, default_type const& defaults)
+    : Sequence{std::move(name), Comment{""}, defaults}
+  {}
+
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name,
+                           Comment&& comment,
+                           default_type const& defaults)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::DEFAULT,
+                   par_type::SEQ_ARRAY,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    std::size_t i{};
+    for (auto const& arg : defaults) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i), arg);
+      ++i;
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T, std::size_t N>
+  Sequence<T, N>::Sequence(Name&& name,
+                           Comment&& comment,
+                           std::function<bool()> maybeUse,
+                           default_type const& defaults)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::DEFAULT_CONDITIONAL,
+                   par_type::SEQ_ARRAY,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+    , value_{{nullptr}}
+  {
+    std::size_t i{};
+    for (auto const& arg : defaults) {
+      value_.at(i) =
+        std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i), arg);
+      ++i;
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  //==================================================================
+  // e.g. Sequence<int> ====> std::vector<int>
+  //
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name)
+    : Sequence{std::move(name), Comment{""}}
+  {}
+
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name, Comment&& comment)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::REQUIRED,
+                   par_type::SEQ_VECTOR,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+    , value_{{std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))}}
+  {
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name,
+                               Comment&& comment,
+                               std::function<bool()> maybeUse)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::REQUIRED_CONDITIONAL,
+                   par_type::SEQ_VECTOR,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+    , value_{{std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(0ul))}}
+  {
+    NameStackRegistry::end_of_ctor();
+  }
+
+  // c'tors that support defaults
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name, default_type const& defaults)
+    : Sequence{std::move(name), Comment{""}, defaults}
+  {}
+
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name,
+                               Comment&& comment,
+                               default_type const& defaults)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::DEFAULT,
+                   par_type::SEQ_VECTOR,
+                   detail::AlwaysUse()}
+    , RegisterIfTableMember{this}
+  {
+    static_assert(!tt::is_table_v<T>, NO_DEFAULTS_FOR_TABLE);
+    std::size_t i{};
+    for (auto const& t : defaults) {
+      value_.push_back(std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i), t));
+      ++i;
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+
+  template <typename T>
+  Sequence<T, -1ull>::Sequence(Name&& name,
+                               Comment&& comment,
+                               std::function<bool()> maybeUse,
+                               default_type const& defaults)
+    : SequenceBase{std::move(name),
+                   std::move(comment),
+                   par_style::DEFAULT_CONDITIONAL,
+                   par_type::SEQ_VECTOR,
+                   maybeUse}
+    , RegisterIfTableMember{this}
+  {
+    static_assert(!tt::is_table_v<T>, NO_DEFAULTS_FOR_TABLE);
+    std::size_t i{};
+    for (auto const& t : defaults) {
+      value_.emplace_back(std::make_shared<tt::fhicl_type<T>>(Name::sequence_element(i), t));
+      ++i;
+    }
+    NameStackRegistry::end_of_ctor();
+  }
+}
 
 #endif /* fhiclcpp_types_Sequence_h */
 

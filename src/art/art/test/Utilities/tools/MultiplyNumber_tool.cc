@@ -17,6 +17,6 @@ namespace arttest {
       i *= 2;
     }
   };
-}
+} // namespace arttest
 
 DEFINE_ART_CLASS_TOOL(arttest::MultiplyNumber)

@@ -1,27 +1,26 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent canvas	v3_03_04
-defaultqual	e15
+parent canvas	v3_10_00
+defaultqual	e19
 #
 fcldir -
 perllib  product_dir
 #
-product		version
-clhep		v2_3_4_6
-cppunit		v1_13_2c
-range		v3_0_3_0
-messagefacility	v2_02_04
-cetbuildtools	v7_04_00	-	only_for_build
-root		v6_12_06a	c2
+product         version		<format=2>
+clhep           v2_4_1_3a
+range           v3_0_10_0b
+messagefacility	v2_07_00
+cppunit         v1_15_1a        -       only_for_build
+cetbuildtools   v7_17_01        -       only_for_build
 end_product_list
 
-qualifier	messagefacility	clhep		root		cppunit		range		notes
-e15:debug	e15:debug	e15:debug	-		e15:debug	-nq-
-e15:prof	e15:prof	e15:prof	-		e15:prof	-nq-
-e17:debug	e17:debug	e17:debug	-		e17:debug	-nq-
-e17:prof	e17:prof	e17:prof	-		e17:prof	-nq-
-c2:debug	c2:debug	c2:debug	c2:debug	c2:debug	-nq-
-c2:prof		c2:prof		c2:prof		c2:prof		c2:prof		-nq-
+qualifier	messagefacility clhep		cppunit		range		notes
+e20:debug	e20:debug	e20:debug	e20:debug	-nq-
+e20:prof	e20:prof	e20:prof	e20:prof	-nq-
+e19:debug	e19:debug	e19:debug	e19:debug	-nq-
+e19:prof	e19:prof	e19:prof	e19:prof	-nq-
+c7:debug	c7:debug	c7:debug	c7:debug	-nq-
+c7:prof		c7:prof		c7:prof		c7:prof		-nq-
 end_qualifier_list
 
 # Local Variables:

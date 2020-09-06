@@ -1,5 +1,6 @@
 #ifndef gallery_BranchData_h
 #define gallery_BranchData_h
+// vim: set sw=2 expandtab :
 
 // BranchData holds a pointer to a single TBranch and
 // the buffer that data is written to from that TBranch.
@@ -14,7 +15,7 @@ class TClass;
 
 namespace art {
   class EDProduct;
-  class EDProductGetterFinder;
+  class PrincipalBase;
   class TypeID;
 } // namespace art
 
@@ -24,62 +25,58 @@ namespace gallery {
 
   class BranchData : public art::EDProductGetter {
   public:
-    // This is an invalid BranchData object initialized
-    // such that getIt always returns a nullptr.
-    BranchData() = default;
-
-    BranchData(art::TypeID const& type,
-               TClass* iTClass,
-               TBranch* branch,
-               EventNavigator const* eventNavigator,
-               art::EDProductGetterFinder const* finder,
-               std::string&& iBranchName);
-
-    BranchData(BranchData const&) = delete;
-    BranchData const& operator=(BranchData const&) = delete;
-
     virtual ~BranchData();
 
+    BranchData() = default;
+
+    explicit BranchData(art::TypeID const& type,
+                        TClass* iTClass,
+                        TBranch* branch,
+                        EventNavigator const* eventNavigator,
+                        art::PrincipalBase const* finder,
+                        std::string&& iBranchName);
+
+    BranchData(BranchData const&) = delete;
+    BranchData(BranchData&&) = delete;
+    BranchData& operator=(BranchData const&) = delete;
+    BranchData& operator=(BranchData&&) = delete;
+
+  public:
     virtual void updateFile(TBranch* iBranch);
 
     TClass*
-    tClass() const
+    tClass() const noexcept
     {
       return tClass_;
     }
+
     void*
-    address() const
+    address() const noexcept
     {
       return address_;
     }
+
     TBranch*
-    branch() const
+    branch() const noexcept
     {
       return branch_;
     }
+
     std::string const&
-    branchName() const
+    branchName() const noexcept
     {
       return branchName_;
     }
+
     long long
-    lastProduct() const
+    lastProduct() const noexcept
     {
       return lastProduct_;
     }
 
-    bool
-    isReady() const override
-    {
-      return true;
-    }
-    art::EDProduct const* getIt() const override;
-
-    art::EDProduct const* anyProduct() const override;
-    art::EDProduct const* uniqueProduct() const override;
-    art::EDProduct const* uniqueProduct(art::TypeID const&) const override;
-    bool resolveProduct(art::TypeID const&) const override;
-    bool resolveProductIfAvailable(art::TypeID const&) const override;
+    virtual art::EDProduct const* getIt_() const;
+    virtual art::EDProduct const* uniqueProduct_() const;
+    virtual art::EDProduct const* uniqueProduct_(art::TypeID const&) const;
 
   private:
     TClass* tClass_{nullptr};
@@ -87,11 +84,13 @@ namespace gallery {
     art::EDProduct const* edProduct_{nullptr};
     TBranch* branch_{nullptr};
     EventNavigator const* eventNavigator_{nullptr};
-    cet::exempt_ptr<art::EDProductGetterFinder const> finder_{nullptr};
+    cet::exempt_ptr<art::PrincipalBase const> finder_{nullptr};
     mutable long long lastProduct_{-1};
     std::string branchName_{};
   };
+
 } // namespace gallery
+
 #endif /* gallery_BranchData_h */
 
 // Local Variables:

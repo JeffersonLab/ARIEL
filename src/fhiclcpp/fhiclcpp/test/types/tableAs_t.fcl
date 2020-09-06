@@ -1,0 +1,17 @@
+pset: {
+  mother: {
+    name: "Angela"
+    age: 32
+  }
+  kids: [
+    { name: "Alice"    age: 1 },
+    { name: "Bob"      age: 2 },
+    { name: "Charlie"  age: 3 },
+    { name: "Danielle" age: 4 },
+    { name: "Edgar"    age: 5 }
+  ]
+  contact_info: {
+    street_address: "123 S. 45th Ave."
+    phone_number: "(123) 456-7890"
+  }
+}

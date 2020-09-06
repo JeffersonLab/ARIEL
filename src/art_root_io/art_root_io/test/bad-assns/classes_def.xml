@@ -1,0 +1,9 @@
+<lcgdict>
+  <class name="arttest::DummyA" ClassVersion="10">
+   <version ClassVersion="10" checksum="737085074"/>
+  </class>
+  <class name="std::vector<art::Ptr<arttest::DummyProduct> >"/>
+  <class name="std::pair<art::Ptr<arttest::DummyA>,art::Ptr<arttest::DummyProduct> >"/>
+  <class name="art::Assns<arttest::DummyA,arttest::DummyProduct,void>"/>
+  <class name="art::Wrapper<art::Assns<arttest::DummyA,arttest::DummyProduct,void> >"/>
+</lcgdict>

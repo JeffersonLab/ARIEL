@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE (Bounded sequences with defaults)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/intermediate_table.h"
@@ -47,16 +46,16 @@ BOOST_AUTO_TEST_CASE(GoodArray)
 {
   string const good{};
   auto const& validatedTable = validateConfig<ArrayConfig>(good);
-  BOOST_CHECK_EQUAL(validatedTable().composers(0), "Mahler"s);
-  BOOST_CHECK_EQUAL(validatedTable().composers(1), "Elgar"s);
+  BOOST_TEST(validatedTable().composers(0) == "Mahler"s);
+  BOOST_TEST(validatedTable().composers(1) == "Elgar"s);
 }
 
 BOOST_AUTO_TEST_CASE(GoodTuple)
 {
   string const good{};
   auto const& validatedTable = validateConfig<TupleConfig>(good);
-  BOOST_CHECK_EQUAL(validatedTable().ages.get<0>(), "David"s);
-  BOOST_CHECK_EQUAL(validatedTable().ages.get<1>(), 9);
+  BOOST_TEST(validatedTable().ages.get<0>() == "David"s);
+  BOOST_TEST(validatedTable().ages.get<1>() == 9u);
 }
 
 BOOST_AUTO_TEST_CASE(BadSequence)

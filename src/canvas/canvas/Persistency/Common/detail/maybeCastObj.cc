@@ -6,11 +6,6 @@
 
 #include <cxxabi.h>
 
-#ifdef _LIBCPPABI_VERSION
-#include "TClass.h"
-#include "TClassRef.h"
-#endif
-
 #include <iomanip>
 #include <iostream>
 #include <typeinfo>
@@ -19,61 +14,69 @@ using namespace art;
 using namespace std;
 
 #ifdef _LIBCPPABI_VERSION
+// When using libc++, under the assumption that it uses libc++abi,
+// libc++abi implements the __class_type_info classes, but does
+// not expose them in cxxabi.h. However, seem to be able to
+// provide the declarations, link to c++abi, and use them.
+// TODO:
+// 1. Note sure about providing *definition* of constructors
+//    vs just declarations of destructors
+// 2. Configure time check on availability of __class_type_info?
+// 3. Configure time check on which c++ ABI library is used?
+//
+namespace __cxxabiv1 {
+  // Type information for a class
+  class __class_type_info : public std::type_info {
+  public:
+    explicit __class_type_info(char const* n) : type_info(n) {}
+    virtual ~__class_type_info() override;
+  };
 
-bool
-detail::upcastAllowed(type_info const& tid_from, type_info const& tid_to)
-{
-  if (tid_from == tid_to) {
-    return true;
-  }
-  auto const clFrom = TClass::GetClass(tid_from);
-  if (!clFrom) {
-    return false;
-  }
-  auto const clTo = TClass::GetClass(tid_to);
-  if (!clTo) {
-    return false;
-  }
-  return clFrom->InheritsFrom(clTo);
+  // Type information for a class with a single non-virtual base
+  class __si_class_type_info : public __class_type_info {
+  public:
+    __class_type_info const* __base_type;
+    explicit __si_class_type_info(char const* n, __class_type_info const* base)
+      : __class_type_info(n), __base_type(base)
+    {}
+    virtual ~__si_class_type_info() override;
+  };
+
+  // Helper class for __vmi_class_type.
+  struct __base_class_type_info {
+    __class_type_info const* __base_type;
+#if defined _GLIBCXX_LLP64
+    long long __offset_flags;
+#else
+    long __offset_flags;
+#endif
+    enum __offset_flags_masks {
+      __virtual_mask = 0x1,
+      __public_mask = 0x2,
+      __offset_shift = 8
+    };
+  };
+
+  // Type information for a class with multiple and/or virtual bases.
+  class __vmi_class_type_info : public __class_type_info {
+  public:
+    unsigned int __flags;
+    unsigned int __base_count;
+    __base_class_type_info __base_info[1];
+
+    enum __flags_masks {
+      __non_diamond_repeat_mask = 0x1,
+      __diamond_shaped_mask = 0x2,
+      __flags_unknown_mask = 0x10
+    };
+
+    explicit __vmi_class_type_info(char const* n, int flags)
+      : __class_type_info(n), __flags(flags), __base_count(0)
+    {}
+    virtual ~__vmi_class_type_info() override;
+  };
 }
-
-void const*
-art::detail::maybeCastObj(void const* address,
-                          std::type_info const& tiFrom,
-                          std::type_info const& tiTo)
-{
-  if (tiFrom == tiTo) {
-    // The do nothing case.
-    return address;
-  }
-  auto const clFrom = TClass::GetClass(tiFrom);
-  auto const clTo = TClass::GetClass(tiTo);
-  if (clFrom && clTo) {
-    void const* castAddr(nullptr);
-    if (clFrom->InheritsFrom(clTo)) {
-      // The upcast case, let ROOT do it.
-      castAddr = clFrom->DynamicCast(clTo, const_cast<void*>(address), true);
-    } else if (clTo->InheritsFrom(clFrom)) {
-      // The downcast case is forbidden.
-      throw Exception(errors::TypeConversion)
-        << "art::Wrapper<> : unable to convert type "
-        << cet::demangle_symbol(tiFrom.name()) << " to "
-        << cet::demangle_symbol(tiTo.name()) << ", which is a subclass.\n";
-    }
-    if (castAddr != nullptr) {
-      // ROOT succeeded, done.
-      return castAddr;
-    }
-  }
-  // ROOT could not do the upcast, or there was no inheritance
-  // relationship between the classes, die.
-  throw Exception(errors::TypeConversion)
-    << "art::Wrapper<> : unable to convert type "
-    << cet::demangle_symbol(tiFrom.name()) << " to "
-    << cet::demangle_symbol(tiTo.name()) << "\n";
-}
-
-#else // _LIBCPPABI_VERSION
+#endif // _LIBCPPABI_VERSION
 
 namespace {
 
@@ -85,8 +88,8 @@ namespace {
     long offset = 0L;
 
   public:
-    void print[[gnu::unused]]() const;
-    void reset[[gnu::unused]]();
+    void print [[maybe_unused]] () const;
+    void reset [[maybe_unused]] ();
   };
 
   void
@@ -219,5 +222,3 @@ detail::maybeCastObj(void const* ptr,
   }
   return static_cast<char const*>(ptr) + res.offset;
 }
-
-#endif // _LIBCPPABI_VERSION

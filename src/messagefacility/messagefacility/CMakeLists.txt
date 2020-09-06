@@ -17,8 +17,7 @@ cet_make_library(
     cetlib
     cetlib_except
     fhiclcpp
-    hep_concurrency
-    ${TBB})
+    hep_concurrency)
 
 add_subdirectory(MessageLogger)
 add_subdirectory(MessageService)

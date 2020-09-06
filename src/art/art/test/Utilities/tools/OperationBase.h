@@ -15,7 +15,7 @@ namespace arttest {
   private:
     virtual void do_adjustNumber(int&) const = 0;
   };
-}
+} // namespace arttest
 
 #endif /* art_test_Utilities_tools_OperationBase_h */
 

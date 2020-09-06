@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "canvas/Persistency/Provenance/IDNumber.h"
-#include "cetlib/compiler_macros.h"
 #include "fhiclcpp/types/ConfigurationTable.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/TupleAs.h"
@@ -41,10 +40,10 @@ namespace {
           // N.B. Rely on fall-through behavior to set all relevant data.
         case 3ull:
           e_ = idNumbers[2];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 2ull:
           sr_ = idNumbers[1];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 1ull:
           r_ = idNumbers[0];
           break;
@@ -90,7 +89,7 @@ namespace {
     SubRunNumber_t sr_{IDNumber<Level::SubRun>::invalid()};
     EventNumber_t e_{IDNumber<Level::Event>::invalid()};
   };
-}
+} // namespace
 
 #define OUTPUT_COMMENT                                                         \
   "To indicate where an output file should switch, one can\n"                  \
@@ -145,7 +144,7 @@ namespace arttest {
     write(EventPrincipal& ep) override
     {
       requestsFileClose_ =
-        activeSwitchPoint_.matches(currentInputFileName_, ep.id());
+        activeSwitchPoint_.matches(currentInputFileName_, ep.eventID());
       if (requestsFileClose_) {
         updateSwitchPoints();
       }
@@ -155,7 +154,7 @@ namespace arttest {
     writeSubRun(SubRunPrincipal& srp) override
     {
       requestsFileClose_ =
-        activeSwitchPoint_.matches(currentInputFileName_, srp.id());
+        activeSwitchPoint_.matches(currentInputFileName_, srp.subRunID());
       if (requestsFileClose_) {
         updateSwitchPoints();
       }
@@ -165,7 +164,7 @@ namespace arttest {
     writeRun(RunPrincipal& rp) override
     {
       requestsFileClose_ =
-        activeSwitchPoint_.matches(currentInputFileName_, rp.id());
+        activeSwitchPoint_.matches(currentInputFileName_, rp.runID());
       if (requestsFileClose_) {
         updateSwitchPoints();
       }
@@ -212,6 +211,7 @@ namespace arttest {
     std::string currentInputFileName_{};
     bool requestsFileClose_{false};
   };
-}
+
+} // namespace arttest
 #undef OUTPUT_COMMENT
 DEFINE_ART_MODULE(arttest::EventProcessorTestOutput)

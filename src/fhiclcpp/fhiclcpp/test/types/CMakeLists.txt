@@ -51,6 +51,10 @@ cet_test(return_types_table_t    USE_BOOST_UNIT)
 cet_test(return_value_defaults_t USE_BOOST_UNIT)
 cet_test(searchAllowedConfiguration_t USE_BOOST_UNIT)
 
+cet_test(tableAs_t USE_BOOST_UNIT
+  DATAFILES
+  tableAs_t.fcl)
+
 cet_test(tupleAs_t USE_BOOST_UNIT
   DATAFILES
   tupleAs_t.fcl)

@@ -7,7 +7,6 @@
 //
 // ======================================================================
 
-#include "boost/any.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/numeric/conversion/cast.hpp"
 #include "cetlib_except/demangle.h"
@@ -21,6 +20,7 @@
 #include "fhiclcpp/extended_value.h"
 #include "fhiclcpp/fwd.h"
 
+#include <any>
 #include <cctype>
 #include <map>
 #include <sstream>
@@ -104,7 +104,7 @@ public:
   bool operator!=(ParameterSet const& other) const;
 
 private:
-  using map_t = std::map<std::string, boost::any>;
+  using map_t = std::map<std::string, std::any>;
   using map_iter_t = map_t::const_iterator;
 
   map_t mapping_;
@@ -112,16 +112,16 @@ private:
   mutable ParameterSetID id_;
 
   // Private inserters.
-  void insert_(std::string const& key, boost::any const& value);
-  void insert_or_replace_(std::string const& key, boost::any const& value);
+  void insert_(std::string const& key, std::any const& value);
+  void insert_or_replace_(std::string const& key, std::any const& value);
   void insert_or_replace_compatible_(std::string const& key,
-                                     boost::any const& value);
+                                     std::any const& value);
 
   std::string to_string_(bool compact = false) const;
-  std::string stringify_(boost::any const& a, bool compact = false) const;
+  std::string stringify_(std::any const& a, bool compact = false) const;
 
   bool key_is_type_(std::string const& key,
-                    std::function<bool(boost::any const&)> func) const;
+                    std::function<bool(std::any const&)> func) const;
 
   // Local retrieval only.
   template <class T>
@@ -160,7 +160,7 @@ fhicl::ParameterSet::is_key_to_sequence(std::string const& key) const
 inline bool
 fhicl::ParameterSet::is_key_to_atom(std::string const& key) const
 {
-  return key_is_type_(key, [](boost::any const& a) {
+  return key_is_type_(key, [](std::any const& a) {
     return !(detail::is_sequence(a) || detail::is_table(a));
   });
 }
@@ -171,7 +171,7 @@ fhicl::ParameterSet::put(std::string const& key, T const& value)
 {
   auto insert = [this, &value](auto const& key) {
     using detail::encode;
-    this->insert_(key, boost::any(encode(value)));
+    this->insert_(key, std::any(encode(value)));
   };
   detail::try_insert(insert, key);
 }
@@ -182,7 +182,7 @@ fhicl::ParameterSet::put_or_replace(std::string const& key, T const& value)
 {
   auto insert_or_replace = [this, &value](auto const& key) {
     using detail::encode;
-    this->insert_or_replace_(key, boost::any(encode(value)));
+    this->insert_or_replace_(key, std::any(encode(value)));
     srcMapping_.erase(key);
   };
   detail::try_insert(insert_or_replace, key);
@@ -195,7 +195,7 @@ fhicl::ParameterSet::put_or_replace_compatible(std::string const& key,
 {
   auto insert_or_replace_compatible = [this, &value](auto const& key) {
     using detail::encode;
-    this->insert_or_replace_compatible_(key, boost::any(encode(value)));
+    this->insert_or_replace_compatible_(key, std::any(encode(value)));
     srcMapping_.erase(key);
   };
   detail::try_insert(insert_or_replace_compatible, key);
@@ -324,7 +324,7 @@ namespace fhicl {
                          fhicl::extended_value const& value);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* fhiclcpp_ParameterSet_h */
 

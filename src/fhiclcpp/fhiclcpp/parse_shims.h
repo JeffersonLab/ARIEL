@@ -29,8 +29,7 @@ namespace boost {
   namespace spirit {
     template <>
     struct use_terminal<::boost::spirit::qi::domain, shims::tag::catchall>
-      : mpl::true_ {
-    };
+      : mpl::true_ {};
   }
 }
 
@@ -108,3 +107,7 @@ namespace boost {
   }
 }
 #endif /* fhiclcpp_parse_shims_h */
+
+// Local Variables:
+// mode: c++
+// End:

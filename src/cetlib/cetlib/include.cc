@@ -5,55 +5,55 @@
 // ======================================================================
 
 #include "cetlib/include.h"
-#include "cetlib/split_by_regex.h"
-
 #include "cetlib/filesystem.h"
 #include "cetlib/search_path.h"
+#include "cetlib/split_by_regex.h"
 #include "cetlib/trim.h"
 #include "cetlib_except/coded_exception.h"
+
 #include <fstream>
+#include <regex>
 
 // ----------------------------------------------------------------------
 
-namespace cet {
-  namespace detail {
+namespace {
+  std::regex const reCarriageReturn{"\r"};
+  std::string const include_lit{"#include \""};
+  std::size_t const include_sz{include_lit.size()};
+}
 
-    enum error { cant_open, cant_read, malformed };
+namespace {
+  enum error { cant_open, cant_read, malformed };
 
-    std::string
-    translate(error const code)
-    {
-      switch (code) {
-        case cant_open:
-          return "Can't locate or can't open specified file:";
-        case cant_read:
-          return "Can't read from supplied input stream:";
-        case malformed:
-          return "Malformed #include directive:";
-        default:
-          return "Unknown code";
+  std::string
+  translate(error const code)
+  {
+    switch (code) {
+      case cant_open:
+        return "Can't locate or can't open specified file:";
+      case cant_read:
+        return "Can't read from supplied input stream:";
+      case malformed:
+        return "Malformed #include directive:";
+      default:
+        return "Unknown code";
+    }
+  }
+
+  using include_exception = cet::coded_exception<error, translate>;
+
+  std::vector<std::string>
+  getlines(std::istream& is)
+  {
+    std::vector<std::string> result;
+    for (std::string readline; std::getline(is, readline);) {
+      for (auto const& line : cet::split_by_regex(readline, reCarriageReturn)) {
+        result.emplace_back(line);
       }
     }
-
-    using include_exception = cet::coded_exception<error, translate>;
-
-    std::string const include_lit{"#include \""};
-    std::size_t const include_sz{include_lit.size()};
-
-    std::vector<std::string>
-    getlines(std::istream& is)
-    {
-      std::vector<std::string> result;
-      for (std::string readline; std::getline(is, readline);) {
-        for (auto const& line : cet::split_by_regex(readline, "\r")) {
-          result.emplace_back(line);
-        }
-      }
-      return result;
-    }
-
-  } // detail
-} // cet
+    return result;
+  }
+}
 
 using namespace cet::detail;
 

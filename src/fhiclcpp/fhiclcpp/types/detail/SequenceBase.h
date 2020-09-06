@@ -26,12 +26,12 @@ namespace fhicl {
       {}
 
       bool
-      empty() const
+      empty() const noexcept
       {
         return size() == 0;
       }
       std::size_t
-      size() const
+      size() const noexcept
       {
         return get_size();
       }
@@ -53,7 +53,7 @@ namespace fhicl {
       }
 
     private:
-      virtual std::size_t get_size() const = 0;
+      virtual std::size_t get_size() const noexcept = 0;
 
       virtual void do_prepare_elements_for_validation(std::size_t) = 0;
       virtual void do_walk_elements(

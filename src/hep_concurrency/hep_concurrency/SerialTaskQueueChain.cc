@@ -14,9 +14,8 @@ using namespace std;
 namespace hep {
   namespace concurrency {
 
-    SerialTaskQueueChain::~SerialTaskQueueChain() {}
-
-    SerialTaskQueueChain::SerialTaskQueueChain() {}
+    SerialTaskQueueChain::~SerialTaskQueueChain() = default;
+    SerialTaskQueueChain::SerialTaskQueueChain() = default;
 
     SerialTaskQueueChain::SerialTaskQueueChain(
       vector<shared_ptr<SerialTaskQueue>> queues)

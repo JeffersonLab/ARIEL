@@ -12,22 +12,19 @@ template <typename T>
 struct compare_is_int
   : public std::integral_constant<bool,
                                   tt::is_int<T>::value ==
-                                    tt_old::is_int<T>::value> {
-};
+                                    tt_old::is_int<T>::value> {};
 
 template <typename T>
 struct compare_is_uint
   : public std::integral_constant<bool,
                                   tt::is_uint<T>::value ==
-                                    tt_old::is_uint<T>::value> {
-};
+                                    tt_old::is_uint<T>::value> {};
 
 template <typename T>
 struct compare_is_numeric
   : public std::integral_constant<bool,
                                   tt::is_numeric<T>::value ==
-                                    tt_old::is_numeric<T>::value> {
-};
+                                    tt_old::is_numeric<T>::value> {};
 
 template <typename T>
 void

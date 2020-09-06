@@ -9,16 +9,16 @@
 #include <vector>
 
 namespace art {
-  template <class COLLECTION>
-  void getElementAddresses(COLLECTION const& coll,
-                           const std::type_info& iToType,
-                           const std::vector<unsigned long>& iIndices,
+  template <typename Collection>
+  void getElementAddresses(Collection const& coll,
+                           std::type_info const& iToType,
+                           std::vector<unsigned long> const& indices,
                            std::vector<void const*>& oPtr);
 
   template <typename T>
   void getElementAddresses(cet::map_vector<T> const& obj,
-                           const std::type_info& iToType,
-                           const std::vector<unsigned long>& iIndices,
+                           std::type_info const& iToType,
+                           std::vector<unsigned long> const& indices,
                            std::vector<void const*>& oPtr);
 
   namespace detail {
@@ -43,9 +43,9 @@ public:
   }
 
   bool
-  starts_with_pair(std::string const& type_name, size_t pos = 0)
+  starts_with_pair(std::string const& type_name, size_t const pos)
   {
-    return (type_name.compare(pos, pair_stem_offset(), pair_stem()) == 0);
+    return type_name.compare(pos, pair_stem_offset(), pair_stem()) == 0;
   }
 
   template <typename T>
@@ -62,58 +62,46 @@ public:
   }
 };
 
-template <class COLLECTION>
+template <typename Collection>
 void
-art::getElementAddresses(COLLECTION const& coll,
-                         const std::type_info& iToType,
-                         const std::vector<unsigned long>& iIndices,
+art::getElementAddresses(Collection const& coll,
+                         std::type_info const& iToType,
+                         std::vector<unsigned long> const& indices,
                          std::vector<void const*>& oPtr)
 {
-  typedef COLLECTION product_type;
-  oPtr.reserve(iIndices.size());
-  for (std::vector<unsigned long>::const_iterator itIndex = iIndices.begin(),
-                                                  itEnd = iIndices.end();
-       itIndex != itEnd;
-       ++itIndex) {
-    auto it = coll.begin();
-    advance(it, *itIndex);
+  oPtr.reserve(indices.size());
+  for (auto const index : indices) {
+    auto it = coll.cbegin();
+    advance(it, index);
     oPtr.push_back(detail::maybeCastObj(
-      detail::GetProduct<product_type>::address(it), iToType));
+      detail::GetProduct<Collection>::address(it), iToType));
   }
 }
 
 template <typename T>
 void
 art::getElementAddresses(cet::map_vector<T> const& obj,
-                         const std::type_info& iToType,
-                         const std::vector<unsigned long>& iIndices,
+                         std::type_info const& iToType,
+                         std::vector<unsigned long> const& indices,
                          std::vector<void const*>& oPtr)
 {
-  typedef cet::map_vector<T> product_type;
-  typedef typename product_type::const_iterator iter;
   detail::value_type_helper vh;
   std::string const wanted_type =
     uniform_type_name(cet::demangle_symbol(iToType.name()));
-  static size_t pos = vh.look_past_pair<T>();
-  oPtr.reserve(iIndices.size());
+  static size_t const pos = vh.look_past_pair<T>();
+  oPtr.reserve(indices.size());
   if ((pos < wanted_type.size()) && vh.starts_with_pair(wanted_type, pos)) {
     // Want value_type.
-    for (std::vector<unsigned long>::const_iterator itIndex = iIndices.begin(),
-                                                    itEnd = iIndices.end();
-         itIndex != itEnd;
-         ++itIndex) {
-      iter it = obj.find(cet::map_vector_key(*itIndex));
-      oPtr.push_back(
-        detail::maybeCastObj((it == obj.end()) ? 0 : &(*it), iToType));
+    for (auto const index : indices) {
+      auto it = obj.find(cet::map_vector_key{index});
+      auto ptr = (it == obj.cend()) ? nullptr : &*it;
+      oPtr.push_back(detail::maybeCastObj(ptr, iToType));
     }
   } else {
     // Want mapped_type.
-    for (std::vector<unsigned long>::const_iterator itIndex = iIndices.begin(),
-                                                    itEnd = iIndices.end();
-         itIndex != itEnd;
-         ++itIndex) {
-      oPtr.push_back(detail::maybeCastObj(
-        obj.getOrNull(cet::map_vector_key(*itIndex)), iToType));
+    for (auto const index : indices) {
+      auto ptr = obj.getOrNull(cet::map_vector_key{index});
+      oPtr.push_back(detail::maybeCastObj(ptr, iToType));
     }
   }
 }

@@ -22,6 +22,12 @@ namespace art {
       return 0x2;
     } // Product was not made successfully
     constexpr ProductStatus
+    dummyToPreventDoubleCount() noexcept
+    {
+      return 0x3;
+    } // Product is a dummy placeholder object with an invalid range set to
+      // prevent double-counting when combining run/subrun products
+    constexpr ProductStatus
     unknown() noexcept
     {
       return 0xfe;
@@ -46,6 +52,11 @@ namespace art {
     dropped(ProductStatus const status) noexcept
     {
       return status == dropped();
+    }
+    constexpr bool
+    dummyToPreventDoubleCount(ProductStatus const status) noexcept
+    {
+      return status == dummyToPreventDoubleCount();
     }
     constexpr bool
     unknown(ProductStatus const status) noexcept

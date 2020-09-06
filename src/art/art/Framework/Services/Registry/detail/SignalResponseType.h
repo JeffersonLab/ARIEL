@@ -24,8 +24,8 @@ namespace art {
     {
       s.emplace_front(f);
     }
-  }
-}
+  } // namespace detail
+} // namespace art
 
 #endif /* art_Framework_Services_Registry_detail_SignalResponseType_h */
 

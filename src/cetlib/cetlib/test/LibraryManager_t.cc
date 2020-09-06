@@ -49,36 +49,38 @@ BOOST_FIXTURE_TEST_SUITE(LibraryManagerTests, LibraryManagerTestFixture)
 BOOST_AUTO_TEST_CASE(libSpecsVector)
 {
   std::vector<std::string> lib_list;
-  BOOST_REQUIRE(lm_ref.getValidLibspecs(lib_list) > 0);
+  BOOST_TEST_REQUIRE(lm_ref.getValidLibspecs(lib_list) > 0);
 }
 
 BOOST_AUTO_TEST_CASE(libSpecsIter)
 {
   std::vector<std::string> lib_list;
-  BOOST_REQUIRE(lm_ref.getValidLibspecs(std::back_inserter(lib_list)) > 0);
+  BOOST_TEST_REQUIRE(lm_ref.getValidLibspecs(std::back_inserter(lib_list)) > 0);
 }
 
 BOOST_AUTO_TEST_CASE(libListVector)
 {
   std::vector<std::string> lib_list;
-  BOOST_REQUIRE(lm_ref.getLoadableLibraries(lib_list) > 0);
+  BOOST_TEST_REQUIRE(lm_ref.getLoadableLibraries(lib_list) > 0);
 }
 
 BOOST_AUTO_TEST_CASE(libListIter)
 {
   std::vector<std::string> lib_list;
-  BOOST_REQUIRE(lm_ref.getLoadableLibraries(std::back_inserter(lib_list)) > 0);
+  BOOST_TEST_REQUIRE(lm_ref.getLoadableLibraries(std::back_inserter(lib_list)) >
+                     0);
 }
 
 BOOST_AUTO_TEST_CASE(getSymbolLong)
 {
-  BOOST_REQUIRE(lm_ref.getSymbolByLibspec<void*>("2/1/5", "idString") !=
-                nullptr);
+  BOOST_TEST_REQUIRE(lm_ref.getSymbolByLibspec<void*>("2/1/5", "idString") !=
+                     nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(getSymbolShort)
 {
-  BOOST_REQUIRE(lm_ref.getSymbolByLibspec<void*>("5", "idString") != nullptr);
+  BOOST_TEST_REQUIRE(lm_ref.getSymbolByLibspec<void*>("5", "idString") !=
+                     nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(getSymbolPathPrecedence)
@@ -102,7 +104,7 @@ namespace {
     while ((pos = libspec.find_first_of('/', pos)) != std::string::npos) {
       libspec[pos] = '_';
     }
-    BOOST_REQUIRE_EQUAL(libspec, idString());
+    BOOST_TEST_REQUIRE(libspec == idString());
   }
 }
 
@@ -148,15 +150,15 @@ BOOST_AUTO_TEST_CASE(dictLoadable)
 {
   std::vector<std::string> lib_list;
   lm_ref.getLoadableLibraries(lib_list);
-  BOOST_REQUIRE(lm_ref.libraryIsLoadable(*lib_list.begin()));
+  BOOST_TEST_REQUIRE(lm_ref.libraryIsLoadable(*lib_list.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(dictLoadableButNotLoaded)
 {
   std::vector<std::string> lib_list;
   lm_ref.getLoadableLibraries(lib_list);
-  BOOST_REQUIRE(lm_ref.libraryIsLoadable(*lib_list.begin()));
-  BOOST_REQUIRE(!lm_ref.libraryIsLoaded(*lib_list.begin()));
+  BOOST_TEST_REQUIRE(lm_ref.libraryIsLoadable(*lib_list.begin()));
+  BOOST_TEST_REQUIRE(!lm_ref.libraryIsLoaded(*lib_list.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(loadAllLibraries)
@@ -169,14 +171,14 @@ BOOST_AUTO_TEST_CASE(dictLoaded)
   std::vector<std::string> lib_list;
   lm_ref.getLoadableLibraries(lib_list);
   lm_ref.loadAllLibraries();
-  BOOST_REQUIRE(lm_ref.libraryIsLoaded(*lib_list.begin()));
+  BOOST_TEST_REQUIRE(lm_ref.libraryIsLoaded(*lib_list.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(dictNotLoadable)
 {
   std::vector<std::string> lib_list;
   lm_ref.getLoadableLibraries(lib_list);
-  BOOST_REQUIRE(!lm_ref.libraryIsLoadable("UnknownLibrary"));
+  BOOST_TEST_REQUIRE(!lm_ref.libraryIsLoadable("UnknownLibrary"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

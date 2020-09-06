@@ -1,24 +1,25 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent art	v2_11_05
-defaultqual	e15
+parent art	v3_06_01
+defaultqual	e19
 #
 fcldir -
 perllib  product_dir
 #
-product		version
-canvas_root_io	v1_01_09
-cetbuildtools	v7_04_00	-	only_for_build
-catch		v1_11_0		-nq-	only_for_build
+product		version		<format=2>
+canvas          v3_10_00
+hep_concurrency v1_05_00
+cetbuildtools	v7_17_01	-	only_for_build
+catch		v2_12_2		-	only_for_build
 end_product_list
 
-qualifier	canvas_root_io		notes
-e15:debug	e15:debug
-e15:prof	e15:prof
-e17:debug	e17:debug
-e17:prof	e17:prof
-c2:debug	c2:debug
-c2:prof		c2:prof
+qualifier	canvas		hep_concurrency	notes
+e20:debug	e20:debug	e20:debug
+e20:prof	e20:prof	e20:prof
+e19:debug	e19:debug	e19:debug
+e19:prof	e19:prof	e19:prof
+c7:debug	c7:debug	c7:debug
+c7:prof		c7:prof		c7:prof
 end_qualifier_list
 
 table_fragment_begin
@@ -27,11 +28,6 @@ table_fragment_begin
     sourceRequired(${ART_FQ_DIR}/bin/lar_completions, NO_UPS_ENV)
     sourceRequired(${ART_FQ_DIR}/bin/gm2_completions, NO_UPS_ENV)
     sourceRequired(${ART_FQ_DIR}/bin/mu2e_completions, NO_UPS_ENV)
-    sourceRequired(${ART_FQ_DIR}/bin/sam_metadata_dumper_completions, NO_UPS_ENV)
-    sourceRequired(${ART_FQ_DIR}/bin/product_sizes_dumper_completions, NO_UPS_ENV)
-    sourceRequired(${ART_FQ_DIR}/bin/config_dumper_completions, NO_UPS_ENV)
-    sourceRequired(${ART_FQ_DIR}/bin/count_events_completions, NO_UPS_ENV)
-    sourceRequired(${ART_FQ_DIR}/bin/file_info_dumper_completions, NO_UPS_ENV)
 table_fragment_end
 
 # Local Variables:

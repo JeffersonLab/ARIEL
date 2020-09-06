@@ -71,7 +71,8 @@ namespace shims {
         return isSnippetMode() ? &*_iters.listmap_iter : &*_iters.mapmap_iter;
       }
 
-      TT& operator++()
+      TT&
+      operator++()
       {
         return isSnippetMode() ? *(_iters.listmap_iter++) :
                                  *(_iters.mapmap_iter++);
@@ -351,3 +352,7 @@ namespace shims {
 }
 
 #endif /* fhiclcpp_stdmap_shims_h */
+
+// Local Variables:
+// mode: c++
+// End:

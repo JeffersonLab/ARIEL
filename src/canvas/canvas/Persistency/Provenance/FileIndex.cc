@@ -1,4 +1,5 @@
 #include "canvas/Persistency/Provenance/FileIndex.h"
+// vim: set sw=2 expandtab :
 
 #include "cetlib/container_algorithms.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -6,11 +7,13 @@
 #include <algorithm>
 #include <iomanip>
 #include <ostream>
+#include <utility>
 
 using namespace cet;
 using namespace std;
 
 namespace {
+
   bool
   subRunUnspecified(art::EventID const& eID)
   {
@@ -21,9 +24,111 @@ namespace {
     return (!eID.isValid()) && eID.runID().isValid() &&
            art::EventID(art::SubRunID::firstSubRun(), eID.event()).isValid();
   }
-}
+
+} // unnamed namespace
 
 namespace art {
+
+  FileIndex::EntryNumber_t constexpr FileIndex::Element::invalidEntry;
+
+  FileIndex::Element::Element(EventID const& eID) : Element(eID, invalidEntry)
+  {}
+
+  FileIndex::Element::Element(EventID const& eID, EntryNumber_t const entry)
+    : eventID_{eID}, entry_{entry}
+  {}
+
+  FileIndex::EntryType
+  FileIndex::Element::getEntryType() const
+  {
+    return eventID_.isValid() ?
+             kEvent :
+             (eventID_.subRunID().isValid() ? kSubRun : kRun);
+  }
+
+  FileIndex::iterator
+  FileIndex::begin()
+  {
+    return entries_.begin();
+  }
+
+  FileIndex::const_iterator
+  FileIndex::begin() const
+  {
+    return entries_.begin();
+  }
+
+  FileIndex::const_iterator
+  FileIndex::cbegin() const
+  {
+    return entries_.begin();
+  }
+
+  FileIndex::iterator
+  FileIndex::end()
+  {
+    return entries_.end();
+  }
+
+  FileIndex::const_iterator
+  FileIndex::end() const
+  {
+    return entries_.end();
+  }
+
+  FileIndex::const_iterator
+  FileIndex::cend() const
+  {
+    return entries_.end();
+  }
+
+  std::vector<FileIndex::Element>::size_type
+  FileIndex::size() const
+  {
+    return entries_.size();
+  }
+
+  bool
+  FileIndex::empty() const
+  {
+    return entries_.empty();
+  }
+
+  bool&
+  FileIndex::allInEntryOrder() const
+  {
+    return transients_.get().allInEntryOrder_;
+  }
+
+  bool&
+  FileIndex::resultCached() const
+  {
+    return transients_.get().resultCached_;
+  }
+
+  FileIndex::SortState&
+  FileIndex::sortState() const
+  {
+    return transients_.get().sortState_;
+  }
+
+  bool
+  FileIndex::contains(EventID const& id, bool exact) const
+  {
+    return findPosition(id, exact) != entries_.end();
+  }
+
+  bool
+  FileIndex::contains(SubRunID const& id, bool exact) const
+  {
+    return findPosition(id, exact) != entries_.end();
+  }
+
+  bool
+  FileIndex::contains(RunID const& id, bool exact) const
+  {
+    return findPosition(id, exact) != entries_.end();
+  }
 
   void
   FileIndex::addEntry(EventID const& eID, EntryNumber_t const entry)
@@ -80,39 +185,38 @@ namespace art {
   bool
   FileIndex::eventsUniqueAndOrdered() const
   {
-
     auto it = cbegin();
     auto itEnd = cend();
-
     // Set up the iterators to point to first two events
     // (In the trivial case where there is zero or one event,
     // the set is unique and ordered by construction).
-
-    if (it == itEnd)
+    if (it == itEnd) {
       return true;
-
+    }
     // Step to first event
     while (it->getEntryType() != kEvent) {
       ++it;
-      if (it == itEnd)
+      if (it == itEnd) {
         return true;
+      }
     }
     auto itPrevious = it;
-
     // Step to second event
     ++it;
-    if (it == itEnd)
+    if (it == itEnd) {
       return true;
+    }
     while (it->getEntryType() != kEvent) {
       ++it;
-      if (it == itEnd)
+      if (it == itEnd) {
         return true;
+      }
     }
-
     for (; it != itEnd; ++it) {
       if (it->getEntryType() == kEvent) {
-        if (it->eventID_ <= itPrevious->eventID_)
+        if (it->eventID_ <= itPrevious->eventID_) {
           return false;
+        }
         itPrevious = it;
       }
     }
@@ -122,37 +226,32 @@ namespace art {
   FileIndex::const_iterator
   FileIndex::findPosition(EventID const& eID) const
   {
-
     assert(sortState() == kSorted_Run_SubRun_Event);
-
     Element el{eID};
     return lower_bound_all(entries_, el);
   }
 
-  template <>
   FileIndex::const_iterator
   FileIndex::findPosition(EventID const& eID, bool exact) const
   {
-
     assert(sortState() == kSorted_Run_SubRun_Event);
-
     if (subRunUnspecified(eID)) {
       return findEventForUnspecifiedSubRun(eID, exact);
     }
-
     const_iterator it = findPosition(eID);
     const_iterator itEnd = entries_.end();
     while (it != itEnd && it->getEntryType() != FileIndex::kEvent) {
       ++it;
     }
-    if (it == itEnd)
+    if (it == itEnd) {
       return itEnd;
-    if (exact && (*it != eID))
+    }
+    if (exact && (*it != eID)) {
       return itEnd;
+    }
     return it;
   }
 
-  template <>
   FileIndex::const_iterator
   FileIndex::findPosition(SubRunID const& srID, bool exact) const
   {
@@ -169,14 +268,15 @@ namespace art {
     while (it != itEnd && it->getEntryType() != FileIndex::kSubRun) {
       ++it;
     }
-    if (it == itEnd)
+    if (it == itEnd) {
       return itEnd;
-    if (exact && (it->eventID_.subRunID() != srID))
+    }
+    if (exact && (it->eventID_.subRunID() != srID)) {
       return itEnd;
+    }
     return it;
   }
 
-  template <>
   FileIndex::const_iterator
   FileIndex::findPosition(RunID const& rID, bool exact) const
   {
@@ -193,10 +293,12 @@ namespace art {
     while (it != itEnd && it->getEntryType() != FileIndex::kRun) {
       ++it;
     }
-    if (it == itEnd)
+    if (it == itEnd) {
       return itEnd;
-    if (exact && (it->eventID_.runID() != rID))
+    }
+    if (exact && (it->eventID_.runID() != rID)) {
       return itEnd;
+    }
     return it;
   }
 
@@ -217,39 +319,6 @@ namespace art {
       ++it;
     }
     return it;
-  }
-
-  bool
-  operator<(FileIndex::Element const& lh, FileIndex::Element const& rh)
-  {
-    bool const result = lh.eventID_ < rh.eventID_;
-    return result;
-  }
-
-  bool
-  Compare_Run_SubRun_EventEntry::operator()(FileIndex::Element const& lh,
-                                            FileIndex::Element const& rh)
-  {
-    if (lh.eventID_.subRunID() == rh.eventID_.subRunID()) {
-      if ((!lh.eventID_.isValid()) && (!rh.eventID_.isValid())) {
-        return false;
-      } else if (!lh.eventID_.isValid()) {
-        return true;
-      } else if (!rh.eventID_.isValid()) {
-        return false;
-      } else {
-        return lh.entry_ < rh.entry_;
-      }
-    } else {
-      return lh.eventID_.subRunID() < rh.eventID_.subRunID();
-    }
-  }
-
-  ostream&
-  operator<<(ostream& os, FileIndex::Element const& el)
-  {
-    os << el.eventID_ << ": entry# " << el.entry_;
-    return os;
   }
 
   void
@@ -274,48 +343,20 @@ namespace art {
     }
   }
 
-  ostream&
-  operator<<(ostream& os, FileIndex const& fileIndex)
-  {
-
-    os << "\nPrinting FileIndex contents.  This includes a list of all Runs, "
-          "SubRuns\n"
-       << "and Events stored in the root file.\n\n";
-    os << setw(15) << "Run" << setw(15) << "SubRun" << setw(15) << "Event"
-       << setw(15) << "TTree Entry"
-       << "\n";
-    for (auto const& e : fileIndex) {
-      if (e.getEntryType() == FileIndex::kEvent) {
-        os << setw(15) << e.eventID_.run() << setw(15) << e.eventID_.subRun()
-           << setw(15) << e.eventID_.event() << setw(15) << e.entry_ << "\n";
-      } else if (e.getEntryType() == FileIndex::kSubRun) {
-        os << setw(15) << e.eventID_.run() << setw(15) << e.eventID_.subRun()
-           << setw(15) << " " << setw(15) << e.entry_ << "  (SubRun)"
-           << "\n";
-      } else if (e.getEntryType() == FileIndex::kRun) {
-        os << setw(15) << e.eventID_.run() << setw(15) << " " << setw(15) << " "
-           << setw(15) << e.entry_ << "  (Run)"
-           << "\n";
-      }
-    }
-    return os;
-  }
-
   FileIndex::const_iterator
   FileIndex::findEventForUnspecifiedSubRun(EventID const& eID, bool exact) const
   {
-
     RunID const& runID = eID.runID();
     EventNumber_t event = eID.event();
     SubRunID last_subRunID;
-
     // Try to find the event.
     auto const firstEvent =
       findPosition(EventID::firstEvent(SubRunID::firstSubRun(runID)), false);
     const_iterator it = firstEvent;
     const_iterator const itEnd = entries_.end();
-    if (it == itEnd)
+    if (it == itEnd) {
       return it;
+    }
 
     // Starting with it, jump to the first event of each subrun until
     // we find either:
@@ -330,7 +371,6 @@ namespace art {
       it = findPosition(EventID::firstEvent(it->eventID_.subRunID().next()),
                         false);
     }
-
     const_iterator result = itEnd;
     if ((it != itEnd) && (it->eventID_.runID() == runID) &&
         (it->eventID_.event() == event)) {
@@ -370,4 +410,92 @@ namespace art {
     }
     return result;
   }
-}
+
+  bool
+  operator<(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    bool const result = lh.eventID_ < rh.eventID_;
+    return result;
+  }
+
+  bool
+  operator>(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    return rh < lh;
+  }
+
+  bool
+  operator>=(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    return !(lh < rh);
+  }
+
+  bool
+  operator<=(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    return !(rh < lh);
+  }
+
+  bool
+  operator==(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    return !(lh < rh || rh < lh);
+  }
+
+  bool
+  operator!=(FileIndex::Element const& lh, FileIndex::Element const& rh)
+  {
+    return lh < rh || rh < lh;
+  }
+
+  bool
+  Compare_Run_SubRun_EventEntry::operator()(FileIndex::Element const& lh,
+                                            FileIndex::Element const& rh)
+  {
+    if (lh.eventID_.subRunID() == rh.eventID_.subRunID()) {
+      if ((!lh.eventID_.isValid()) && (!rh.eventID_.isValid())) {
+        return false;
+      } else if (!lh.eventID_.isValid()) {
+        return true;
+      } else if (!rh.eventID_.isValid()) {
+        return false;
+      }
+      return lh.entry_ < rh.entry_;
+    }
+    return lh.eventID_.subRunID() < rh.eventID_.subRunID();
+  }
+
+  ostream&
+  operator<<(ostream& os, FileIndex::Element const& el)
+  {
+    os << el.eventID_ << ": entry# " << el.entry_;
+    return os;
+  }
+
+  ostream&
+  operator<<(ostream& os, FileIndex const& fileIndex)
+  {
+    os << "\nPrinting FileIndex contents.  This includes a list of all Runs, "
+          "SubRuns\n"
+       << "and Events stored in the root file.\n\n";
+    os << setw(15) << "Run" << setw(15) << "SubRun" << setw(15) << "Event"
+       << setw(15) << "TTree Entry"
+       << "\n";
+    for (auto const& e : fileIndex) {
+      if (e.getEntryType() == FileIndex::kEvent) {
+        os << setw(15) << e.eventID_.run() << setw(15) << e.eventID_.subRun()
+           << setw(15) << e.eventID_.event() << setw(15) << e.entry_ << "\n";
+      } else if (e.getEntryType() == FileIndex::kSubRun) {
+        os << setw(15) << e.eventID_.run() << setw(15) << e.eventID_.subRun()
+           << setw(15) << " " << setw(15) << e.entry_ << "  (SubRun)"
+           << "\n";
+      } else if (e.getEntryType() == FileIndex::kRun) {
+        os << setw(15) << e.eventID_.run() << setw(15) << " " << setw(15) << " "
+           << setw(15) << e.entry_ << "  (Run)"
+           << "\n";
+      }
+    }
+    return os;
+  }
+
+} // namespace art

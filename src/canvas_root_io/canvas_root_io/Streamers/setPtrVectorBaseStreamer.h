@@ -16,6 +16,7 @@ class TBuffer;
 class art::detail::PtrVectorBaseStreamer : public TClassStreamer {
 
 public:
+  virtual TClassStreamer* Generate() const override;
   void operator()(TBuffer& R_b, void* objp) override;
 };
 

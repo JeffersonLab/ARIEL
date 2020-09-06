@@ -1,127 +1,100 @@
 #ifndef canvas_Persistency_Provenance_RunAuxiliary_h
 #define canvas_Persistency_Provenance_RunAuxiliary_h
-
-#include <iosfwd>
-#include <set>
+// vim: set sw=2 expandtab :
 
 #include "canvas/Persistency/Provenance/BranchType.h"
 #include "canvas/Persistency/Provenance/ProcessHistoryID.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 
+#include <iosfwd>
+#include <set>
+#include <utility>
+
 // Auxiliary run data that is persistent
 
 namespace art {
-  class RunAuxiliary;
-}
 
-class art::RunAuxiliary {
-public:
-  static constexpr BranchType branch_type = InRun;
+  class RunAuxiliary {
 
-  RunAuxiliary() = default;
+  public: // TYPES
+    static constexpr BranchType branch_type = InRun;
 
-  RunAuxiliary(RunID const& theId,
-               Timestamp const& theTime,
-               Timestamp const& theEndTime)
-    : id_{theId}, beginTime_{theTime}, endTime_{theEndTime}
-  {}
+  public: // MEMBER FUNCTIONS -- Special Member Functions
+    ~RunAuxiliary();
 
-  RunAuxiliary(RunNumber_t const run,
-               Timestamp const& theTime,
-               Timestamp const& theEndTime)
-    : id_{run}, beginTime_{theTime}, endTime_{theEndTime}
-  {}
+    RunAuxiliary();
 
-  void write(std::ostream& os) const;
+    RunAuxiliary(RunID const& theId,
+                 Timestamp const& theTime,
+                 Timestamp const& theEndTime);
 
-  ProcessHistoryID const&
-  processHistoryID() const
-  {
-    return processHistoryID_;
-  }
+    RunAuxiliary(RunNumber_t const& run,
+                 Timestamp const& theTime,
+                 Timestamp const& theEndTime);
 
-  void
-  setProcessHistoryID(ProcessHistoryID const& phid) const
-  {
-    processHistoryID_ = phid;
-  }
+    RunAuxiliary(RunAuxiliary const&);
 
-  RunID const&
-  id() const
-  {
-    return id_;
-  }
+    RunAuxiliary(RunAuxiliary&&);
 
-  Timestamp const&
-  beginTime() const
-  {
-    return beginTime_;
-  }
+    RunAuxiliary& operator=(RunAuxiliary const&);
 
-  Timestamp const&
-  endTime() const
-  {
-    return endTime_;
-  }
+    RunAuxiliary& operator=(RunAuxiliary&&);
 
-  RunID const&
-  runID() const
-  {
-    return id_;
-  }
-  RunNumber_t
-  run() const
-  {
-    return id_.run();
-  }
+  public:
+    void write(std::ostream&) const;
 
-  void
-  setEndTime(Timestamp const& time)
-  {
-    if (endTime_ == Timestamp::invalidTimestamp())
-      endTime_ = time;
-  }
+    ProcessHistoryID& processHistoryID() const noexcept;
 
-  void
-  setRangeSetID(unsigned const id) const
-  {
-    rangeSetID_ = id;
-  }
-  auto
-  rangeSetID() const
-  {
-    return rangeSetID_;
-  }
+    void setProcessHistoryID(ProcessHistoryID const&) const;
 
-  bool mergeAuxiliary(RunAuxiliary const& aux);
+    unsigned rangeSetID() const noexcept;
 
-  // most recent process that put a RunProduct into this run
-  // is the last on the list, this defines what "latest" is
-  mutable ProcessHistoryID processHistoryID_{};
+    void setRangeSetID(unsigned const id) const;
 
-  // allEventsProcessHistories_ contains all the ProcessHistoryIDs for all
-  // events in this run seen so far.
-  std::set<ProcessHistoryID> allEventsProcessHistories_{};
+    RunID const& id() const noexcept;
 
-  mutable unsigned rangeSetID_{-1u};
+    RunID const& runID() const noexcept;
 
-  RunID id_{};
-  // Times from DAQ
-  Timestamp beginTime_{};
-  Timestamp endTime_{};
+    void runID(RunID const&);
 
-private:
-  void mergeNewTimestampsIntoThis_(RunAuxiliary const& newAux);
-  void mergeNewProcessHistoryIntoThis_(RunAuxiliary const& newAux);
-};
+    RunNumber_t run() const noexcept;
 
-inline std::ostream&
-operator<<(std::ostream& os, art::RunAuxiliary const& p)
-{
-  p.write(os);
-  return os;
-}
+    Timestamp const& beginTime() const noexcept;
+
+    void beginTime(Timestamp const&);
+
+    Timestamp const& endTime() const noexcept;
+
+    void endTime(Timestamp const&);
+
+    bool mergeAuxiliary(RunAuxiliary const&);
+
+  private:
+    void mergeNewTimestampsIntoThis_(RunAuxiliary const&);
+    void mergeNewProcessHistoryIntoThis_(RunAuxiliary const&);
+
+    // most recent process that put a RunProduct into this run
+    // is the last on the list, this defines what "latest" is
+    mutable ProcessHistoryID processHistoryID_{};
+
+    // allEventsProcessHistories_ contains all the ProcessHistoryIDs for all
+    // events in this run seen so far.
+    // Note: The default ctor for set is not noexcept.
+    std::set<ProcessHistoryID> allEventsProcessHistories_{};
+
+    mutable unsigned rangeSetID_{-1u};
+
+    RunID id_{};
+
+    Timestamp beginTime_{};
+
+    Timestamp endTime_{};
+  };
+
+  std::ostream& operator<<(std::ostream&, const RunAuxiliary&);
+
+} // namespace art
 
 #endif /* canvas_Persistency_Provenance_RunAuxiliary_h */
 

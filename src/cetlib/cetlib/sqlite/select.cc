@@ -2,5 +2,4 @@
 
 #include <cassert>
 
-namespace {
-}
+namespace {}

@@ -16,7 +16,7 @@ namespace {
          std::string const ref)
   {
     replace_all(start, find, replace);
-    BOOST_CHECK_EQUAL(start, ref);
+    BOOST_TEST(start == ref);
   }
 }
 

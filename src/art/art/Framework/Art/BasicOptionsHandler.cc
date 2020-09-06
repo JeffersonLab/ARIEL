@@ -26,48 +26,51 @@ namespace {
     return s.substr(1); // trim off 'v'
   }
 
+  auto
+  to_string(bool const value)
+  {
+    return value ? "true"s : "false"s;
+  }
+
 } // namespace
 
 art::BasicOptionsHandler::BasicOptionsHandler(bpo::options_description& desc,
-                                              cet::filepath_maker& maker)
+                                              cet::filepath_maker& maker,
+                                              bool const report_unused)
   : help_desc_{desc}, maker_{maker}
 {
-  auto options = desc.add_options();
-  add_opt(options, "help,h", "produce help message");
-  add_opt(
-    options,
-    "version",
-    ("Print art version (" + pretty_version(art::getReleaseVersion()) + ")")
-      .c_str());
-  add_opt(
-    options, "config,c", bpo::value<std::string>(), "Configuration file.");
-  add_opt(
-    options, "process-name", bpo::value<std::string>(), "art process name.");
-  add_opt(
-    options,
-    "print-available",
-    bpo::value<std::string>(),
-    ("List all available plugins with the provided suffix.  Choose from:"s +
-     Suffixes::print())
-      .c_str());
-  add_opt(options,
-          "print-available-modules",
-          "List all available modules that can be invoked in a FHiCL file.");
-  add_opt(options,
-          "print-available-services",
-          "List all available services that can be invoked in a FHiCL file.");
-  add_opt(options,
-          "print-description",
-          bpo::value<std::vector<std::string>>()->multitoken(),
-          "Print description of specified module, service, source, or other "
-          "plugin (multiple OK).  Argument can be a regular expression used "
-          "to match the plugin specification.  To narrow the search to "
-          "plugins with a particular suffix, preface the regular expression"
-          "with the suffix (e.g. service:TFileService).");
-  add_opt(options,
-          "status-bar",
-          "Provide status bar that reports the progress of retrieving "
-          "plugin information for a 'print-available' command.");
+  // clang-format off
+  desc.add_options()
+    ("help,h", "produce help message")
+    ("version", ("Print art version (" + pretty_version(art::getReleaseVersion()) + ")")
+      .c_str())
+    ("config,c", bpo::value<std::string>(), "Configuration file.")
+    ("process-name", bpo::value<std::string>(), "art process name.")
+    ("prune-config",
+       bpo::value<bool>()->default_value(true, to_string(true)),
+       "Remove unused modules and paths from the fully-processed configuration.")
+    ("report-unused",
+       bpo::value<bool>()->default_value(report_unused, to_string(report_unused)),
+       "If 'true', the list of unused modules and paths will be printed to STDERR.")
+    ("print-available",
+       bpo::value<std::string>(),
+       ("List all available plugins with the provided suffix.  Choose from:"s +
+        Suffixes::print()).c_str())
+    ("print-available-modules",
+       "List all available modules that can be invoked in a FHiCL file.")
+    ("print-available-services",
+       "List all available services that can be invoked in a FHiCL file.")
+    ("print-description",
+       bpo::value<std::vector<std::string>>()->multitoken(),
+       "Print description of specified module, service, source, or other "
+       "plugin (multiple OK).  Argument can be a regular expression used "
+       "to match the plugin specification.  To narrow the search to "
+       "plugins with a particular suffix, preface the regular expression"
+       "with the suffix (e.g. service:TFileService).")
+    ("status-bar",
+       "Provide status bar that reports the progress of retrieving "
+       "plugin information for a 'print-available' command.");
+  // clang-format on
 }
 
 int
@@ -88,16 +91,16 @@ art::BasicOptionsHandler::doCheckOptions(bpo::variables_map const& vm)
   }
   bool const status_bar = vm.count("status-bar") > 0;
   if (vm.count("print-available")) {
-    detail::print_available_plugins(
-      Suffixes::get(vm["print-available"].as<std::string>()), status_bar);
+    detail::print_available_plugins(vm["print-available"].as<std::string>(),
+                                    status_bar);
     return detail::info_success();
   }
   if (vm.count("print-available-modules")) {
-    detail::print_available_plugins(suffix_type::module, status_bar);
+    detail::print_available_plugins(Suffixes::module(), status_bar);
     return detail::info_success();
   }
   if (vm.count("print-available-services")) {
-    detail::print_available_plugins(suffix_type::service, status_bar);
+    detail::print_available_plugins(Suffixes::service(), status_bar);
     return detail::info_success();
   }
   if (status_bar) {
@@ -143,6 +146,14 @@ art::BasicOptionsHandler::doProcessOptions(
   }
   if (vm.count("process-name")) {
     raw_config.put("process_name", vm["process-name"].as<std::string>());
+  }
+  if (vm.count("prune-config")) {
+    raw_config.put("services.scheduler.pruneConfig",
+                   vm["prune-config"].as<bool>());
+  }
+  if (vm.count("report-unused")) {
+    raw_config.put("services.scheduler.reportUnused",
+                   vm["report-unused"].as<bool>());
   }
   return 0;
 }

@@ -1,0 +1,7 @@
+process_name: WriteInt
+
+physics.producers.makeInt: {
+   module_type: IntProducer
+   ivalue: 6
+}
+physics.tp: [makeInt]

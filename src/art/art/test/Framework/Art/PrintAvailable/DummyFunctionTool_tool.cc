@@ -7,7 +7,7 @@ namespace art {
     {
       return 1;
     }
-  }
-}
+  } // namespace test
+} // namespace art
 
 DEFINE_ART_FUNCTION_TOOL(art::test::num, "num")

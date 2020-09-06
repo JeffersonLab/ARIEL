@@ -1,3 +1,0 @@
-## Multi-threading analysis of `cet::column_width`{.cpp}
-
-No inherent threading issues.

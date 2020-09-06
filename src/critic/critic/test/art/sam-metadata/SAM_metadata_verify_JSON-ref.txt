@@ -1,0 +1,24 @@
+{
+  "out.root": {
+    "application.family": "Ethel",
+    "application.version": "v0.00.01a",
+    "file_type": "MC",
+    "art.run_type": "MCChallenge",
+    "group": "MyGang",
+    "art.process_name": "SAMMetadataW",
+    "testMetadata": "success!",
+    "data_tier": "The one with the thickest frosting",
+    "data_stream": "o1",
+    "file_format": "artroot",
+    "start_time": "<date-time>",
+    "end_time": "<date-time>",
+    "runs": [ [ 1, 0, "MCChallenge" ], [ 1, 1, "MCChallenge" ] ],
+    "event_count": 10,
+    "first_event": 1,
+    "last_event": 5,
+    "art.first_event": [ 1, 0, 1 ],
+    "art.last_event": [ 1, 1, 5 ],
+    "art.file_format_era": "ART_2011a",
+    "art.file_format_version": 13
+  }
+}

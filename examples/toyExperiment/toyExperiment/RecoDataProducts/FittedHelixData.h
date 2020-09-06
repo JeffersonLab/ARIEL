@@ -5,7 +5,6 @@
 // The persistent data for a fitted helix.
 //
 
-
 #include "toyExperiment/RecoDataProducts/Helix.h"
 #include "toyExperiment/RecoDataProducts/TrkHit.h"
 
@@ -21,32 +20,44 @@ namespace tex {
   class FittedHelixData {
 
   public:
-
     // Genreflex still needs the space between > >.  C++11 does not.
-    typedef std::vector<art::Ptr<TrkHit> >  hits_type;
+    typedef std::vector<art::Ptr<TrkHit>> hits_type;
 
     FittedHelixData();
 
-    FittedHelixData( Helix               const& helix,
-                     CLHEP::HepSymMatrix const& cov,
-                     hits_type           const& hits );
+    FittedHelixData(Helix const& helix,
+                    CLHEP::HepSymMatrix const& cov,
+                    hits_type const& hits);
 
-    Helix               const& helix() const { return helix_; }
-    CLHEP::HepSymMatrix const& cov()   const { return cov_;   }
-    hits_type           const& hits()  const { return hits_;  }
+    Helix const&
+    helix() const
+    {
+      return helix_;
+    }
+    CLHEP::HepSymMatrix const&
+    cov() const
+    {
+      return cov_;
+    }
+    hits_type const&
+    hits() const
+    {
+      return hits_;
+    }
 
-    art::Ptr<TrkHit>    const& hit ( size_t i ) const { return hits_.at(i); }
+    art::Ptr<TrkHit> const&
+    hit(size_t i) const
+    {
+      return hits_.at(i);
+    }
 
   private:
-
-    Helix               helix_;
+    Helix helix_;
     CLHEP::HepSymMatrix cov_;
-    hits_type           hits_;
-
+    hits_type hits_;
   };
 
-  std::ostream& operator<<(std::ostream& ost,
-                           const tex::FittedHelixData& fit );
+  std::ostream& operator<<(std::ostream& ost, const tex::FittedHelixData& fit);
 }
 
 #endif /* RecoDataProducts_FittedHelixData_h */

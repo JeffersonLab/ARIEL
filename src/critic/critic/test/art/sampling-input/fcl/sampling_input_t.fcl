@@ -1,0 +1,75 @@
+process_name: SamplingInputTest
+
+source: {
+  module_type: SamplingInput
+  summary: true
+  dataSets: {
+    signal: {
+      weight: 0.35
+      fileNames: ["../SamplingInput_w_signal.d/out.root"]
+      skipToEvent: "14:3:11"
+    }
+    bkgd: {
+      weight: 0.82
+      fileNames: ["../SamplingInput_w_bkgd.d/out.root"]
+    }
+    noise: {
+      # Choosing a weight of 0 tests that the (sub)run products are
+      # still accessible even if the events are never sampled, and it
+      # also tests for proper printout in the summary (there should be
+      # an entry in the printed out table even if no events are
+      # sampled),
+      weight: 0.00
+      fileNames: ["../SamplingInput_w_noise.d/out.root"]
+    }
+  }
+}
+
+physics: {
+  analyzers: {
+    checkInts: {
+      module_type: SamplingAnalyzer
+      run_int_label: "makeRunInt"
+      subrun_int_label: "makeSubRunInt"
+      event_int_label: "makeEventInt"
+      ptrmv_label: "makePtrs"
+      datasets: {
+        signal: {
+          process_name: "SamplingInputWrite"
+          sampled_subruns: [[14, 3]]
+          run_values: [
+            [14, 14]
+          ]
+          subrun_values: [
+            [[14, 3], 3]
+          ]
+          event_values: [9]
+        }
+        bkgd: {
+          process_name: "SamplingInputWrite"
+          sampled_subruns: [[4, 0], [4, 1]]
+          run_values: [
+            [4, 4]
+          ]
+          subrun_values: [
+            [[4, 0], 0],
+            [[4, 1], 0]
+          ]
+          event_values: [1]
+        }
+        noise: {
+          process_name: "RandomNoise"
+          sampled_subruns: [[5, 92]]
+          run_values: [
+            [5, 5]
+          ]
+          subrun_values: [
+            [[5, 92], 92]
+          ]
+          event_values: [17]
+        }
+      }
+    }
+  }
+  ep: [checkInts]
+}

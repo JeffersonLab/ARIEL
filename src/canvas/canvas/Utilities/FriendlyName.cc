@@ -1,7 +1,10 @@
 #include "canvas/Utilities/FriendlyName.h"
-#include "canvas/Utilities/Exception.h"
-#include "tbb/concurrent_unordered_map.h"
+// vim: set sw=2 expandtab :
 
+#include "canvas/Utilities/Exception.h"
+#include "hep_concurrency/RecursiveMutex.h"
+
+#include <map>
 #include <regex>
 #include <string>
 
@@ -15,6 +18,7 @@
 // the node transformations).
 
 namespace {
+
   std::regex const reAllSpaces{" +"};
   std::regex const reAssns{"art::Assns"};
   std::regex const reBeginSpace{"^ +"};
@@ -78,7 +82,6 @@ namespace {
   subFriendlyName(std::string const& iFullName)
   {
     std::string result{removeExtraSpaces(iFullName)};
-
     std::smatch theMatch;
     if (std::regex_match(result, theMatch, reTemplateArgs)) {
       std::string const cMatch{theMatch.str(1)};
@@ -133,14 +136,17 @@ namespace {
     result = std::regex_replace(result, reComma, emptyString);
     return result;
   }
-}
+
+} // unnamed namespace
 
 std::string
 art::friendlyname::friendlyName(std::string const& iFullName)
 {
-  static tbb::concurrent_unordered_map<std::string, std::string> s_nameMap;
+  static hep::concurrency::RecursiveMutex s_mutex;
+  static std::map<std::string, std::string> s_nameMap;
+  hep::concurrency::RecursiveMutexSentry sentry{s_mutex, __func__};
   auto entry = s_nameMap.find(iFullName);
-  if (s_nameMap.end() == entry) {
+  if (entry == s_nameMap.end()) {
     entry =
       s_nameMap.emplace(iFullName, subFriendlyName(standardRenames(iFullName)))
         .first;

@@ -8,13 +8,10 @@
 namespace art {
   namespace detail {
     template <class T, class Enable = void>
-    struct is_handle : std::false_type {
-    };
+    struct is_handle : std::false_type {};
 
     template <class T>
-    struct is_handle<T, cet::enable_if_type_exists_t<typename T::HandleTag>>
-      : std::true_type {
-    };
+    struct is_handle<T, std::void_t<typename T::HandleTag>> : std::true_type {};
 
     template <class T, class U>
     struct are_handles {

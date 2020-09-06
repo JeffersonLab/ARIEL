@@ -7,8 +7,7 @@
 #define BOOST_TEST_MODULE (table_insertionOperator_t)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
-#include "cetlib_except/demangle.h"
+
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Table.h"
@@ -79,7 +78,7 @@ BOOST_AUTO_TEST_CASE(simple)
   oss << config;
   auto const& test = oss.str();
   auto const& ref = reference();
-  BOOST_CHECK_EQUAL(test, ref);
+  BOOST_TEST(test == ref);
 }
 
 BOOST_AUTO_TEST_CASE(logger)
@@ -87,10 +86,10 @@ BOOST_AUTO_TEST_CASE(logger)
   Table<Config> config{Name("config")};
   Logger logger;
   logger << config;
-  BOOST_CHECK_EQUAL(logger.log, reference());
+  BOOST_TEST(logger.log == reference());
 
   Logger const logger2 = (Logger() << config);
-  BOOST_CHECK_EQUAL(logger2.log, reference());
+  BOOST_TEST(logger2.log == reference());
 }
 
 BOOST_AUTO_TEST_CASE(loggerOptional)
@@ -98,10 +97,10 @@ BOOST_AUTO_TEST_CASE(loggerOptional)
   OptionalTable<Config> config{Name("config")};
   Logger logger;
   logger << config;
-  BOOST_CHECK_EQUAL(logger.log, optional_reference());
+  BOOST_TEST(logger.log == optional_reference());
 
   Logger const logger2 = (Logger() << config);
-  BOOST_CHECK_EQUAL(logger2.log, optional_reference());
+  BOOST_TEST(logger2.log == optional_reference());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

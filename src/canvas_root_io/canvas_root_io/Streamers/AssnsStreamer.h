@@ -27,8 +27,14 @@ namespace art {
 
       static void init_streamer(std::string className);
 
+      TClassStreamer*
+      Generate() const override
+      {
+        return new AssnsStreamer{*this};
+      }
+
       void
-      operator()(TBuffer& R_b, void* objp)
+      operator()(TBuffer& R_b, void* objp) override
       {
         TClassRef cl{TClass::GetClass(className_.c_str())};
         auto obj = reinterpret_cast<detail::AssnsBase*>(objp);

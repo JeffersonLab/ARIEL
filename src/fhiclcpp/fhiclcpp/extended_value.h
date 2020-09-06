@@ -7,11 +7,11 @@
 //
 // ======================================================================
 
-#include "boost/any.hpp"
 #include "fhiclcpp/Protection.h"
 #include "fhiclcpp/fwd.h"
 #include "stdmap_shims.h"
 
+#include <any>
 #include <map>
 #include <string>
 #include <vector>
@@ -45,25 +45,25 @@ public:
 
   extended_value(bool const in_prolog,
                  value_tag const tag,
-                 boost::any const value,
+                 std::any const value,
                  Protection const protection,
-                 std::string const& src = {})
+                 std::string src = {})
     : in_prolog{in_prolog}
     , tag{tag}
     , value{value}
-    , src_info{src}
+    , src_info{move(src)}
     , protection{protection}
   {}
 
   extended_value(bool const in_prolog,
                  value_tag const tag,
-                 boost::any const value,
-                 std::string const& src = {})
-    : in_prolog{in_prolog}, tag{tag}, value{value}, src_info{src}
+                 std::any const value,
+                 std::string src = {})
+    : in_prolog{in_prolog}, tag{tag}, value{value}, src_info{move(src)}
   {}
 
   bool
-  is_a(value_tag t) const
+  is_a(value_tag const t) const noexcept
   {
     return t == tag;
   }
@@ -80,17 +80,17 @@ public:
 
   std::string pretty_src_info() const;
 
-  operator atom_t() const { return boost::any_cast<atom_t>(value); }
+  operator atom_t() const { return std::any_cast<atom_t>(value); }
 
-  operator complex_t() const { return boost::any_cast<complex_t>(value); }
+  operator complex_t() const { return std::any_cast<complex_t>(value); }
 
-  operator sequence_t() const { return boost::any_cast<sequence_t>(value); }
+  operator sequence_t() const { return std::any_cast<sequence_t>(value); }
 
-  operator table_t() const { return boost::any_cast<table_t>(value); }
+  operator table_t() const { return std::any_cast<table_t>(value); }
 
   bool in_prolog{false};
   value_tag tag{UNKNOWN};
-  boost::any value{};
+  std::any value{};
   std::string src_info{};
   Protection protection{Protection::NONE};
 

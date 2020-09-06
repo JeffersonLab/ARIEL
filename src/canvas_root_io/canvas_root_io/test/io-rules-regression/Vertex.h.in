@@ -1,0 +1,39 @@
+#ifndef art_root_io_test_io_rules_regression_Vertex_h
+#define art_root_io_test_io_rules_regression_Vertex_h
+
+#cmakedefine VERTEX_VERSION @VERTEX_VERSION@
+#ifndef VERTEX_VERSION
+#error "Vertex.h requires VERTEX VERSION to be defined!"
+#endif
+
+#include "Math/Cartesian3D.h"
+#include "Math/PositionVector3D.h"
+#include "Math/SMatrix.h"
+
+namespace arttest {
+  class Vertex;
+}
+
+class arttest::Vertex {
+public:
+  using Coord_t = 
+#if VERTEX_VERSION < 11
+                     double
+#else
+                     Double32_t
+#endif
+                     ;
+
+  using Point_t = ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<Coord_t>, ROOT::Math::GlobalCoordinateSystemTag>;
+  using SMatrixSym33 = ROOT::Math::SMatrix<Coord_t,3,3,ROOT::Math::MatRepSym<Coord_t,3> >;
+
+  Point_t pos;
+  SMatrixSym33 cov;
+  int id;
+};
+
+#endif /* art_root_io_test_io_rules_regression_Vertex_h */
+
+// Local Variables:
+// mode: c++
+// End:

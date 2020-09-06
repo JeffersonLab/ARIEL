@@ -19,7 +19,7 @@ namespace art {
 
 class art::EventID {
 public:
-  constexpr EventID();
+  constexpr EventID() noexcept;
   EventID(RunNumber_t r, SubRunNumber_t sr, EventNumber_t e);
 
   // This needs to be done in enough places in the framework that this
@@ -46,10 +46,10 @@ public:
   static EventID maxEvent();
   static EventID firstEvent();
   static EventID firstEvent(SubRunID const& srID);
-  static constexpr EventID invalidEvent();
+  static constexpr EventID invalidEvent() noexcept;
   static EventID invalidEvent(RunID rID);
   static EventID invalidEvent(SubRunID const& srID);
-  static constexpr EventID flushEvent();
+  static constexpr EventID flushEvent() noexcept;
   static EventID flushEvent(RunID rID);
   static EventID flushEvent(SubRunID srID);
 
@@ -64,10 +64,9 @@ public:
   friend std::ostream& operator<<(std::ostream& os, EventID const& iID);
 
 private:
-  struct FlushFlag {
-  };
+  struct FlushFlag {};
 
-  explicit constexpr EventID(FlushFlag);
+  explicit constexpr EventID(FlushFlag) noexcept;
   EventID(RunID rID, FlushFlag);
   EventID(SubRunID srID, FlushFlag);
 
@@ -77,7 +76,7 @@ private:
   EventNumber_t event_;
 };
 
-inline constexpr art::EventID::EventID()
+inline constexpr art::EventID::EventID() noexcept
   : subRun_(), event_(IDNumber<Level::Event>::invalid())
 {}
 
@@ -200,7 +199,7 @@ art::EventID::firstEvent(SubRunID const& srID)
 }
 
 inline constexpr art::EventID
-art::EventID::invalidEvent()
+art::EventID::invalidEvent() noexcept
 {
   return EventID{};
 }
@@ -219,7 +218,7 @@ art::EventID::invalidEvent(SubRunID const& srID)
 }
 
 inline constexpr art::EventID
-art::EventID::flushEvent()
+art::EventID::flushEvent() noexcept
 {
   return EventID{FlushFlag()};
 }
@@ -280,7 +279,7 @@ art::EventID::operator>=(EventID const& other) const
   return !(*this < other);
 }
 
-inline constexpr art::EventID::EventID(FlushFlag)
+inline constexpr art::EventID::EventID(FlushFlag) noexcept
   : subRun_(SubRunID::flushSubRun())
   , event_(IDNumber<Level::Event>::flush_value())
 {}

@@ -10,6 +10,7 @@
 #include "cetlib_except/exception.h"
 
 #include <dirent.h>
+#include <errno.h>
 #include <iterator>
 #include <ostream>
 #include <regex>
@@ -23,7 +24,7 @@ namespace {
   string const exception_category{"search_path"};
 
   string
-  get_env_if_present(string const& arg)
+  get_env_if_colon_present(string const& arg)
   {
     // If no colon and no slash is present, assume the user is specifying an
     // environment variable.
@@ -32,10 +33,8 @@ namespace {
   }
 
   vector<string>
-  get_dirs(std::string const& env, std::string const& paths)
+  get_dirs(std::string const& path_to_split)
   {
-    string const& path_to_split = env.empty() ? paths : cet::getenv(env);
-
     vector<string> dirs;
     cet::split(path_to_split, ':', back_inserter(dirs));
 
@@ -56,10 +55,33 @@ namespace {
     }
     return dirs;
   }
+
+  vector<string>
+  get_dirs(std::string const& env, std::string const& paths)
+  {
+    return get_dirs(env.empty() ? paths : cet::getenv(env));
+  }
+
+  vector<string>
+  get_dirs(std::string const& env, std::nothrow_t)
+  {
+    return get_dirs(cet::getenv(env, std::nothrow));
+  }
 }
 
-search_path::search_path(string const& arg)
-  : env_{get_env_if_present(arg)}, dirs_{get_dirs(env_, arg)}
+cet::path_tag_t const cet::path_tag;
+
+search_path::search_path(string const& env_name_or_path)
+  : env_{get_env_if_colon_present(env_name_or_path)}
+  , dirs_{get_dirs(env_, env_name_or_path)}
+{}
+
+search_path::search_path(string const& env_name, std::nothrow_t)
+  : env_{env_name}, dirs_{get_dirs(env_, std::nothrow)}
+{}
+
+search_path::search_path(string const& path, cet::path_tag_t)
+  : env_{}, dirs_{get_dirs(path)}
 {}
 
 bool
@@ -116,27 +138,34 @@ size_t
 search_path::find_files(string const& pat, vector<string>& out) const
 {
   regex const re{pat};
-
   size_t count{};
-  size_t err{};
-  struct dirent entry;
-  struct dirent* result = nullptr;
-
   for (auto const& dir : dirs_) {
     unique_ptr<DIR, function<int(DIR*)>> dd(opendir(dir.c_str()), closedir);
-    if (dd == nullptr)
+    if (dd.get() == nullptr) {
+      // The opendir() failed, we do not care why, skip it.
       continue;
-    while (!(err = readdir_r(dd.get(), &entry, &result)) && result != nullptr) {
-      if (regex_match(entry.d_name, re)) {
-        out.push_back(dir + '/' + entry.d_name);
+    }
+    while (1) {
+      // Note: errno is a thread-local!
+      errno = 0;
+      // Note: This is thread-safe so long as each thread
+      // has their own dd, which is the case here.
+      auto entry = readdir(dd.get());
+      if (errno != 0) {
+        throw cet::exception(exception_category)
+          << "Failed to read directory \"" << dir
+          << "\"; error num = " << errno;
+      }
+      if (entry == nullptr) {
+        // We have reached the end of this directory stream.
+        break;
+      }
+      if (regex_match(entry->d_name, re)) {
+        out.push_back(dir + '/' + entry->d_name);
         ++count;
       }
     }
-    if (result != nullptr)
-      throw cet::exception(exception_category)
-        << "Failed to read directory \"" << dir << "\"; error num = " << err;
   }
-
   return count;
 }
 

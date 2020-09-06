@@ -1,5 +1,6 @@
 #ifndef canvas_Utilities_Level_h
 #define canvas_Utilities_Level_h
+// vim: set sw=2 expandtab :
 
 #include <cassert>
 #include <cstdint>
@@ -27,24 +28,16 @@ namespace art {
     return static_cast<std::underlying_type_t<Level>>(l);
   }
 
-  // Unfortunately, with C++14 we are not able to create a scoped
-  // enumerator via:
-  //
-  //   Level l {2}; // l == Level::Run
-  //
-  // Such support will be available with C++17, but until then, we are
-  // forced to resort to static_cast's.
-
   constexpr auto
   highest_level() noexcept
   {
-    return static_cast<Level>(0);
+    return Level{0};
   }
 
   constexpr auto
   level_up(Level const l) noexcept
   {
-    return static_cast<Level>(underlying_value(l) - 1);
+    return Level{underlying_value(l) - 1};
   }
 
   constexpr auto
@@ -56,7 +49,7 @@ namespace art {
   constexpr auto
   level_down(Level const l) noexcept
   {
-    return static_cast<Level>(underlying_value(l) + 1);
+    return Level{underlying_value(l) + 1};
   }
 
   constexpr bool
@@ -111,7 +104,8 @@ namespace art {
     }
     return os;
   }
-}
+
+} // namespace art
 
 #endif /* canvas_Utilities_Level_h */
 

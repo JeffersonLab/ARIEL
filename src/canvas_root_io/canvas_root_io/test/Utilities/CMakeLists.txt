@@ -32,10 +32,10 @@ cet_test(RootClassMapping_t USE_BOOST_UNIT
   LIBRARIES
   canvas_root_io_test_Utilities_dict
   ${ROOT_CINTEX}
-  ${ROOT_TREE}
-  ${ROOT_MATHCORE}
-  ${ROOT_RIO}
-  ${ROOT_CORE}
+  ROOT::Tree
+  ROOT::MathCore
+  ROOT::RIO
+  ROOT::Core
   ${ROOT_CINT}
   ${ROOT_REFLEX}
   ${CMAKE_DL_LIBS}
@@ -47,12 +47,12 @@ cet_test(RootClassMapping_t USE_BOOST_UNIT
 cet_test(TypeTools_t USE_BOOST_UNIT
   LIBRARIES
   canvas_root_io
-  ${ROOT_TREE}
-  ${ROOT_HIST}
-  ${ROOT_MATRIX}
-  ${ROOT_MATHCORE}
-  ${ROOT_RIO}
-  ${ROOT_CORE}
+  ROOT::Tree
+  ROOT::Hist
+  ROOT::Matrix
+  ROOT::MathCore
+  ROOT::RIO
+  ROOT::Core
   ${ROOT_CINT}
   ${ROOT_REFLEX}
   ${CMAKE_DL_LIBS}
@@ -61,5 +61,10 @@ cet_test(TypeTools_t USE_BOOST_UNIT
 cet_test(TypeWithDict_t USE_BOOST_UNIT
   LIBRARIES
   canvas_root_io
-  ${ROOT_CORE}
+  ROOT::Core
+  )
+
+cet_test(TWD_minimal_t
+  LIBRARIES
+  ROOT::Core
   )

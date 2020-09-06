@@ -19,10 +19,10 @@
 using namespace fhicl;
 using namespace fhicl::detail;
 
-using boost::any;
-using boost::any_cast;
 using boost::lexical_cast;
 using boost::numeric_cast;
+using std::any;
+using std::any_cast;
 
 // ======================================================================
 
@@ -72,7 +72,7 @@ atom_rep(any const& a, std::string& result)
 // ----------------------------------------------------------------------
 
 bool
-fhicl::detail::is_nil(boost::any const& val)
+fhicl::detail::is_nil(std::any const& val)
 {
   bool result = false;
   if (!(is_table(val) || is_sequence(val))) {

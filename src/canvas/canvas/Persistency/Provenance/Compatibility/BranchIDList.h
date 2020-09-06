@@ -10,7 +10,7 @@
 // retained for converting old on-disk ProductID schemas to new ones.
 // =======================================================================
 
-#include "canvas/Persistency/Provenance/BranchID.h"
+#include "canvas/Persistency/Provenance/Compatibility/BranchID.h"
 #include <vector>
 
 namespace art {

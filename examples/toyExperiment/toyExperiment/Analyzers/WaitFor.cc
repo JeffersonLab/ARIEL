@@ -7,20 +7,18 @@
 #include "toyExperiment/Analyzers/WaitFor.h"
 
 std::string const&
-tex::WaitForDetail::typeName() {
+tex::WaitForDetail::typeName()
+{
   static std::string type("WaitFor");
   return type;
 }
 
-std::map<tex::WaitForDetail::enum_type,std::string> const&
-tex::WaitForDetail::names(){
+std::map<tex::WaitForDetail::enum_type, std::string> const&
+tex::WaitForDetail::names()
+{
 
-  static const std::map<enum_type,std::string> nam =
-    { { unknown,  "unknown"},
-      { keyboard, "keyboard"},
-      { mouse,    "mouse"}
-    };
+  static const std::map<enum_type, std::string> nam = {
+    {unknown, "unknown"}, {keyboard, "keyboard"}, {mouse, "mouse"}};
 
   return nam;
 }
-

@@ -42,7 +42,7 @@ namespace {
     std::string process_;
   };
 
-  [[gnu::unused]] inline bool
+  [[maybe_unused]] inline bool
   operator==(CheapTag const& left, CheapTag const& right)
   {
     return left.label() == right.label() &&
@@ -50,7 +50,7 @@ namespace {
            left.process() == right.process();
   }
 
-  [[gnu::unused]] inline bool
+  [[maybe_unused]] inline bool
   operator!=(CheapTag const& left, CheapTag const& right)
   {
     return !(left == right);
@@ -95,16 +95,17 @@ namespace {
 }
 
 art::ProductLookup_t
-art::detail::createProductLookups(ProductDescriptions const& descriptions)
+art::detail::createProductLookups(ProductDescriptionsByID const& descriptions)
 {
   // Computing the product lookups does not rely on any ROOT facilities.
   ProductLookup_t result;
   std::vector<PendingBTLEntry> pendingEntries;
   std::unordered_map<ProductID, CheapTag, ProductID::Hash> insertedABVs;
-  for (auto const& pd : descriptions) {
+  for (auto const& pr : descriptions) {
+    auto const pid = pr.first;
+    auto const& pd = pr.second;
     auto const& prodFCN = pd.friendlyClassName();
     auto const& procName = pd.processName();
-    auto const pid = pd.productID();
     result[prodFCN][procName].emplace_back(pid);
 
     // Additional work only for Assns lookup

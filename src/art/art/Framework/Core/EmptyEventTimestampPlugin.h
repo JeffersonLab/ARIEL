@@ -59,14 +59,14 @@ namespace art {
   class RunID;
   class SubRun;
   class SubRunID;
-}
+} // namespace art
 
 namespace cet {
   template <>
   struct PluginTypeDeducer<art::EmptyEventTimestampPlugin> {
     static std::string const value;
   };
-}
+} // namespace cet
 
 class art::EmptyEventTimestampPlugin {
 public:

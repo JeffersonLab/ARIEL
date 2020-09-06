@@ -30,8 +30,7 @@ PrettifierPrefixAnnotated::before_action(key_t const& key,
 //==========================================================================
 
 void
-PrettifierPrefixAnnotated::enter_table(std::string const& key,
-                                       boost::any const&)
+PrettifierPrefixAnnotated::enter_table(std::string const& key, std::any const&)
 {
   buffer_ << print_full_key_(key) << nl() << print_prefix_annotated_info(info_)
           << nl() << indent_() << table::printed_prefix(key) << nl();
@@ -40,7 +39,7 @@ PrettifierPrefixAnnotated::enter_table(std::string const& key,
 }
 
 void
-PrettifierPrefixAnnotated::exit_table(std::string const& key, boost::any const&)
+PrettifierPrefixAnnotated::exit_table(std::string const& key, std::any const&)
 {
   name_stack_.pop_back();
   indent_.pop();
@@ -52,7 +51,7 @@ PrettifierPrefixAnnotated::exit_table(std::string const& key, boost::any const&)
 
 void
 PrettifierPrefixAnnotated::enter_sequence(std::string const& key,
-                                          boost::any const& a)
+                                          std::any const& a)
 {
   push_size_(a);
   buffer_ << print_full_key_(key) << nl() << print_prefix_annotated_info(info_)
@@ -62,7 +61,7 @@ PrettifierPrefixAnnotated::enter_sequence(std::string const& key,
 
 void
 PrettifierPrefixAnnotated::exit_sequence(std::string const& key,
-                                         boost::any const&)
+                                         std::any const&)
 {
   indent_.pop();
   buffer_ << indent_() << sequence::closing_brace()
@@ -73,7 +72,7 @@ PrettifierPrefixAnnotated::exit_sequence(std::string const& key,
 //==========================================================================
 
 void
-PrettifierPrefixAnnotated::atom(std::string const& key, boost::any const& a)
+PrettifierPrefixAnnotated::atom(std::string const& key, std::any const& a)
 {
   buffer_ << print_full_key_(key) << nl() << print_prefix_annotated_info(info_)
           << nl() << indent_() << atom::printed_prefix(key) << atom::value(a)
@@ -83,9 +82,9 @@ PrettifierPrefixAnnotated::atom(std::string const& key, boost::any const& a)
 //=========================================================================
 
 void
-PrettifierPrefixAnnotated::push_size_(boost::any const& a)
+PrettifierPrefixAnnotated::push_size_(std::any const& a)
 {
-  sequence_sizes_.emplace(boost::any_cast<ps_sequence_t>(a).size());
+  sequence_sizes_.emplace(std::any_cast<ps_sequence_t>(a).size());
   curr_size_ = sequence_sizes_.top();
 }
 

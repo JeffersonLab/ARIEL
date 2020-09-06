@@ -1,0 +1,176 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use vars qw(%cmake_library_list);
+
+BEGIN {
+  %cmake_library_list = (
+    "\${ROOT_ASIMAGEGUI}" => "ROOT::ASImageGui",
+    "\${ROOT_ASIMAGE}" => "ROOT::ASImage",
+    "\${ROOT_CLING}" => "ROOT::Cling",
+    "\${ROOT_CORE}" => "ROOT::Core",
+    "\${ROOT_EGPYTHIA6}" => "ROOT::EGPythia6",
+    "\${ROOT_EG}" => "ROOT::EG",
+    "\${ROOT_EVE}" => "ROOT::Eve",
+    "\${ROOT_FFTW}" => "ROOT::FFTW",
+    "\${ROOT_FITPANEL}" => "ROOT::FitPanel",
+    "\${ROOT_FOAM}" => "ROOT::Foam",
+    "\${ROOT_FTGL}" => "ROOT::FTGL",
+    "\${ROOT_FUMILI}" => "ROOT::Fumili",
+    "\${ROOT_GDML}" => "ROOT::Gdml",
+    "\${ROOT_GED}" => "ROOT::Ged",
+    "\${ROOT_GENETIC}" => "ROOT::Genetic",
+    "\${ROOT_GENVECTOR}" => "ROOT::GenVector",
+    "\${ROOT_GEOMBUILDER}" => "ROOT::GeomBuilder",
+    "\${ROOT_GEOMPAINTER}" => "ROOT::GeomPainter",
+    "\${ROOT_GEOM}" => "ROOT::Geom",
+    "\${ROOT_GLEW}" => "ROOT::GLEW",
+    "\${ROOT_GPAD}" => "ROOT::Gpad",
+    "\${ROOT_GRAF3D}" => "ROOT::Graf3d",
+    "\${ROOT_GRAF}" => "ROOT::Graf",
+    "\${ROOT_GUIBLD}" => "ROOT::GuiBld",
+    "\${ROOT_GUIHTML}" => "ROOT::GuiHtml",
+    "\${ROOT_GUI}" => "ROOT::Gui",
+    "\${ROOT_GVIZ3D}" => "ROOT::Gviz3d",
+    "\${ROOT_GX11}" => "ROOT::GX11",
+    "\${ROOT_GX11TTF}" => "ROOT::GX11TTF",
+    "\${ROOT_HBOOK}" => "ROOT::Hbook",
+    "\${ROOT_HISTFACTORY}" => "ROOT::HistFactory",
+    "\${ROOT_HISTPAINTER}" => "ROOT::HistPainter",
+    "\${ROOT_HIST}" => "ROOT::Hist",
+    "\${ROOT_HTML}" => "ROOT::Html",
+    "\${ROOT_IMT}" => "ROOT::Imt",
+    "\${ROOT_JUPYROOT}" => "ROOT::JupyROOT",
+    "\${ROOT_MATHCORE}" => "ROOT::MathCore",
+    "\${ROOT_MATHMORE}" => "ROOT::MathMore",
+    "\${ROOT_MATRIX}" => "ROOT::Matrix",
+    "\${ROOT_MINUIT2}" => "ROOT::Minuit2",
+    "\${ROOT_MINUIT}" => "ROOT::Minuit",
+    "\${ROOT_MLP}" => "ROOT::MLP",
+    "\${ROOT_MULTIPROC}" => "ROOT::MultiProc",
+    "\${ROOT_NET}" => "ROOT::Net",
+    "\${ROOT_NETXNG}" => "ROOT::NetxNG",
+    "\${ROOT_NETX}" => "ROOT::Netx",
+    "\${ROOT_NEW}" => "ROOT::New",
+    "\${ROOT_PGSQL}" => "ROOT::PgSQL",
+    "\${ROOT_PHYSICS}" => "ROOT::Physics",
+    "\${ROOT_POSTSCRIPT}" => "ROOT::Postscript",
+    "\${ROOT_PROOFBENCH}" => "ROOT::ProofBench",
+    "\${ROOT_PROOFDRAW}" => "ROOT::ProofDraw",
+    "\${ROOT_PROOFPLAYER}" => "ROOT::ProofPlayer",
+    "\${ROOT_PROOF}" => "ROOT::Proof",
+    "\${ROOT_PROOFX}" => "ROOT::Proofx",
+    "\${ROOT_PYMVA}" => "ROOT::PyMVA",
+    "\${ROOT_PYROOT}" => "ROOT::PyROOT",
+    "\${ROOT_QUADP}" => "ROOT::Quadp",
+    "\${ROOT_RCSG}" => "ROOT::RCsg",
+    "\${ROOT_RECORDER}" => "ROOT::Recorder",
+    "\${ROOT_RGL}" => "ROOT::RGL",
+    "\${ROOT_RHTTPSNIFF}" => "ROOT::RHTTPSniff",
+    "\${ROOT_RHTTP}" => "ROOT::RHTTP",
+    "\${ROOT_RINT}" => "ROOT::Rint",
+    "\${ROOT_RIO}" => "ROOT::RIO",
+    "\${ROOT_RMYSQL}" => "ROOT::RMySQL",
+    "\${ROOT_ROOFITCORE}" => "ROOT::RooFitCore",
+    "\${ROOT_ROOFIT}" => "ROOT::RooFit",
+    "\${ROOT_ROOSTATS}" => "ROOT::RooStats",
+    "\${ROOT_ROOTAUTH}" => "ROOT::RootAuth",
+    "\${ROOT_ROOTBROWSERV7}" => "ROOT::ROOTBrowserv7",
+    "\${ROOT_ROOTCANVASPAINTER}" => "ROOT::ROOTCanvasPainter",
+    "\${ROOT_ROOTDATAFRAME}" => "ROOT::ROOTDataFrame",
+    "\${ROOT_ROOTEVE}" => "ROOT::ROOTEve",
+    "\${ROOT_ROOTFITPANELV7}" => "ROOT::ROOTFitPanelv7",
+    "\${ROOT_ROOTGPADV7}" => "ROOT::ROOTGpadv7",
+    "\${ROOT_ROOTGRAPHICSPRIMITIVES}" => "ROOT::ROOTGraphicsPrimitives",
+    "\${ROOT_ROOTHISTDRAW}" => "ROOT::ROOTHistDraw",
+    "\${ROOT_ROOTNTUPLE}" => "ROOT::ROOTNTuple",
+    "\${ROOT_ROOTVECOPS}" => "ROOT::ROOTVecOps",
+    "\${ROOT_ROOTWEBDISPLAY}" => "ROOT::ROOTWebDisplay",
+    "\${ROOT_SESSIONVIEWER}" => "ROOT::SessionViewer",
+    "\${ROOT_SMATRIX}" => "ROOT::Smatrix",
+    "\${ROOT_SPECTRUMPAINTER}" => "ROOT::SpectrumPainter",
+    "\${ROOT_SPECTRUM}" => "ROOT::Spectrum",
+    "\${ROOT_SPLOT}" => "ROOT::SPlot",
+    "\${ROOT_SQLIO}" => "ROOT::SQLIO",
+    "\${ROOT_SRVAUTH}" => "ROOT::SrvAuth",
+    "\${ROOT_THREAD}" => "ROOT::Thread",
+    "\${ROOT_TMVAGUI}" => "ROOT::TMVAGui",
+    "\${ROOT_TMVA}" => "ROOT::TMVA",
+    "\${ROOT_TREEPLAYER}" => "ROOT::TreePlayer",
+    "\${ROOT_TREE}" => "ROOT::Tree",
+    "\${ROOT_TREEVIEWER}" => "ROOT::TreeViewer",
+    "\${ROOT_UNFOLD}" => "ROOT::Unfold",
+    "\${ROOT_VMC}" => "ROOT::VMC",
+    "\${ROOT_WEBGUI6}" => "ROOT::WebGui6",
+    "\${ROOT_X3D}" => "ROOT::X3d",
+    "\${ROOT_XMLIO}" => "ROOT::XMLIO",
+    "\${ROOT_XMLPARSER}" => "ROOT::XMLParser",
+    "\${ROOT_XRDPROOFD}" => "ROOT::XrdProofd"
+  );
+}
+
+use Getopt::Long qw(:config no_ignore_case bundling);
+
+my $top_level_dir;
+my $dry_run;
+GetOptions("help|h|?" => \&help_message,
+           "top-level-dir|d=s" => \$top_level_dir,
+           "dry-run|n" => \$dry_run)
+    or die_while_processing_options();
+
+if (!defined $top_level_dir) {
+    print("The 'top-level-dir|d' command-line option is required:\n  ");
+    usage();
+    exit(1);
+}
+
+sub usage {
+    print("Usage: update-root-cmake -d <top-level directory> [--dry-run]\n");
+}
+
+sub help_message {
+    print("\n");
+    usage();
+    print("\nOptions:\n\n");
+    print("  -d [--top-level-dir] arg   Top-level directory to apply migration script.\n");
+    print("  -n [--dry-run]             Show what files would be changed.\n\n");
+    exit(0);
+}
+
+sub die_while_processing_options {
+    usage();
+    print("Type 'update-root-cmake --help' for more information.\n");
+    exit(1);
+}
+
+sub replace_in_files {
+    my ($files_str_ref, $old_pattern, $new_pattern, $dry) = @_;
+    if ($files_str_ref =~ /^\s*$/) {
+        return;
+    }
+    my $matched_files_str = `grep -l "\\$old_pattern" $files_str_ref`;
+    my @matched_files = split /^/m, $matched_files_str;
+    foreach(@matched_files) {
+      if ($dry) {
+        print "  Would change file $_";
+      }
+      else {
+        print "  Updating file $_";
+        `sed -i.backup "s|\\$old_pattern|$new_pattern|g" $_`;
+      }
+    }
+}
+
+# Fix CMake files
+my $cmake_files_str = `find -L $top_level_dir \\( \\( -name .svn -o -name .git -o -name CVS \\) -prune \\) -o \\( -name 'CMakeLists.txt' -o -name '*.cmake' \\) -printf "%p "`;
+if ($cmake_files_str !~ /^\s*$/) {
+  print "\nChecking library dependencies (CMake)\n";
+  print "=====================================\n";
+  foreach my $old_lib (sort keys %cmake_library_list) {
+    print "Checking for uses of $old_lib\n";
+    my $old_pattern = $old_lib;
+    my $new_lib = $cmake_library_list{$old_lib};
+    replace_in_files($cmake_files_str, $old_pattern, $new_lib, $dry_run);
+  }
+}

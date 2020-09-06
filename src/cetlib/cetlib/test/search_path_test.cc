@@ -1,64 +1,78 @@
-// ======================================================================
-//
-// test cet::search_path
-//
-// ======================================================================
+#include <catch2/catch.hpp>
 
+#include "cetlib/exception_category_matcher.h"
 #include "cetlib/search_path.h"
 #include "cetlib_except/exception.h"
-#include <cstdlib>
+
 #include <string>
 
 using cet::search_path;
 
-void
-ensure(int const which, bool const claim)
-{
-  if (!claim)
-    std::exit(which);
-}
-
 using namespace std::string_literals;
 
-int
-main()
+TEST_CASE("Autodetect env")
 {
-  {
-    auto const path = "xyzzy"s;
-    search_path const xyzzy{path};
-    ensure(1, xyzzy.size() == 1);
-    ensure(2, xyzzy.showenv() == path);
-  }
+  auto const path = "xyzzy"s;
+  search_path const xyzzy{path};
+  CHECK(xyzzy.size() == 1);
+  CHECK(xyzzy.showenv() == path);
+}
 
-  {
-    search_path const xyzzy{":xyzzy"};
-    ensure(3, xyzzy.size() == 1);
-    ensure(4, xyzzy.showenv().empty());
-  }
+TEST_CASE("Autodetect missing env")
+{
+  auto const path = "/MISSING/"s;
+  CHECK_THROWS_MATCHES(search_path{path},
+                       cet::exception,
+                       cet::exception_category_matcher("getenv"));
+}
 
-  ensure(5, search_path{":xyzzy:"}.size() == 1);
-  ensure(6, search_path{"xyzzy:plugh"}.size() == 2);
-  ensure(7, search_path{"xyzzy:::plugh"}.size() == 2);
-  ensure(8, search_path{"xyzzy:plugh:twisty:grue"}.size() == 4);
+TEST_CASE("Autodetect path")
+{
+  search_path const xyzzy{":xyzzy"};
+  CHECK(xyzzy.size() == 1);
+  CHECK(xyzzy.showenv().empty());
+}
 
-  ensure(11, !search_path{""}.empty());
-  ensure(12, !search_path{":"}.empty());
-  ensure(13, !search_path{"::"}.empty());
+TEST_CASE("Missing env OK")
+{
+  auto const path{"/MISSING/"s};
+  search_path const sp{path, std::nothrow};
+  CHECK(sp.size() == 1);
+  CHECK(sp.showenv() == path);
+}
 
-  ensure(14, search_path{""}.size() == 1);
-  ensure(15, search_path{":"}.size() == 1);
-  ensure(16, search_path{"::"}.size() == 1);
+TEST_CASE("Specified path")
+{
+  search_path const sp{"/onedir", cet::path_tag};
+  CHECK(sp.size() == 1);
+  CHECK(sp.showenv().empty());
+}
 
-  {
-    try {
-      search_path const sp{":/tmp:"};
-      sp.find_file("");
-      ensure(21, false);
-    }
-    catch (cet::exception const& e) {
-      ensure(22, e.category() == "search_path"s);
-    }
-  }
+TEST_CASE("Path entry count checks")
+{
+  CHECK(search_path{":xyzzy:"}.size() == 1);
+  CHECK(search_path{"xyzzy:plugh"}.size() == 2);
+  CHECK(search_path{"xyzzy:::plugh"}.size() == 2);
+  CHECK(search_path{"xyzzy:plugh:twisty:grue"}.size() == 4);
 
-  ensure(23, search_path{"a:bb:c.c"}.to_string() == "a:bb:c.c"s);
+  CHECK(!search_path{""}.empty());
+  CHECK(!search_path{":"}.empty());
+  CHECK(!search_path{"::"}.empty());
+
+  CHECK(search_path{""}.size() == 1);
+  CHECK(search_path{":"}.size() == 1);
+  CHECK(search_path{"::"}.size() == 1);
+}
+
+TEST_CASE("Null find check")
+{
+  search_path const sp{":/tmp:"};
+  CHECK_THROWS_MATCHES(sp.find_file(""),
+                       cet::exception,
+                       cet::exception_category_matcher("search_path"));
+}
+
+TEST_CASE("Path reproduction check")
+{
+  CHECK(search_path{"a:bb:c.c"}.to_string() == "a:bb:c.c"s);
 }

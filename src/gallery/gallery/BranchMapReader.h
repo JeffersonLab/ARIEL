@@ -9,10 +9,10 @@
 // far.
 
 #include "canvas/Persistency/Provenance/BranchDescription.h"
-#include "canvas/Persistency/Provenance/BranchListIndex.h"
 #include "canvas/Persistency/Provenance/Compatibility/BranchIDList.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "cetlib/exempt_ptr.h"
+#include "gallery/InfoForTypeLabelInstance.h"
 
 #include <map>
 #include <memory>
@@ -28,13 +28,24 @@ namespace gallery {
   public:
     void updateFile(TFile* tFile);
 
-    cet::exempt_ptr<art::BranchIDLists const>
-    branchIDLists() const
-    {
-      return branchIDLists_.get();
-    }
-    art::BranchDescription const* productToBranch(
-      art::ProductID const& pid) const;
+    art::BranchDescription const* productDescription(
+      InfoForTypeLabelInstance const& info,
+      std::string const& process) const;
+
+    art::BranchDescription const* productDescription(
+      art::TypeID const& type,
+      std::string const& label,
+      std::string const& instance,
+      std::string const& process) const;
+
+    art::BranchDescription const* productDescription(
+      art::ProductID const pid) const;
+
+    std::map<art::ProductID, art::BranchDescription> const&
+    productDescriptions() const;
+
+    cet::exempt_ptr<art::BranchIDLists const> branchIDLists() const;
+
     bool branchInRegistryOfAnyOpenedFile(art::ProductID const&) const;
 
   private:

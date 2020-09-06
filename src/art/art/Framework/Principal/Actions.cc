@@ -1,56 +1,46 @@
 #include "art/Framework/Principal/Actions.h"
+// vim: set sw=2 expandtab :
 
+#include "art/Framework/Principal/ActionCodes.h"
 #include "canvas/Utilities/DebugMacros.h"
 #include "canvas/Utilities/Exception.h"
 #include "cetlib/container_algorithms.h"
 #include "fhiclcpp/ParameterSet.h"
-#include <iostream>
-#include <vector>
 
 using namespace cet;
 using namespace std;
+
 using fhicl::ParameterSet;
 
 namespace art {
-  namespace actions {
-    namespace {
-      struct ActionNames {
-        ActionNames() : table_(LastCode + 1)
-        {
-          table_[IgnoreCompletely] = "IgnoreCompletely";
-          table_[Rethrow] = "Rethrow";
-          table_[SkipEvent] = "SkipEvent";
-          table_[FailModule] = "FailModule";
-          table_[FailPath] = "FailPath";
-        }
 
-        using Table = vector<char const*>;
-        Table table_;
-      };
-    }
+  namespace actions {
 
     char const*
-    actionName(ActionCodes const code)
+    actionName(ActionCodes code)
     {
-      static ActionNames tab;
-      return static_cast<unsigned int>(code) < tab.table_.size() ?
-               tab.table_[code] :
-               "UnknownAction";
+      vector<const char*> names{
+        "IgnoreCompletely", "Rethrow", "SkipEvent", "FailModule", "FailPath"};
+      return (static_cast<size_t>(code) < names.size()) ? names[code] :
+                                                          "UnknownAction";
     }
-  }
 
-  ActionTable::ActionTable() : map_() { addDefaults_(); }
+  } // namespace actions
 
-  ActionTable::ActionTable(ParameterSet const& scheduleOpts) : map_()
+  ActionTable::~ActionTable() = default;
+
+  ActionTable::ActionTable() { addDefaults_(); }
+
+  ActionTable::ActionTable(Config const& c)
   {
-    if (scheduleOpts.get<bool>("defaultExceptions", true)) {
+    if (c.defaultExceptions()) {
       addDefaults_();
     }
-    install_(actions::SkipEvent, scheduleOpts);
-    install_(actions::Rethrow, scheduleOpts);
-    install_(actions::IgnoreCompletely, scheduleOpts);
-    install_(actions::FailModule, scheduleOpts);
-    install_(actions::FailPath, scheduleOpts);
+    install_(actions::IgnoreCompletely, c.ignoreCompletely());
+    install_(actions::Rethrow, c.rethrow());
+    install_(actions::SkipEvent, c.skipEvent());
+    install_(actions::FailModule, c.failModule());
+    install_(actions::FailPath, c.failPath());
   }
 
   void
@@ -67,18 +57,16 @@ namespace art {
   }
 
   void
-  ActionTable::install_(actions::ActionCodes const code,
-                        ParameterSet const& scheduler)
+  ActionTable::install_(actions::ActionCodes code,
+                        vector<string> const& action_names)
   {
-    auto const& action_names =
-      scheduler.get<vector<string>>(actionName(code), {});
     for_all(action_names, [this, code](auto const& action_name) {
       this->add(action_name, code);
     });
   }
 
   void
-  ActionTable::add(string const& category, actions::ActionCodes const code)
+  ActionTable::add(const string& category, actions::ActionCodes code)
   {
     map_[category] = code;
   }
@@ -86,8 +74,8 @@ namespace art {
   actions::ActionCodes
   ActionTable::find(string const& category) const
   {
-    auto it = map_.find(category);
-    return it != end(map_) ? it->second : actions::Rethrow;
+    auto I = map_.find(category);
+    return (I != map_.end()) ? I->second : actions::Rethrow;
   }
 
-} // art
+} // namespace art

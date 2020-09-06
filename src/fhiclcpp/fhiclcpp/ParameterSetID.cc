@@ -5,52 +5,44 @@
 // ======================================================================
 
 #include "fhiclcpp/ParameterSetID.h"
-
-#include "boost/format.hpp"
 #include "fhiclcpp/ParameterSet.h"
+
+#include <iomanip>
 
 using namespace boost;
 using namespace cet;
 using namespace fhicl;
 using namespace std;
 
-typedef sha1::digest_t digest_t;
-
 // ======================================================================
 
-static digest_t const&
-invalid_id_()
-{
-  static digest_t invalid_value = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  return invalid_value;
-}
+constexpr sha1::digest_t invalid_id{{}};
 
 // ----------------------------------------------------------------------
 
-ParameterSetID::ParameterSetID() : valid_(false), id_(invalid_id_()) {}
+ParameterSetID::ParameterSetID() noexcept : valid_{false}, id_{invalid_id} {}
 
-ParameterSetID::ParameterSetID(ParameterSet const& ps) : valid_(false), id_()
+ParameterSetID::ParameterSetID(ParameterSet const& ps) : valid_{false}, id_{}
 {
   reset(ps);
 }
 
 ParameterSetID::ParameterSetID(std::string const& id)
-  : valid_(id.size() == max_str_size()), id_()
+  : valid_{id.size() == max_str_size()}, id_{}
 {
   if (valid_) {
     for (size_t i = 0, e = id_.size(); i != e; ++i) {
       id_[i] = std::stoi(id.substr(i * 2, 2), nullptr, 16);
     }
     if (id != to_string()) {
-      throw exception(error::cant_happen)
+      throw exception{error::cant_happen}
         << "ParameterSetID construction failure: " << id
         << " != " << to_string() << ".\n";
     }
   } else if (id.empty()) {
-    id_ = invalid_id_();
+    id_ = invalid_id;
   } else {
-    throw fhicl::exception(error::parse_error)
+    throw fhicl::exception{error::parse_error}
       << "Attempt to construct ParameterSetID from inappropriate input: " << id
       << ".\n";
   }
@@ -59,7 +51,7 @@ ParameterSetID::ParameterSetID(std::string const& id)
 // ----------------------------------------------------------------------
 
 bool
-ParameterSetID::is_valid() const
+ParameterSetID::is_valid() const noexcept
 {
   return valid_;
 }
@@ -67,28 +59,33 @@ ParameterSetID::is_valid() const
 string
 ParameterSetID::to_string() const
 {
-  string s;
-  for (std::size_t i = 0; i != id_.size(); ++i)
-    s += str(format("%02x") % (unsigned int)id_[i]);
-  return s;
+  std::ostringstream oss;
+  oss << std::hex << std::setfill('0');
+  // The range-for loop performs an implicit cast from 'unsigned char'
+  // to 'unsigned int'.
+  for (unsigned int const num : id_) {
+    oss << std::setw(2) << num;
+  }
+  return oss.str();
 }
 
 // ----------------------------------------------------------------------
 
 void
-ParameterSetID::invalidate()
+ParameterSetID::invalidate() noexcept
 {
   valid_ = false;
-  id_ = invalid_id_();
+  id_ = invalid_id;
 }
 
 void
 ParameterSetID::reset(ParameterSet const& ps)
 {
-  string const& hash(ps.to_string());
-  sha1 sha(hash.c_str());
+  auto const& hash = ps.to_string();
+  sha1 sha{hash.c_str()};
 
-  id_ = sha.digest(), valid_ = true;
+  id_ = sha.digest();
+  valid_ = true;
 }
 
 void
@@ -101,37 +98,37 @@ ParameterSetID::swap(ParameterSetID& other)
 // ----------------------------------------------------------------------
 
 bool
-ParameterSetID::operator==(ParameterSetID const& other) const
+ParameterSetID::operator==(ParameterSetID const& other) const noexcept
 {
   return id_ == other.id_;
 }
 
 bool
-ParameterSetID::operator!=(ParameterSetID const& other) const
+ParameterSetID::operator!=(ParameterSetID const& other) const noexcept
 {
   return id_ != other.id_;
 }
 
 bool
-ParameterSetID::operator<(ParameterSetID const& other) const
+ParameterSetID::operator<(ParameterSetID const& other) const noexcept
 {
   return id_ < other.id_;
 }
 
 bool
-ParameterSetID::operator>(ParameterSetID const& other) const
+ParameterSetID::operator>(ParameterSetID const& other) const noexcept
 {
   return id_ > other.id_;
 }
 
 bool
-ParameterSetID::operator<=(ParameterSetID const& other) const
+ParameterSetID::operator<=(ParameterSetID const& other) const noexcept
 {
   return id_ <= other.id_;
 }
 
 bool
-ParameterSetID::operator>=(ParameterSetID const& other) const
+ParameterSetID::operator>=(ParameterSetID const& other) const noexcept
 {
   return id_ >= other.id_;
 }

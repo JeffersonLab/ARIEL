@@ -7,13 +7,13 @@
 
 #include <string>
 
-namespace art{
+namespace art {
   class EventID;
 }
 
 namespace tex {
 
-  std::string eventIDToString( art::EventID const& id );
+  std::string eventIDToString(art::EventID const& id);
 
 }
 #endif /* Utilities_eventIDToString_h */

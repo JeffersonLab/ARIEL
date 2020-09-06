@@ -5,8 +5,6 @@
 
 namespace art {
 
-  ProductID::ProductID(value_type const value) : value_{value} {}
-
   ProductID::ProductID(std::string const& canonicalProductName)
     : ProductID{toID(canonicalProductName)}
   {}

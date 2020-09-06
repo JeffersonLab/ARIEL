@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(th1f)
 
   // Aggregation happens here
   auto const& h3 = r.get<TH1F>();
-  BOOST_REQUIRE_EQUAL(h3d.size(), static_cast<size_t>(h3.GetNbinsX()));
+  BOOST_REQUIRE(h3d.size() == static_cast<size_t>(h3.GetNbinsX()));
 
   for (std::size_t i{0}; i != h3d.size(); ++i) {
     BOOST_CHECK_CLOSE_FRACTION(h3.GetBinContent(i + 1), h3d[i], tolerance);
@@ -154,8 +154,8 @@ BOOST_AUTO_TEST_CASE(th2f)
 
   // Aggregation happens here
   auto const& h3 = r.get<TH2F>();
-  BOOST_REQUIRE_EQUAL(nBinsX, h3.GetNbinsX());
-  BOOST_REQUIRE_EQUAL(nBinsY, h3.GetNbinsY());
+  BOOST_REQUIRE(nBinsX == h3.GetNbinsX());
+  BOOST_REQUIRE(nBinsY == h3.GetNbinsY());
 
   for (std::size_t i{0}; i != nBinsX; ++i) {
     for (std::size_t j{0}; j != nBinsY; ++j) {

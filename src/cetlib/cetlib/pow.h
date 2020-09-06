@@ -45,27 +45,24 @@ namespace cet {
   constexpr T sum_of_squares(T x, T y, T z);
 }
 
-namespace cet {
-  namespace detail {
+namespace cet::detail {
+  template <unsigned N, class T, unsigned = N % 2u>
+  struct pow;
 
-    template <unsigned N, class T, unsigned = N % 2u>
-    struct pow;
+  template <unsigned N, class T>
+  struct pow<N, T, 0u>;
 
-    template <unsigned N, class T>
-    struct pow<N, T, 0u>;
+  template <unsigned N, class T>
+  struct pow<N, T, 1u>;
 
-    template <unsigned N, class T>
-    struct pow<N, T, 1u>;
+  template <class T>
+  struct pow<0u, T, 0u>;
 
-    template <class T>
-    struct pow<0u, T, 0u>;
+  template <class T>
+  struct pow<1u, T, 1u>;
 
-    template <class T>
-    struct pow<1u, T, 1u>;
-
-    template <class T>
-    struct pow<2u, T, 0u>;
-  }
+  template <class T>
+  struct pow<2u, T, 0u>;
 } // cet::detail
 
 // ----------------------------------------------------------------------
@@ -151,7 +148,7 @@ cet::sum_of_squares(T x, T y, T z)
   return square(x) + square(y) + square(z);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_pow_h */
 

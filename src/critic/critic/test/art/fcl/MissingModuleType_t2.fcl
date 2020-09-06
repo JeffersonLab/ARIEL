@@ -1,0 +1,6 @@
+# This test will not fail because 'BadModuleConfig' is not included on
+# any path.
+
+process_name: TEST
+
+outputs.BadModuleConfig: { }

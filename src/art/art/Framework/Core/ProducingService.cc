@@ -1,4 +1,6 @@
 #include "art/Framework/Core/ProducingService.h"
+// vim: set sw=2 expandtab :
+
 #include "art/Framework/Core/ProducingServiceSignals.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/EventPrincipal.h"
@@ -9,55 +11,64 @@
 #include "canvas/Persistency/Provenance/RangeSet.h"
 #include "fhiclcpp/ParameterSet.h"
 
-art::ProducingService::~ProducingService() noexcept = default;
+namespace art {
 
-void
-art::ProducingService::registerCallbacks(ProducingServiceSignals& signals)
-{
-  signals.sPostReadRun.watch(this, &ProducingService::doPostReadRun);
-  signals.sPostReadSubRun.watch(this, &ProducingService::doPostReadSubRun);
-  signals.sPostReadEvent.watch(this, &ProducingService::doPostReadEvent);
-}
+  ProducingService::ProducingService()
+    : ProductRegistryHelper{product_creation_mode::produces}
+  {}
+  ProducingService::~ProducingService() noexcept = default;
 
-void
-art::ProducingService::doPostReadRun(RunPrincipal& rp)
-{
-  Run r{rp, md_, Consumer::non_module_context(), RangeSet::forRun(rp.id())};
-  postReadRun(r);
-  r.commit(rp, true, expectedProducts<InRun>());
-}
+  void
+  ProducingService::setModuleDescription(ModuleDescription const& md)
+  {
+    // We choose the one-argument constructor since the path
+    // information is irrelevant when the doPostRead* functions are
+    // invoked.
+    mc_ = ModuleContext{md};
+  }
 
-void
-art::ProducingService::doPostReadSubRun(SubRunPrincipal& srp)
-{
-  SubRun sr{
-    srp, md_, Consumer::non_module_context(), RangeSet::forSubRun(srp.id())};
-  postReadSubRun(sr);
-  sr.commit(srp, true, expectedProducts<InSubRun>());
-}
+  void
+  ProducingService::registerCallbacks(ProducingServiceSignals& cbReg)
+  {
+    cbReg.sPostReadRun.watch(this, &ProducingService::doPostReadRun);
+    cbReg.sPostReadSubRun.watch(this, &ProducingService::doPostReadSubRun);
+    cbReg.sPostReadEvent.watch(this, &ProducingService::doPostReadEvent);
+  }
 
-void
-art::ProducingService::doPostReadEvent(EventPrincipal& ep)
-{
-  Event e{ep, md_, Consumer::non_module_context()};
-  postReadEvent(e);
-  e.commit(ep, true, expectedProducts<InEvent>());
-}
+  void
+  ProducingService::doPostReadRun(RunPrincipal& rp)
+  {
+    Run r{rp, mc_, RangeSet::forRun(rp.runID())};
+    postReadRun(r);
+    r.movePutProductsToPrincipal(rp);
+  }
 
-void
-art::ProducingService::postReadRun(Run&)
-{}
+  void
+  ProducingService::doPostReadSubRun(SubRunPrincipal& srp)
+  {
+    SubRun sr{srp, mc_, RangeSet::forSubRun(srp.subRunID())};
+    postReadSubRun(sr);
+    sr.movePutProductsToPrincipal(srp);
+  }
 
-void
-art::ProducingService::postReadSubRun(SubRun&)
-{}
+  void
+  ProducingService::doPostReadEvent(EventPrincipal& ep)
+  {
+    Event e{ep, mc_};
+    postReadEvent(e);
+    e.movePutProductsToPrincipal(ep, true, &expectedProducts<InEvent>());
+  }
 
-void
-art::ProducingService::postReadEvent(Event&)
-{}
+  void
+  ProducingService::postReadRun(Run&)
+  {}
 
-void
-art::ProducingService::setModuleDescription(ModuleDescription const& md)
-{
-  md_ = md;
-}
+  void
+  ProducingService::postReadSubRun(SubRun&)
+  {}
+
+  void
+  ProducingService::postReadEvent(Event&)
+  {}
+
+} // namespace art

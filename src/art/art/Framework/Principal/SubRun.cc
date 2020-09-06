@@ -1,32 +1,27 @@
 #include "art/Framework/Principal/SubRun.h"
+// vim: set sw=2 expandtab :
+
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
 
 namespace art {
 
-  namespace {
-    Run*
-    newRun(SubRunPrincipal const& srp,
-           ModuleDescription const& md,
-           cet::exempt_ptr<Consumer> consumer)
-    {
-      return srp.runPrincipalExemptPtr() ?
-               new Run{srp.runPrincipal(), md, consumer} :
-               nullptr;
-    }
-  }
+  SubRun::~SubRun() = default;
 
   SubRun::SubRun(SubRunPrincipal const& srp,
-                 ModuleDescription const& md,
-                 cet::exempt_ptr<Consumer> consumer,
-                 RangeSet const& rs)
-    : DataViewImpl{srp, md, InSubRun, false, consumer}
-    , principal_{srp}
-    , aux_{srp.aux()}
-    , run_{newRun(srp, md, consumer)}
-    , productRangeSet_{rs}
+                 ModuleContext const& mc,
+                 RangeSet const& rs /* = RangeSet::invalid() */)
+    : DataViewImpl{InSubRun, srp, mc, false, rs}
+    , run_{srp.runPrincipalExemptPtr() ? new Run{srp.runPrincipal(), mc} :
+                                         nullptr}
   {}
+
+  SubRunID
+  SubRun::id() const
+  {
+    return DataViewImpl::subRunID();
+  }
 
   Run const&
   SubRun::getRun() const
@@ -38,39 +33,4 @@ namespace art {
     return *run_;
   }
 
-  EDProductGetter const*
-  SubRun::productGetter(ProductID const pid) const
-  {
-    return principal_.productGetter(pid);
-  }
-
-  void
-  SubRun::commit(SubRunPrincipal& srp,
-                 bool const checkProducts,
-                 std::set<TypeLabel> const& expectedProducts)
-  {
-    // Check addresses only since type of 'srp' will hopefully change to
-    // Principal&.
-    assert(&srp == &principal_);
-    checkPutProducts(checkProducts, expectedProducts, putProducts());
-    commit(srp);
-  }
-
-  void
-  SubRun::commit(SubRunPrincipal& srp)
-  {
-    for (auto& elem : putProducts()) {
-      auto const& pd = elem.second.pd;
-      auto productProvenancePtr = std::make_unique<ProductProvenance const>(
-        pd.productID(), productstatus::present());
-
-      srp.put(std::move(elem.second.prod),
-              pd,
-              std::move(productProvenancePtr),
-              std::move(elem.second.rs));
-    }
-
-    // the cleanup is all or none
-    putProducts().clear();
-  }
-}
+} // namespace art

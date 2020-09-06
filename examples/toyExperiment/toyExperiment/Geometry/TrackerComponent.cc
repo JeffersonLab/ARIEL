@@ -6,22 +6,23 @@
 #include "toyExperiment/Geometry/TrackerComponent.h"
 
 std::string const&
-tex::TrackerComponentDetail::typeName() {
+tex::TrackerComponentDetail::typeName()
+{
   static std::string type("TrackerComponent");
   return type;
 }
 
-std::map<tex::TrackerComponentDetail::enum_type,std::string> const& 
-tex::TrackerComponentDetail::names(){
+std::map<tex::TrackerComponentDetail::enum_type, std::string> const&
+tex::TrackerComponentDetail::names()
+{
 
-  static std::map<enum_type,std::string> nam;
+  static std::map<enum_type, std::string> nam;
 
-  if ( nam.empty() ){
+  if (nam.empty()) {
     nam[unknown] = "unknown";
-    nam[inner]   = "inner";
-    nam[outer]   = "outer";
+    nam[inner] = "inner";
+    nam[outer] = "outer";
   }
 
   return nam;
 }
-

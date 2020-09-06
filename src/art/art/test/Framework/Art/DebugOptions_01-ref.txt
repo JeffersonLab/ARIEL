@@ -8,8 +8,8 @@ services: {
       service_provider: "TrivialFileTransfer"
       service_type: "FileTransfer"
    }
-   MemoryTracker: {
-      service_type: "MemoryTracker"
+   Tracer: {
+      service_type: "Tracer"
    }
    message: {
       destinations: {
@@ -31,16 +31,18 @@ services: {
       }
    }
    scheduler: {
-      debugConfig: {
+      debug: {
          fileName: "config.out"
+         option: "debug-config"
          printMode: "raw"
       }
       defaultExceptions: false
-      errorOnFailureToPut: true
       errorOnMissingConsumes: false
       errorOnSIGINT: true
+      num_schedules: 1
       num_threads: 1
-      wantTracer: true
+      pruneConfig: true
+      reportUnused: true
    }
 }
 source: {

@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE (delegatedParameter test)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
+
 #include "fhiclcpp/test/types/FixtureBase.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
@@ -33,20 +33,20 @@ namespace {
     std::set<std::string> const ref{
       "everything", "everything[0]", "you", "imagine"};
     auto const& test = pset.get_all_keys();
-    CET_CHECK_EQUAL_COLLECTIONS(test, ref);
+    BOOST_TEST(test == ref, boost::test_tools::per_element{});
   }
 
   void
   receive_vector(std::vector<int> const& v)
   {
-    auto const ref = {1, 2, 3};
-    CET_CHECK_EQUAL_COLLECTIONS(v, ref);
+    std::vector const ref{1, 2, 3};
+    BOOST_TEST(v == ref);
   }
 
   void
   receive_int(int const i)
   {
-    BOOST_CHECK_EQUAL(i, 3);
+    BOOST_TEST(i == 3);
   }
 }
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(delegation_check)
   receive_int(config().nested().da.get<int>());
   std::string maybe_string;
   config().nested().oda.get_if_present(maybe_string);
-  BOOST_CHECK_EQUAL("Hello, Billy"s, maybe_string);
+  BOOST_TEST("Hello, Billy"s == maybe_string);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

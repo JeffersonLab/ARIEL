@@ -1,18 +1,17 @@
 #ifndef canvas_Persistency_Provenance_Transient_h
 #define canvas_Persistency_Provenance_Transient_h
+// vim: set sw=2 expandtab :
 
-/**\class Transient Transient.h DataFormats/Provenance/interface/Transient.h
+// ===================================================================
+//  We give all instantiations of this template a 'transient="true"'
+//  attribute for the value_ data member to tell ROOT to never write
+//  it to disk.  We also set all instantiations (by hand!) to have a
+//  custom streamer (TransientStreamer) that makes sure if the ROOT
+//  I/O buffer is reused for reading that the data member _value is
+//  reinitialized with a default-constructed T.
+// ===================================================================
 
-   Description: ROOT safe bool
-
-   Usage:
-   We define a template for transients  in order to guarantee that value_
-   is always reset when ever a new instance of this class is read from a file.
-*/
-
-// forward declarations
 namespace art {
-
   template <typename T>
   class Transient {
   public:

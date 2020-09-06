@@ -3,13 +3,13 @@
 // test of tuple-type decoding
 //
 // template<typename T,std::size_t SIZE>
-// void decode( boost::any const & a, std::array<T,SIZE> & result );
+// void decode(std::any const& a, std::array<T,SIZE>& result);
 //
 // template<typename KEY,typename VALUE>
-// void decode( boost::any const & a, std::pair<KEY,VALUE> & result );
+// void decode(std::any const& a, std::pair<KEY,VALUE>& result);
 //
 // template<typename ... ARGS>
-// void decode( boost::any const & a, std::tuple<ARGS...> & result );
+// void decode(std::any const& a, std::tuple<ARGS...>& result);
 //
 // ======================================================================
 
@@ -33,14 +33,13 @@
 using namespace fhicl;
 
 namespace {
-
   template <typename T>
   void
   print(T const& t)
   {
     std::cout << std::setw(15) << std::left
               << cet::demangle_symbol(typeid(t).name()) << " with value \"" << t
-              << "\"" << std::endl;
+              << "\"\n";
   }
 }
 
@@ -61,11 +60,10 @@ main()
   // array checking
   //======================================================================
 
-  std::cout << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << " ARRAY CHECK " << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << std::endl;
+  std::cout << '\n'
+            << "=================================\n"
+            << " ARRAY CHECK\n"
+            << "=================================\n\n";
 
   // warmup
   auto const vs0 = pset.get<std::vector<std::string>>("vec0");
@@ -87,11 +85,10 @@ main()
   // pair checking
   //======================================================================
 
-  std::cout << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << " PAIR CHECK " << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << std::endl;
+  std::cout << '\n'
+            << "=================================\n"
+            << " PAIR CHECK\n"
+            << "=================================\n\n";
 
   // warmup
   auto const vs1 = pset.get<std::vector<std::string>>("vec1");
@@ -128,11 +125,10 @@ main()
   // tuple checking
   //======================================================================
 
-  std::cout << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << " TUPLE CHECK" << std::endl;
-  std::cout << "=================================" << std::endl;
-  std::cout << std::endl;
+  std::cout << '\n'
+            << "=================================\n"
+            << " TUPLE CHECK\n"
+            << "=================================\n\n";
 
   // warmup
   auto const vs2 = pset.get<std::vector<std::string>>("vec2");

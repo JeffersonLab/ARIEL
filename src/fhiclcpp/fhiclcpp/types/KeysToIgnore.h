@@ -5,8 +5,7 @@
 
 #include <set>
 #include <string>
-
-#define TEMPLATE_ARG "Template argument specified must be callable."
+#include <type_traits>
 
 namespace fhicl {
   namespace detail {
@@ -15,7 +14,7 @@ namespace fhicl {
     std::set<std::string>
     ensure_callable()
     {
-      static_assert(tt::is_callable<T>::value, TEMPLATE_ARG);
+      static_assert(tt::is_callable<T>::value);
       return T{}();
     }
 
@@ -47,7 +46,6 @@ namespace fhicl {
   };
 }
 
-#undef TEMPLATE_ARG
 #endif /* fhiclcpp_types_KeysToIgnore_h */
 
 // Local variables:

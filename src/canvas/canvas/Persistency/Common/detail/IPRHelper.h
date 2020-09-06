@@ -14,107 +14,106 @@
 #include <type_traits>
 #include <unordered_map>
 
-namespace art {
-  namespace detail {
+namespace art::detail {
 
-    inline InputTag
-    input_tag(InputTag const& tag)
-    {
-      return tag;
-    }
+  template <typename ProdA, typename ProdB, typename Data>
+  struct safe_input_tag {
+    safe_input_tag(InputTag const& input_tag) : tag{input_tag} {}
+    safe_input_tag(ProductToken<Assns<ProdA, ProdB, Data>> const& token)
+      : tag{token.inputTag_}
+    {}
+    art::InputTag tag;
+  };
 
-    template <typename T>
-    inline InputTag
-    input_tag(ProductToken<T> const& token)
-    {
-      return token.inputTag_;
-    }
-
-    template <typename T>
-    inline InputTag
-    input_tag(ViewToken<T> const& token)
-    {
-      return token.inputTag_;
-    }
-
-    class IPRHelperDef {
-    };
-
-    template <typename ProdA,
-              typename ProdB,
-              typename Data,
-              typename DATACOLL,
-              typename EVENT>
-    class IPRHelper;
-
-    template <typename DATA>
-    class DataCollHelper {
-    public:
-      void init(size_t size, std::vector<DATA const*>& data) const;
-      template <typename ASSNS>
-      void fill(ptrdiff_t assns_index,
-                ASSNS const& assns,
-                size_t data_index,
-                std::vector<DATA const*>& data) const;
-
-      void init(size_t size, std::vector<std::vector<DATA const*>>& data) const;
-      template <typename ASSNS>
-      void fill(ptrdiff_t assns_index,
-                ASSNS const& assns,
-                size_t data_index,
-                std::vector<std::vector<DATA const*>>& data) const;
-
-      void init(size_t, IPRHelperDef&) const;
-      template <typename ASSNS>
-      void fill(ptrdiff_t, ASSNS const&, size_t, IPRHelperDef&) const;
-    };
-
-    // Note that the template parameter Bcoll is determined by the
-    // IPRHelper's use by the FindOne and FindMany classes, and is not
-    // as free-ranging as one might naively imagine.
-    template <typename ProdB>
-    class BcollHelper {
-    public:
-      BcollHelper(InputTag const& assnsTag);
-      template <typename Bcoll>
-      void init(size_t size, Bcoll& bColl);
-
-      // 1. When Bcoll is a collection of pointer to const B -- one to one.
-      template <typename Bcoll>
-      std::enable_if_t<
-        std::is_same<typename Bcoll::value_type, ProdB const*>::value>
-      fill(size_t index, Ptr<ProdB> const& item, Bcoll& bColl);
-
-      // 2. When Bcoll is a collection of Ptr<B> -- one to one.
-      template <typename Bcoll>
-      std::enable_if_t<
-        std::is_convertible<typename Bcoll::value_type, Ptr<ProdB>>::value>
-      fill(size_t index, Ptr<ProdB> const& item, Bcoll& bColl);
-
-      template <typename Bcoll>
-      void init(size_t size, std::vector<Bcoll>& bColls) const;
-
-      // 3. When Bcoll is a collection of pointer to const B -- one to many.
-      template <typename Bcoll>
-      std::enable_if_t<
-        std::is_same<typename Bcoll::value_type, ProdB const*>::value>
-      fill(size_t index,
-           Ptr<ProdB> const& item,
-           std::vector<Bcoll>& bColls) const;
-
-      // 4. When Bcoll is a collection of Ptr<B> -- one to many.
-      template <typename Bcoll>
-      std::enable_if_t<
-        std::is_convertible<typename Bcoll::value_type, Ptr<ProdB>>::value>
-      fill(size_t index,
-           Ptr<ProdB> const& item,
-           std::vector<Bcoll>& bColls) const;
-
-    private:
-      InputTag const assnsTag_;
-      std::vector<uint8_t> seen_;
-    };
+  template <typename ProdA, typename ProdB, typename Data, typename Tag>
+  InputTag
+  input_tag(Tag const& tag)
+  {
+    static_assert(
+      std::is_convertible_v<Tag, InputTag> ||
+        std::is_same_v<Tag, ProductToken<Assns<ProdA, ProdB>>> ||
+        std::is_same_v<Tag, ProductToken<Assns<ProdA, ProdB, Data>>>,
+      "\n\nart error: The input tag or product token provided to the "
+      "smart-query object\n"
+      "           constructor has a type that conflicts with that of the "
+      "smart-query object.\n");
+    return safe_input_tag<ProdA, ProdB, Data>(tag).tag;
   }
+
+  class IPRHelperDef {};
+
+  template <typename ProdA,
+            typename ProdB,
+            typename Data,
+            typename DATACOLL,
+            typename EVENT>
+  class IPRHelper;
+
+  template <typename DATA>
+  class DataCollHelper {
+  public:
+    void init(size_t size, std::vector<DATA const*>& data) const;
+    template <typename ASSNS>
+    void fill(ptrdiff_t assns_index,
+              ASSNS const& assns,
+              size_t data_index,
+              std::vector<DATA const*>& data) const;
+
+    void init(size_t size, std::vector<std::vector<DATA const*>>& data) const;
+    template <typename ASSNS>
+    void fill(ptrdiff_t assns_index,
+              ASSNS const& assns,
+              size_t data_index,
+              std::vector<std::vector<DATA const*>>& data) const;
+
+    void init(size_t, IPRHelperDef&) const;
+    template <typename ASSNS>
+    void fill(ptrdiff_t, ASSNS const&, size_t, IPRHelperDef&) const;
+  };
+
+  // Note that the template parameter Bcoll is determined by the
+  // IPRHelper's use by the FindOne and FindMany classes, and is not
+  // as free-ranging as one might naively imagine.
+  template <typename ProdB>
+  class BcollHelper {
+  public:
+    BcollHelper(InputTag const& assnsTag);
+    template <typename Bcoll>
+    void init(size_t size, Bcoll& bColl);
+
+    // 1. When Bcoll is a collection of pointer to const B -- one to one.
+    template <typename Bcoll>
+    std::enable_if_t<std::is_same_v<typename Bcoll::value_type, ProdB const*>>
+    fill(size_t index, Ptr<ProdB> const& item, Bcoll& bColl);
+
+    // 2. When Bcoll is a collection of Ptr<B> -- one to one.
+    template <typename Bcoll>
+    std::enable_if_t<
+      std::is_convertible_v<typename Bcoll::value_type, Ptr<ProdB>>>
+    fill(size_t index, Ptr<ProdB> const& item, Bcoll& bColl);
+
+    template <typename Bcoll>
+    void init(size_t size, std::vector<Bcoll>& bColls) const;
+
+    // 3. When Bcoll is a collection of pointer to const B -- one to many.
+    template <typename Bcoll>
+    std::enable_if_t<std::is_same_v<typename Bcoll::value_type, ProdB const*>>
+    fill(size_t index,
+         Ptr<ProdB> const& item,
+         std::vector<Bcoll>& bColls) const;
+
+    // 4. When Bcoll is a collection of Ptr<B> -- one to many.
+    template <typename Bcoll>
+    std::enable_if_t<
+      std::is_convertible_v<typename Bcoll::value_type, Ptr<ProdB>>>
+    fill(size_t index,
+         Ptr<ProdB> const& item,
+         std::vector<Bcoll>& bColls) const;
+
+  private:
+    InputTag const assnsTag_;
+    std::vector<uint8_t> seen_;
+  };
 }
 
 template <typename ProdA,
@@ -125,13 +124,13 @@ template <typename ProdA,
 class art::detail::IPRHelper {
 private:
   // We use IPRHelperDef in place of DATACOLL if Data is void.
-  typedef std::conditional_t<std::is_void<Data>::value, IPRHelperDef, DATACOLL>
-    dataColl_t;
+  using dataColl_t =
+    std::conditional_t<std::is_void_v<Data>, IPRHelperDef, DATACOLL>;
 
 public:
-  typedef std::shared_ptr<art::Exception const> shared_exception_t;
+  using shared_exception_t = std::shared_ptr<art::Exception const>;
 
-  IPRHelper(EVENT const& e, InputTag const& tag) : event_(e), assnsTag_(tag) {}
+  IPRHelper(EVENT const& e, InputTag const& tag) : event_{e}, assnsTag_{tag} {}
 
   // template <typename A, typename B> shared_exception_t operator()(A const& a,
   // B const& b) const
@@ -174,7 +173,7 @@ art::detail::IPRHelper<ProdA, ProdB, Data, DATACOLL, EVENT>::operator()(
 ////////////////////////////////////////////////////////////////////////
 // Implementation notes.
 //
-// The current implementation does not verify the that ProductID of the
+// The current implementation does not verify that the ProductID of the
 // item in the association collection matches that of the item in the
 // reference collection before attempting to dereference its Ptr
 // (although it does verify ptr.isAvailable()). This means that in the
@@ -240,8 +239,7 @@ operator()(Acoll const& aColl, Bcoll& bColl, dataColl_t& dColl) const
       std::for_each(
         foundItems.first,
         foundItems.second,
-        [&bh, &dh, &bColl, bIndex, &assnsHandle, &dColl](
-          typename decltype(lookupCache)::const_reference itemPair) {
+        [&bh, &dh, &bColl, bIndex, &assnsHandle, &dColl](auto const& itemPair) {
           bh.fill(bIndex, itemPair.second.first, bColl);
           dh.fill(itemPair.second.second, *assnsHandle, bIndex, dColl);
         });
@@ -252,7 +250,7 @@ operator()(Acoll const& aColl, Bcoll& bColl, dataColl_t& dColl) const
 
 template <typename DATA>
 inline void
-art::detail::DataCollHelper<DATA>::init(size_t size,
+art::detail::DataCollHelper<DATA>::init(size_t const size,
                                         std::vector<DATA const*>& data) const
 {
   data.assign(size, 0);
@@ -261,9 +259,9 @@ art::detail::DataCollHelper<DATA>::init(size_t size,
 template <typename DATA>
 template <typename ASSNS>
 inline void
-art::detail::DataCollHelper<DATA>::fill(ptrdiff_t assns_index,
+art::detail::DataCollHelper<DATA>::fill(ptrdiff_t const assns_index,
                                         ASSNS const& assns,
-                                        size_t data_index,
+                                        size_t const data_index,
                                         std::vector<DATA const*>& data) const
 {
   data[data_index] = &assns.data(assns_index);
@@ -272,7 +270,7 @@ art::detail::DataCollHelper<DATA>::fill(ptrdiff_t assns_index,
 template <typename DATA>
 inline void
 art::detail::DataCollHelper<DATA>::init(
-  size_t size,
+  size_t const size,
   std::vector<std::vector<DATA const*>>& data) const
 {
   data.resize(size);
@@ -282,9 +280,9 @@ template <typename DATA>
 template <typename ASSNS>
 inline void
 art::detail::DataCollHelper<DATA>::fill(
-  ptrdiff_t assns_index,
+  ptrdiff_t const assns_index,
   ASSNS const& assns,
-  size_t data_index,
+  size_t const data_index,
   std::vector<std::vector<DATA const*>>& data) const
 {
   data[data_index].push_back(&assns.data(assns_index));
@@ -306,25 +304,25 @@ art::detail::DataCollHelper<DATA>::fill(ptrdiff_t,
 
 template <typename ProdB>
 inline art::detail::BcollHelper<ProdB>::BcollHelper(InputTag const& assnsTag)
-  : assnsTag_(assnsTag), seen_()
+  : assnsTag_{assnsTag}, seen_()
 {}
 
 template <typename ProdB>
 template <typename Bcoll>
 inline void
-art::detail::BcollHelper<ProdB>::init(size_t size, Bcoll& bColl)
+art::detail::BcollHelper<ProdB>::init(size_t const size, Bcoll& bColl)
 {
   // This works if BColl is a collection of pointers or Ptrs.
-  bColl.assign(size, typename Bcoll::value_type());
-  seen_.assign(size, uint8_t(0u));
+  bColl.assign(size, typename Bcoll::value_type{});
+  seen_.assign(size, uint8_t{});
 }
 
 // 1.
 template <typename ProdB>
 template <typename Bcoll>
 inline std::enable_if_t<
-  std::is_same<typename Bcoll::value_type, ProdB const*>::value>
-art::detail::BcollHelper<ProdB>::fill(size_t index,
+  std::is_same_v<typename Bcoll::value_type, ProdB const*>>
+art::detail::BcollHelper<ProdB>::fill(size_t const index,
                                       Ptr<ProdB> const& item,
                                       Bcoll& bColl)
 {
@@ -347,8 +345,8 @@ art::detail::BcollHelper<ProdB>::fill(size_t index,
 template <typename ProdB>
 template <typename Bcoll>
 inline std::enable_if_t<
-  std::is_convertible<typename Bcoll::value_type, art::Ptr<ProdB>>::value>
-art::detail::BcollHelper<ProdB>::fill(size_t index,
+  std::is_convertible_v<typename Bcoll::value_type, art::Ptr<ProdB>>>
+art::detail::BcollHelper<ProdB>::fill(size_t const index,
                                       Ptr<ProdB> const& item,
                                       Bcoll& bColl)
 {
@@ -365,7 +363,7 @@ art::detail::BcollHelper<ProdB>::fill(size_t index,
 template <typename ProdB>
 template <typename Bcoll>
 inline void
-art::detail::BcollHelper<ProdB>::init(size_t size,
+art::detail::BcollHelper<ProdB>::init(size_t const size,
                                       std::vector<Bcoll>& bColls) const
 {
   bColls.resize(size);
@@ -375,8 +373,8 @@ art::detail::BcollHelper<ProdB>::init(size_t size,
 template <typename ProdB>
 template <typename Bcoll>
 inline std::enable_if_t<
-  std::is_same<typename Bcoll::value_type, ProdB const*>::value>
-art::detail::BcollHelper<ProdB>::fill(size_t index,
+  std::is_same_v<typename Bcoll::value_type, ProdB const*>>
+art::detail::BcollHelper<ProdB>::fill(size_t const index,
                                       Ptr<ProdB> const& item,
                                       std::vector<Bcoll>& bColls) const
 {
@@ -387,8 +385,8 @@ art::detail::BcollHelper<ProdB>::fill(size_t index,
 template <typename ProdB>
 template <typename Bcoll>
 inline std::enable_if_t<
-  std::is_convertible<typename Bcoll::value_type, art::Ptr<ProdB>>::value>
-art::detail::BcollHelper<ProdB>::fill(size_t index,
+  std::is_convertible_v<typename Bcoll::value_type, art::Ptr<ProdB>>>
+art::detail::BcollHelper<ProdB>::fill(size_t const index,
                                       Ptr<ProdB> const& item,
                                       std::vector<Bcoll>& bColls) const
 {

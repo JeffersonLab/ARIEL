@@ -40,15 +40,18 @@ cet_make_library(LIBRARY_NAME ${LIB_NAME}
   column_width.cc
   cpu_timer.cc
   crc32.cc
+  detail/plugin_search_path.cc
   detail/wrapLibraryManagerException.cc
   filepath_maker.cc
   filesystem.cc
   getenv.cc
   include.cc
   includer.cc
+  loadable_libraries.cc
   lpad.cc
   os_libpath.cc
   nybbler.cc
+  parsed_program_options.cc
   replace_all.cc
   rpad.cc
   search_path.cc
@@ -58,9 +61,10 @@ cet_make_library(LIBRARY_NAME ${LIB_NAME}
   split_by_regex.cc
   LIBRARIES
   cetlib_except
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_REGEX_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
+  hep_concurrency
+  Boost::filesystem
+  Boost::program_options
+  Boost::regex
   ${CMAKE_DL_LIBS}
   ${SQLITE3}
   ${OPENSSL_LIBRARIES}
@@ -71,7 +75,7 @@ cet_make_library(LIBRARY_NAME ${LIB_NAME}
 # Build and install this project's executables:
 
 cet_make_exec(inc-expand LIBRARIES ${LIB_NAME})
-cet_make_exec(get-loadable-libraries LIBRARIES ${LIB_NAME})
+cet_make_exec(get-accessible-paths LIBRARIES ${LIB_NAME})
 
 # ----------------------------------------------------------------------
 # Install this project's headers and sources:

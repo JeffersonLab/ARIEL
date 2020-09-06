@@ -1,0 +1,35 @@
+source: {
+  module_type: EmptyEvent
+  firstRun: @nil
+  firstSubRun: @nil
+  firstEvent: @nil
+}
+
+physics: {
+  producers: {
+    makeRunInt: {
+      module_type: IntProducer
+      ivalue: @nil
+      branchType: 2
+    }
+    makeSubRunInt: {
+      module_type: IntProducer
+      ivalue: @nil
+      branchType: 1
+    }
+    makeEventInt: {
+      module_type: IntProducer
+      ivalue: @nil
+    }
+    makePtrs: {
+      module_type: PtrmvProducer
+    }
+  }
+}
+physics.tp @protect_error: [makeRunInt, makeSubRunInt, makeEventInt, makePtrs]
+physics.ep @protect_error: [out]
+
+outputs.out: {
+  module_type: RootOutput
+  fileName: @nil
+}

@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(observer)
   std::ostringstream oss;
   ostream_handle obs{oss};
   obs << "a";
-  BOOST_CHECK_EQUAL(oss.str(), "a"s);
+  BOOST_TEST(oss.str() == "a"s);
 }
 
 BOOST_AUTO_TEST_CASE(owner)
@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(owner)
   std::string const fileName{"owner.txt"};
   {
     ostream_handle own{fileName};
-    BOOST_CHECK(own);
+    BOOST_TEST(static_cast<bool>(own));
     own << "a";
   }
-  BOOST_CHECK_EQUAL(file_contents(fileName), "a"s);
+  BOOST_TEST(file_contents(fileName) == "a"s);
 }
 
 BOOST_AUTO_TEST_CASE(observerThenOwner)
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(observerThenOwner)
     os = std::move(own);
     os << "c";
   }
-  BOOST_CHECK_EQUAL(file_contents(fileName), "bc"s);
+  BOOST_TEST(file_contents(fileName) == "bc"s);
 }
 
 BOOST_AUTO_TEST_CASE(ownerThenObserver)
@@ -70,9 +70,9 @@ BOOST_AUTO_TEST_CASE(ownerThenObserver)
     obs << "b";
     os = std::move(obs);
     os << "c";
-    BOOST_CHECK_EQUAL(oss.str(), "bc"s);
+    BOOST_TEST(oss.str() == "bc"s);
   }
-  BOOST_CHECK_EQUAL(file_contents(fileName), "a"s);
+  BOOST_TEST(file_contents(fileName) == "a"s);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

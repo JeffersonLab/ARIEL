@@ -1,0 +1,22 @@
+process_name: ReadThenWriteInt
+
+source: {
+   module_type: RootInput
+   fileNames: ["../GetProductDuplicateModuleName_w.d/out.root"]
+}
+
+physics: {
+   producers: {
+      readThenMakeInt: {
+         module_type: IntReaderThenProducer
+         inputTag: "makeInt" # Should read from disk
+         deltaValue: 2
+         shouldSucceed: true
+      }
+      makeInt: {
+         module_type: IntProducer
+         ivalue: 6
+      }
+   }
+   tp: [readThenMakeInt, makeInt]
+}

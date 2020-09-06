@@ -1,46 +1,104 @@
 #include "canvas/Utilities/InputTag.h"
+// vim: set sw=2 expandtab :
 
 #include "boost/algorithm/string/classification.hpp"
 #include "boost/algorithm/string/split.hpp"
-#include "boost/any.hpp"
 #include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/coding.h"
 
+#include <ostream>
 #include <sstream>
-#include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
 
-namespace art {
-  void
-  InputTag::set_from_string_(std::string const& s)
-  {
-    // string is delimited by colons
-    std::vector<std::string> tokens;
-    // cet::split(s, ':', std::back_inserter(tokens));
-    boost::split(tokens, s, boost::is_any_of(":"), boost::token_compress_off);
+using namespace std;
 
-    int nwords = tokens.size();
-    if (nwords > 3) {
-      throw art::Exception(errors::Configuration, "InputTag")
-        << "Input tag " << s << " has " << nwords << " tokens";
+namespace art {
+
+  InputTag::~InputTag() = default;
+  InputTag::InputTag() = default;
+
+  InputTag::InputTag(string const& label,
+                     string const& instance,
+                     string const& processName)
+    : label_{label}, instance_{instance}, process_{processName}
+  {}
+
+  InputTag::InputTag(char const* label,
+                     char const* instance,
+                     char const* processName)
+    : label_{label}, instance_{instance}, process_{processName}
+  {}
+
+  InputTag::InputTag(string const& s)
+  {
+    vector<string> tokens;
+    boost::split(tokens, s, boost::is_any_of(":"), boost::token_compress_off);
+    auto const nwords = tokens.size();
+    if (nwords > 3u) {
+      throw Exception(errors::Configuration,
+                      "An error occurred while creating an input tag.\n")
+        << "The string '" << s
+        << "' has more than three colon-delimited tokens.\n"
+           "The supported syntax is '<module_label>:<optional instance "
+           "name>:<optional process name>'.";
     }
-    if (nwords > 0)
+    if (nwords > 0) {
       label_ = tokens[0];
-    if (nwords > 1)
+    }
+    if (nwords > 1) {
       instance_ = tokens[1];
-    if (nwords > 2)
+    }
+    if (nwords > 2) {
       process_ = tokens[2];
+    }
   }
 
-  std::string
+  InputTag::InputTag(char const* s) : InputTag{string{s}} {}
+
+  InputTag::InputTag(InputTag const& rhs) = default;
+  InputTag::InputTag(InputTag&& rhs) = default;
+
+  InputTag& InputTag::operator=(InputTag const& rhs) = default;
+  InputTag& InputTag::operator=(InputTag&& rhs) = default;
+
+  bool
+  InputTag::operator==(InputTag const& tag) const noexcept
+  {
+    return (label_ == tag.label_) && (instance_ == tag.instance_) &&
+           (process_ == tag.process_);
+  }
+
+  bool
+  InputTag::empty() const noexcept
+  {
+    return label_.empty() && instance_.empty() && process_.empty();
+  }
+
+  string const&
+  InputTag::label() const noexcept
+  {
+    return label_;
+  }
+
+  string const&
+  InputTag::instance() const noexcept
+  {
+    return instance_;
+  }
+
+  string const&
+  InputTag::process() const noexcept
+  {
+    return process_;
+  }
+
+  string
   InputTag::encode() const
   {
-    // NOTE: since the encoding gets used to form the configuration hash I did
-    // not want
-    // to change it so that not specifying a process would cause two colons to
-    // appear in the encoding and thus not being backwards compatible
-    static std::string const separator(":");
-    std::string result = label_;
+    static string const separator{":"};
+    string result = label_;
     if (!instance_.empty() || !process_.empty()) {
       result += separator + instance_;
     }
@@ -50,29 +108,24 @@ namespace art {
     return result;
   }
 
-  std::ostream&
-  operator<<(std::ostream& ost, art::InputTag const& tag)
+  bool
+  operator!=(InputTag const& left, InputTag const& right)
   {
-    static std::string const process(", process = ");
-    ost << "InputTag:  label = " << tag.label()
-        << ", instance = " << tag.instance()
-        << (tag.process().empty() ? std::string() : (process + tag.process()));
-    return ost;
+    return !(left == right);
   }
 
   void
-  decode(boost::any const& a, InputTag& tag)
+  decode(std::any const& a, InputTag& tag)
   {
-
     if (fhicl::detail::is_sequence(a)) {
-      std::vector<std::string> tmp;
+      vector<string> tmp;
       fhicl::detail::decode(a, tmp);
-      if (tmp.size() == 2)
-        tag = {tmp.at(0), tmp.at(1)};
-      else if (tmp.size() == 3)
-        tag = {tmp.at(0), tmp.at(1), tmp.at(2)};
-      else {
-        std::ostringstream errmsg;
+      if (tmp.size() == 2) {
+        tag = {tmp[0], tmp[1]};
+      } else if (tmp.size() == 3) {
+        tag = {tmp[0], tmp[1], tmp[2]};
+      } else {
+        ostringstream errmsg;
         errmsg << "When converting to InputTag by a sequence, FHiCL entries "
                   "must follow the convention:\n\n"
                << "  [ label, instance ], or\n"
@@ -85,12 +138,23 @@ namespace art {
           }
         }
         errmsg << " ]";
-        throw std::length_error(errmsg.str());
+        throw length_error(errmsg.str());
       }
     } else {
-      std::string tmp;
+      string tmp;
       fhicl::detail::decode(a, tmp);
       tag = tmp;
     }
   }
-}
+
+  ostream&
+  operator<<(ostream& os, InputTag const& tag)
+  {
+    static string const process("', process = '");
+    os << "InputTag: label = '" << tag.label() << "', instance = '"
+       << tag.instance()
+       << (tag.process().empty() ? string() : (process + tag.process())) << "'";
+    return os;
+  }
+
+} // namespace art

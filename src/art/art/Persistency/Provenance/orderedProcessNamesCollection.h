@@ -6,12 +6,9 @@
 #include <string>
 #include <vector>
 
-namespace art {
-  namespace detail {
-
-    std::vector<std::vector<std::string>> orderedProcessNamesCollection(
-      ProcessHistoryMap const& pHistMap);
-  }
+namespace art::detail {
+  std::vector<std::vector<std::string>> orderedProcessNamesCollection(
+    ProcessHistoryMap const& pHistMap);
 }
 
 #endif /* art_Persistency_Provenance_orderedProcessNamesCollection_h */

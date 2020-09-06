@@ -7,7 +7,7 @@
 //
 // ======================================================================
 
-#include "boost/any.hpp"
+#include <any>
 
 namespace fhicl {
 
@@ -15,7 +15,7 @@ namespace fhicl {
 
   namespace detail {
 
-    boost::any encode(extended_value const& xval);
+    std::any encode(extended_value const& xval);
   }
 }
 #endif /* fhiclcpp_detail_encode_extended_value_h */

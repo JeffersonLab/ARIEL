@@ -9,9 +9,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/OutputModule.h"
 #include "art/Framework/Principal/EventPrincipal.h"
-#include "art/Persistency/Provenance/ProductMetaData.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
-#include "cetlib/exempt_ptr.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/ConfigurationTable.h"
@@ -52,7 +50,7 @@ namespace art {
   //
   static void
   markAncestors(ProductProvenance const& iInfo,
-                BranchMapper const& iMapper,
+                EventPrincipal& e,
                 std::map<ProductID, bool>& oMap,
                 std::set<ProductID>& oMapperMissing)
   {
@@ -63,9 +61,9 @@ namespace art {
         // there it will add it as 'false'
         oMap[parent];
         cet::exempt_ptr<ProductProvenance const> pInfo =
-          iMapper.branchToProductProvenance(parent);
+          e.branchToProductProvenance(parent);
         if (pInfo.get()) {
-          markAncestors(*pInfo, iMapper, oMap, oMapperMissing);
+          markAncestors(*pInfo, e, oMap, oMapperMissing);
         } else {
           oMapperMissing.insert(parent);
         }
@@ -76,54 +74,47 @@ namespace art {
   void
   ProvenanceCheckerOutput::write(EventPrincipal& e)
   {
-    // check ProductProvenance's parents to see if they are in the
+    // Check ProductProvenance's parents to see if they are in the
     // ProductProvenance list
-    BranchMapper const& mapper =
-      const_cast<EventPrincipal const&>(e).branchMapper();
 
     std::map<ProductID, bool> seenParentInPrincipal;
     std::set<ProductID> missingFromMapper;
     std::set<ProductID> missingProductProvenance;
 
     for (auto const& group : e) {
-      if (group.second && !group.second->productUnavailable()) {
-        // This call seems to have a side effect of filling the
-        // 'ProductProvenance' in the Group
-        e.getForOutput(group.first, false);
-
-        if (not group.second->productProvenancePtr().get()) {
-          missingProductProvenance.insert(group.first);
+      auto const pid = group.first;
+      auto const& pd = group.second;
+      if (pd && pd->productAvailable()) {
+        e.getForOutput(pid, false);
+        if (not pd->productProvenance().get()) {
+          missingProductProvenance.insert(pid);
           continue;
         }
-        cet::exempt_ptr<ProductProvenance const> pInfo =
-          mapper.branchToProductProvenance(group.first);
-        if (!pInfo.get()) {
-          missingFromMapper.insert(group.first);
+        auto pInfo = e.branchToProductProvenance(pid);
+        if (!pInfo) {
+          missingFromMapper.insert(pid);
         }
-        markAncestors(*(group.second->productProvenancePtr()),
-                      mapper,
+        markAncestors(*(pd->productProvenance()),
+                      e,
                       seenParentInPrincipal,
                       missingFromMapper);
       }
-      seenParentInPrincipal[group.first] = true;
+      seenParentInPrincipal[pid] = true;
     }
 
-    // Determine what ProductIDs are in the product registry
-    auto const& prodList = ProductMetaData::instance().productList();
-    std::set<ProductID> branchesInReg;
-    for (auto const& prod : prodList) {
-      branchesInReg.insert(prod.second.productID());
-    }
-
+    // Determine what ProductIDs are missing from the principal,
+    // vs. which ProductIDs are not even accessible to the principal
+    // via the product tables.
     std::set<ProductID> missingFromPrincipal;
-    std::set<ProductID> missingFromReg;
+    std::set<ProductID> missingFromTables;
     for (auto const& seenParent : seenParentInPrincipal) {
       if (!seenParent.second) {
         missingFromPrincipal.insert(seenParent.first);
       }
       ProductID const pid{seenParent.first};
-      if (branchesInReg.find(pid) == branchesInReg.end()) {
-        missingFromReg.insert(pid);
+      auto found = e.getProductDescription(pid);
+      if (found == nullptr) {
+        missingFromTables.insert(pid);
       }
     }
 
@@ -150,14 +141,15 @@ namespace art {
       cet::for_all(missingProductProvenance, logProductID);
     }
 
-    if (missingFromReg.size()) {
-      mf::LogError("ProvenanceChecker")
-        << "Missing the following ProductIDs from ProductRegistry\n";
-      cet::for_all(missingFromReg, logProductID);
+    if (missingFromTables.size()) {
+      mf::LogError("ProvenanceChecker") << "Missing the following ProductIDs "
+                                           "from the principal's product "
+                                           "tables\n";
+      cet::for_all(missingFromTables, logProductID);
     }
 
     if (missingFromMapper.size() or missingFromPrincipal.size() or
-        missingProductProvenance.size() or missingFromReg.size()) {
+        missingProductProvenance.size() or missingFromTables.size()) {
       throw cet::exception("ProvenanceError")
         << (missingFromMapper.size() or missingFromPrincipal.size() ?
               "Having missing ancestors" :
@@ -172,13 +164,13 @@ namespace art {
                                               "ProductProvenance's from Group "
                                               "in EventPrincipal.\n" :
                                               "")
-        << (missingFromReg.size() ?
-              " Have missing info from ProductRegistry.\n" :
+        << (missingFromTables.size() ?
+              " Have missing info from the principal's product tables.\n" :
               "");
     }
   }
 
-} // art
+} // namespace art
 
 // ======================================================================
 

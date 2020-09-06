@@ -14,21 +14,19 @@ art::ProdToProdMapBuilder::prepareTranslationTables(ProductIDTransMap& transMap)
   if (productIDTransMap_.empty()) {
     transMap.swap(productIDTransMap_);
   } else if (productIDTransMap_ != transMap) {
-    throw Exception(errors::DataCorruption)
-      << "Secondary input file "
-         " has ProductIDs inconsistent with previous files.\n";
+    throw Exception(errors::DataCorruption) << "Secondary input file has "
+                                               "ProductIDs inconsistent with "
+                                               "previous files.\n";
   }
 }
 
-void
-art::ProdToProdMapBuilder::populateRemapper(PtrRemapper& mapper, Event& e) const
+art::PtrRemapper
+art::ProdToProdMapBuilder::getRemapper(Event const& e) const
 {
-  mapper.event_.reset(&e);
-  mapper.prodTransMap_ = productIDTransMap_;
-#if ART_DEBUG_PTRREMAPPER
-  for (auto const& pr : mapper.prodTransMap_) {
-    std::cerr << "ProdTransMap_t: "
-              << "(" << pr.first << ") -> (" << pr.second << ").\n";
-  }
-#endif
+  PtrRemapper result;
+  result.event_ = cet::make_exempt_ptr(&e);
+  // Check translation map to see if output product IDs are supported
+  // for given event.
+  result.prodTransMap_ = productIDTransMap_;
+  return result;
 }

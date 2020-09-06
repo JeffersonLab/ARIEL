@@ -1,0 +1,10 @@
+services.RandomNumberGenerator: {}
+
+physics: {
+   producers: {
+      defaultEngine: {
+         module_type: DefaultEngineTester
+      }
+   }
+   tp: [defaultEngine]
+}

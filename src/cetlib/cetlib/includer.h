@@ -34,22 +34,22 @@ public:
   const_iterator
   begin() const
   {
-    return text.begin();
+    return text_.begin();
   }
   const_iterator
   end() const
   {
-    return text.end();
+    return text_.end();
   }
   const_iterator
   cbegin() const
   {
-    return text.cbegin();
+    return text_.cbegin();
   }
   const_iterator
   cend() const
   {
-    return text.cend();
+    return text_.cend();
   }
   std::string whereis(const_iterator const& it) const;
   std::string highlighted_whereis(const_iterator const& it) const;
@@ -61,12 +61,18 @@ private:
     std::string filename;
     uint starting_linenum;
     size_t starting_textpos;
+    // The new-line positions are used to determine line numbers
+    // whenever includer::get_posinfo is called.
+    std::vector<size_t> nl_positions{};
 
-    frame(uint framenum, std::string filename, uint linenum, size_t textpos)
-      : including_framenum(framenum)
-      , filename(filename)
-      , starting_linenum(linenum)
-      , starting_textpos(textpos)
+    frame(uint const framenum,
+          std::string const& filename,
+          uint const linenum,
+          size_t const textpos)
+      : including_framenum{framenum}
+      , filename{filename}
+      , starting_linenum{linenum}
+      , starting_textpos{textpos}
     {}
   };
 
@@ -77,9 +83,9 @@ private:
     uint framenum; // Inclusion level.
   };
 
-  std::string text{};
-  std::vector<frame> frames;
-  std::vector<std::string> recursion_stack{};
+  std::string text_{};
+  std::vector<frame> frames_;
+  std::vector<std::string> recursionStack_{};
 
   void include(int including_framenum,
                std::string const& filename,

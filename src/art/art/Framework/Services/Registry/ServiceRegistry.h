@@ -1,55 +1,47 @@
 #ifndef art_Framework_Services_Registry_ServiceRegistry_h
 #define art_Framework_Services_Registry_ServiceRegistry_h
-
-// ======================================================================
-//
-// ServiceRegistry - Manages the 'thread specific' instance of Services
-//
-// ======================================================================
+// vim: set sw=2 expandtab :
 
 #include "art/Framework/Services/Registry/ServiceScope.h"
-#include "art/Framework/Services/Registry/ServiceToken.h"
 #include "art/Framework/Services/Registry/ServicesManager.h"
 #include "art/Framework/Services/Registry/detail/ServiceHelper.h"
 #include "art/Utilities/PluginSuffixes.h"
-#include "art/Utilities/ScheduleID.h"
 #include "cetlib/LibraryManager.h"
+#include "cetlib/exempt_ptr.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <memory>
-
-// ----------------------------------------------------------------------
+#include <vector>
 
 namespace art {
+  namespace test {
+    void set_manager_for_tests(ServicesManager*);
+  }
+
   class ActivityRegistry;
+  class EventProcessor;
 
   class ServiceRegistry {
-    // non-copyable:
-    ServiceRegistry(ServiceRegistry const&) = delete;
-    ServiceRegistry& operator=(ServiceRegistry const&) = delete;
 
-  public:
-    class Operate {
-      // non-copyable:
-      Operate(Operate const&) = delete;
-      Operate& operator=(Operate const&) = delete;
-      // override operator new to stop use on heap?
+    // Allow EventProcessor to set the manager.  Also, allow a testing
+    // function to set it.
+    friend class EventProcessor;
+    friend void art::test::set_manager_for_tests(ServicesManager*);
 
-    public:
-      Operate(ServiceToken const& iToken)
-        : oldToken_{ServiceRegistry::instance().setContext(iToken)}
-      {}
-
-      ~Operate() { ServiceRegistry::instance().unsetContext(oldToken_); }
-
-    private:
-      ServiceToken oldToken_;
-    }; // Operate
-
-    friend class Operate;
     template <typename T, art::ServiceScope>
     friend class ServiceHandle;
 
+  public: // MEMBER FUNCTIONS -- Special Member Functions
+    ~ServiceRegistry() noexcept;
+    ServiceRegistry(ServiceRegistry const&) = delete;
+    ServiceRegistry(ServiceRegistry&&) = delete;
+    ServiceRegistry& operator=(ServiceRegistry const&) = delete;
+    ServiceRegistry& operator=(ServiceRegistry&&) = delete;
+
+  private: // MEMBER FUNCTIONS -- Special Member Functions
+    ServiceRegistry() noexcept;
+
+  public: // MEMBER FUNCTIONS
     template <typename T>
     static bool
     isAvailable()
@@ -57,28 +49,16 @@ namespace art {
       if (auto& mgr = instance().manager_) {
         return mgr->isAvailable<T>();
       }
-
       throw art::Exception(art::errors::ServiceNotFound, "Service")
         << " no ServiceRegistry has been set for this thread";
     }
 
-    using ParameterSets = std::vector<fhicl::ParameterSet>;
-    static ServiceToken createSet(ParameterSets const&, ActivityRegistry&);
-
   private:
-    // The token can be passed to another thread in order to have the
-    // same services available in the other thread.
-    ServiceToken presentToken() const;
+    static ServiceRegistry& instance() noexcept;
 
-    static ServiceRegistry& instance();
+    void setManager(ServicesManager*) noexcept;
 
-    // returns old token
-    ServiceToken setContext(ServiceToken const& iNewToken);
-    void unsetContext(ServiceToken const& iOldToken);
-
-    template <typename T,
-              typename = std::enable_if_t<detail::ServiceHelper<T>::scope_val !=
-                                          ServiceScope::PER_SCHEDULE>>
+    template <typename T>
     T&
     get() const
     {
@@ -89,30 +69,11 @@ namespace art {
       return manager_->get<T>();
     }
 
-    template <typename T,
-              typename = std::enable_if_t<detail::ServiceHelper<T>::scope_val ==
-                                          ServiceScope::PER_SCHEDULE>>
-    T&
-    get(ScheduleID sID) const
-    {
-      if (!manager_) {
-        throw art::Exception(art::errors::ServiceNotFound, "Service")
-          << " no ServiceRegistry has been set for this thread";
-      }
-      return manager_->get<T>(sID);
-    }
+  private: // MEMBER DATA
+    cet::exempt_ptr<ServicesManager> manager_{nullptr};
+  };
 
-    ServiceRegistry() = default;
-
-    // ---------- member data --------------------------------
-    cet::LibraryManager lm_{Suffixes::service()};
-    std::shared_ptr<ServicesManager> manager_{nullptr};
-
-  }; // ServiceRegistry
-
-} // art
-
-// ======================================================================
+} // namespace art
 
 #endif /* art_Framework_Services_Registry_ServiceRegistry_h */
 

@@ -10,7 +10,7 @@
 #define BOOST_TEST_MODULE (keymap test with tables)
 
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib/test_macros.h"
+
 #include "fhiclcpp/test/types/KeyMap.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -18,7 +18,6 @@
 #include "fhiclcpp/types/TableFragment.h"
 #include "fhiclcpp/types/Tuple.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -27,7 +26,6 @@ using namespace fhicl::detail;
 using namespace std;
 
 namespace {
-
   struct S {
     Atom<int> test{Name("atom")};
     Sequence<int, 2> seq{Name("sequence")};
@@ -50,7 +48,7 @@ BOOST_AUTO_TEST_CASE(table_t)
               "table.tuple[0]",
               "table.tuple[1]",
               "table.tuple[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [15] Sequence< Table<S> >
@@ -68,7 +66,7 @@ BOOST_AUTO_TEST_CASE(table_in_seq_t)
               "seqtable[0].tuple[0]",
               "seqtable[0].tuple[1]",
               "seqtable[0].tuple[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [16] Sequence< Table<S>,2 >
@@ -94,7 +92,7 @@ BOOST_AUTO_TEST_CASE(table_in_seq_2_t)
               "seqtable[1].tuple[0]",
               "seqtable[1].tuple[1]",
               "seqtable[1].tuple[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [17] Tuple< Table<S>, U... >
@@ -113,7 +111,7 @@ BOOST_AUTO_TEST_CASE(table_in_tuple_t)
               "tuptable[0].tuple[2]",
               "tuptable[1]",
               "tuptable[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [18] Tuple< Sequence< Table<S> >, U... >
@@ -133,7 +131,7 @@ BOOST_AUTO_TEST_CASE(seqtable_in_tuple_t)
               "seqtuptable[0][0].tuple[2]",
               "seqtuptable[1]",
               "seqtuptable[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [19] Tuple< Sequence< Table<S>, SZ >, U... >
@@ -163,7 +161,7 @@ BOOST_AUTO_TEST_CASE(seqtable_2_in_tuple_t)
               "seqtuptable[0][1].tuple[2]",
               "seqtuptable[1]",
               "seqtuptable[2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [20] Sequence< Tuple< Table<S>, U... > >
@@ -183,7 +181,7 @@ BOOST_AUTO_TEST_CASE(tuptable_in_seq_t)
               "tupseqtable[0][0].tuple[2]",
               "tupseqtable[0][1]",
               "tupseqtable[0][2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [21] Sequence< Tuple< Table<S>, U... >, SZ >
@@ -216,21 +214,21 @@ BOOST_AUTO_TEST_CASE(tuptable_in_seq_2_t)
               "tupseqtable[1][0].tuple[2]",
               "tupseqtable[1][1]",
               "tupseqtable[1][2]"};
-  CET_CHECK_EQUAL_COLLECTIONS(map, ref);
+  BOOST_TEST(map == ref, boost::test_tools::per_element{});
 }
 
 // [21] Sequence< Tuple< Table<S>, U... >, SZ >
 BOOST_AUTO_TEST_CASE(tablefragment_t)
 {
   TableFragment<S> tf;
-  BOOST_CHECK_EQUAL(tf().test.key(), "atom");
+  BOOST_TEST(tf().test.key() == "atom");
 
   {
     KeyMap km;
     km.walk_over(tf().seq);
     auto mapseq = km.result();
     auto refseq = {"sequence", "sequence[0]", "sequence[1]"};
-    CET_CHECK_EQUAL_COLLECTIONS(mapseq, refseq);
+    BOOST_TEST(mapseq == refseq, boost::test_tools::per_element{});
   }
 
   {
@@ -238,7 +236,7 @@ BOOST_AUTO_TEST_CASE(tablefragment_t)
     km.walk_over(tf().tuple);
     auto maptup = km.result();
     auto reftup = {"tuple", "tuple[0]", "tuple[1]", "tuple[2]"};
-    CET_CHECK_EQUAL_COLLECTIONS(maptup, reftup);
+    BOOST_TEST(maptup == reftup, boost::test_tools::per_element{});
   }
 }
 

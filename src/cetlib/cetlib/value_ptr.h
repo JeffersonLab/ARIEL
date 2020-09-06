@@ -69,9 +69,8 @@ namespace cet {
     template <class T>
     struct has_clone;
 
-    template <
-      class Element,
-      bool = std::is_polymorphic<Element>::value&& _::has_clone<Element>::value>
+    template <class Element,
+              bool = std::is_polymorphic_v<Element>&& has_clone<Element>::value>
     struct default_action;
 
     template <class Element>
@@ -128,8 +127,7 @@ private:
   typedef char (&no_t)[2];
 
   template <class U, U* (U::*)() const = &U::clone>
-  struct cloneable {
-  };
+  struct cloneable {};
 
   template <class U>
   static yes_t test(cloneable<U>*);
@@ -190,15 +188,17 @@ public:
   using element_type = Element;
   using cloner_type = Cloner;
   using deleter_type = Deleter;
-  using pointer = typename std::add_pointer<Element>::type;
+  using pointer = std::add_pointer_t<Element>;
   // TODO: use Deleter::pointer, if it exists, in lieu of above
-  using reference = typename std::add_lvalue_reference<Element>::type;
+  using reference = std::add_lvalue_reference_t<Element>;
 
 private:
   template <class P>
   struct is_compatible
-    : public std::is_convertible<typename std::add_pointer<P>::type, pointer> {
-  };
+    : public std::is_convertible<std::add_pointer_t<P>, pointer> {};
+
+  template <class P>
+  static constexpr bool is_compatible_v = is_compatible<P>::value;
 
 public:
   // default c'tor:
@@ -210,11 +210,11 @@ public:
   template <class E2>
   explicit value_ptr(E2* other) noexcept : p{other}
   {
-    static_assert(is_compatible<E2>::value,
+    static_assert(is_compatible_v<E2>,
                   "value_ptr<>'s pointee type is incompatible!");
     static_assert(
-      !std::is_polymorphic<E2>::value ||
-        !(std::is_same<Cloner, _::default_action<Element, false>>::value),
+      !std::is_polymorphic_v<E2> ||
+        !(std::is_same_v<Cloner, _::default_action<Element, false>>),
       "value_ptr<>'s pointee type would slice when copying!");
   }
 
@@ -223,7 +223,7 @@ public:
 
   template <class E2>
   value_ptr(value_ptr<E2, Cloner, Deleter> const& other,
-            std::enable_if_t<is_compatible<E2>::value>* = nullptr)
+            std::enable_if_t<is_compatible_v<E2>>* = nullptr)
     : p{clone_from(other.p)}
   {}
 
@@ -232,7 +232,7 @@ public:
 
   template <class E2>
   value_ptr(value_ptr<E2, Cloner, Deleter>&& other,
-            std::enable_if_t<is_compatible<E2>::value>* = nullptr) noexcept
+            std::enable_if_t<is_compatible_v<E2>>* = nullptr) noexcept
     : p(other.release())
   {}
 
@@ -255,7 +255,7 @@ public:
   }
 
   template <class E2>
-  std::enable_if_t<is_compatible<E2>::value, value_ptr&>
+  std::enable_if_t<is_compatible_v<E2>, value_ptr&>
   operator=(value_ptr<E2, Cloner, Deleter> const& other)
   {
     value_ptr tmp{other};
@@ -273,7 +273,7 @@ public:
   }
 
   template <class E2>
-  std::enable_if_t<is_compatible<E2>::value, value_ptr&>
+  std::enable_if_t<is_compatible_v<E2>, value_ptr&>
   operator=(value_ptr<E2, Cloner, Deleter>&& other) noexcept
   {
     value_ptr tmp{std::move(other)};
@@ -319,7 +319,7 @@ private:
   pointer
   clone_from(P const p) const
   {
-    return p ? Cloner()(p) : nullptr;
+    return p ? Cloner{}(p) : nullptr;
   }
 
 }; // value_ptr<>
@@ -415,7 +415,7 @@ cet::operator>=(value_ptr<E, C, D> const& x, value_ptr<E, C, D> const& y)
   return !(x < y);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_value_ptr_h */
 

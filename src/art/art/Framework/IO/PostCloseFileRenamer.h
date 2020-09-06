@@ -9,7 +9,7 @@
 namespace art {
   class FileStatsCollector;
   class PostCloseFileRenamer;
-}
+} // namespace art
 
 class art::PostCloseFileRenamer {
 public:

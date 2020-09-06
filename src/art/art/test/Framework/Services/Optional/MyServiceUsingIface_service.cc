@@ -9,13 +9,12 @@ namespace arttest {
 
 class arttest::ServiceUsingIface {
 public:
-  ServiceUsingIface(fhicl::ParameterSet const&, art::ActivityRegistry&);
+  ServiceUsingIface(fhicl::ParameterSet const&);
 };
 
-arttest::ServiceUsingIface::ServiceUsingIface(fhicl::ParameterSet const&,
-                                              art::ActivityRegistry&)
+arttest::ServiceUsingIface::ServiceUsingIface(fhicl::ParameterSet const&)
 {
-  art::ServiceHandle<art::TrivialFileDelivery> h [[gnu::unused]];
+  art::ServiceHandle<art::TrivialFileDelivery> h [[maybe_unused]];
 }
 
 // The DECLARE macro call should be moved to the header file, should you

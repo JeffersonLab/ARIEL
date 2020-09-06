@@ -1,49 +1,79 @@
 #include "canvas/Persistency/Provenance/BranchDescription.h"
-// vim: set sw=2:
+// vim: set sw=2 expandtab :
 
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/canonicalProductName.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/FriendlyName.h"
 #include "canvas/Utilities/WrappedClassName.h"
 #include "fhiclcpp/ParameterSetID.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <ostream>
 #include <sstream>
+#include <utility>
+
+using namespace std;
 
 using fhicl::ParameterSetID;
 
 namespace {
-  void
+
+  [[noreturn]] void
   throwExceptionWithText(char const* txt)
   {
     throw art::Exception(art::errors::LogicError)
       << "Problem using an incomplete BranchDescription\n"
       << txt << "\nPlease report this error to the ART developers\n";
   }
-}
+
+} // unnamed namespace
 
 namespace art {
 
-  BranchDescription::BranchDescription(BranchType const bt,
-                                       TypeLabel const& tl,
-                                       ModuleDescription const& md)
-    : branchType_{bt}
-    , moduleLabel_{tl.hasEmulatedModule() ? tl.emulatedModule() :
-                                            md.moduleLabel()}
-    , processName_{md.processName()}
-    , producedClassName_{tl.className()}
-    , friendlyClassName_{tl.friendlyClassName()}
-    , productInstanceName_{tl.productInstanceName()}
-    , supportsView_{tl.supportsView()}
+  BranchDescription::BranchDescription(
+    BranchType const bt,
+    TypeLabel const& tl,
+    std::string const& moduleLabel,
+    ParameterSetID const& modulePSetID,
+    ProcessConfiguration const& processConfig)
+    : BranchDescription{bt,
+                        tl.hasEmulatedModule() ? tl.emulatedModule() :
+                                                 moduleLabel,
+                        processConfig.processName(),
+                        tl.className(),
+                        tl.productInstanceName(),
+                        modulePSetID,
+                        processConfig.id(),
+                        tl.hasEmulatedModule() ? Transients::PresentFromSource :
+                                                 Transients::Produced,
+                        tl.supportsView(),
+                        tl.transient()}
+  {}
+
+  BranchDescription::BranchDescription(
+    BranchType const branchType,
+    std::string const& moduleLabel,
+    std::string const& processName,
+    std::string const& producedClassName,
+    std::string const& productInstanceName,
+    fhicl::ParameterSetID const& psetID,
+    ProcessConfigurationID const& processConfigurationID,
+    Transients::validity_state const validity,
+    bool const supportsView,
+    bool const transient)
+    : branchType_{branchType}
+    , moduleLabel_{moduleLabel}
+    , processName_{processName}
+    , producedClassName_{producedClassName}
+    , friendlyClassName_{friendlyname::friendlyName(producedClassName_)}
+    , productInstanceName_{productInstanceName}
+    , supportsView_{supportsView}
   {
-    guts().validity_ = Transients::Produced;
-    guts().transient_ = tl.transient();
-    psetIDs_.insert(md.parameterSetID());
-    processConfigurationIDs_.insert(md.processConfigurationID());
+    guts().validity_ = validity;
+    guts().transient_ = transient;
+    psetIDs_.insert(psetID);
+    processConfigurationIDs_.insert(processConfigurationID);
     throwIfInvalid_();
     fluffTransients_();
     initProductID_();
@@ -106,15 +136,15 @@ namespace art {
   }
 
   void
-  BranchDescription::write(std::ostream& os) const
+  BranchDescription::write(ostream& os) const
   {
-    os << "Branch Type = " << branchType_ << std::endl;
-    os << "Process Name = " << processName() << std::endl;
-    os << "ModuleLabel = " << moduleLabel() << std::endl;
+    os << "Branch Type = " << branchType_ << endl;
+    os << "Process Name = " << processName() << endl;
+    os << "ModuleLabel = " << moduleLabel() << endl;
     os << "Product ID = " << productID() << '\n';
     os << "Class Name = " << producedClassName() << '\n';
     os << "Friendly Class Name = " << friendlyClassName() << '\n';
-    os << "Product Instance Name = " << productInstanceName() << std::endl;
+    os << "Product Instance Name = " << productInstanceName() << endl;
   }
 
   void
@@ -134,10 +164,11 @@ namespace art {
     swap(transients_, other.transients_);
   }
 
+  // Note: throws
   void
   BranchDescription::throwIfInvalid_() const
   {
-    constexpr char underscore{'_'};
+    constexpr char underscore('_');
     if (transientsFluffed_()) {
       return;
     }
@@ -156,30 +187,60 @@ namespace art {
     if (friendlyClassName_.empty()) {
       throwExceptionWithText("Friendly class name is not allowed to be empty");
     }
-    if (friendlyClassName_.find(underscore) != std::string::npos) {
+    if (friendlyClassName_.find(underscore) != string::npos) {
       throw Exception(errors::LogicError, "IllegalCharacter")
         << "Class name '" << friendlyClassName()
         << "' contains an underscore ('_'), which is illegal in the "
         << "name of a product.\n";
     }
-    if (moduleLabel_.find(underscore) != std::string::npos) {
+    if (moduleLabel_.find(underscore) != string::npos) {
       throw Exception(errors::Configuration, "IllegalCharacter")
         << "Module label '" << moduleLabel()
         << "' contains an underscore ('_'), which is illegal in a "
         << "module label.\n";
     }
-    if (productInstanceName_.find(underscore) != std::string::npos) {
+    if (productInstanceName_.find(underscore) != string::npos) {
       throw Exception(errors::Configuration, "IllegalCharacter")
         << "Product instance name '" << productInstanceName()
         << "' contains an underscore ('_'), which is illegal in a "
         << "product instance name.\n";
     }
-    if (processName_.find(underscore) != std::string::npos) {
+    if (processName_.find(underscore) != string::npos) {
       throw Exception(errors::Configuration, "IllegalCharacter")
         << "Process name '" << processName()
         << "' contains an underscore ('_'), which is illegal in a "
         << "process name.\n";
     }
+  }
+
+  bool
+  BranchDescription::transientsFluffed_() const noexcept
+  {
+    return !guts().branchName_.empty();
+  }
+
+  bool
+  BranchDescription::isPsetIDUnique() const noexcept
+  {
+    return psetIDs().size() == 1;
+  }
+
+  set<ProcessConfigurationID> const&
+  BranchDescription::processConfigurationIDs() const noexcept
+  {
+    return processConfigurationIDs_;
+  }
+
+  BranchDescription::Transients&
+  BranchDescription::guts() noexcept
+  {
+    return transients_.get();
+  }
+
+  BranchDescription::Transients const&
+  BranchDescription::guts() const noexcept
+  {
+    return transients_.get();
   }
 
   bool

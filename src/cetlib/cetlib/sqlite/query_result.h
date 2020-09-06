@@ -20,16 +20,10 @@
 // query result has been filled, it can be interacted through a simple
 // loop:
 //
-//   for (auto const& row : nums) {
-//     int id;
-//     string name;
-//     std::tie(id, name) = row;
-//     // 'id' and 'name' now filled with the results of 'row' from the query.
+//   for (auto const& [id, name] : nums) {
+//     // 'id' (type int) and 'name' (type string) now filled with the
+//     // results of each row from the query.
 //   }
-//
-// The 'std::tie' notation is encouraged since the 'row' object is of
-// type std::tuple<int,string> (in this case), which can be awkward to
-// work with.
 //
 // For cases where only one row and one column are expected for the
 // query, an automatic conversion can be achieved by using
@@ -70,61 +64,59 @@
 #include "cetlib/container_algorithms.h"
 #include "cetlib/sqlite/Exception.h"
 
-namespace cet {
-  namespace sqlite {
+namespace cet::sqlite {
 
-    template <typename... Args>
-    struct query_result {
-      bool
-      empty() const
-      {
-        return data.empty();
-      }
-      auto
-      begin() const
-      {
-        return data.begin();
-      }
-      auto
-      end() const
-      {
-        return data.end();
-      }
-      explicit operator bool() const { return !empty(); }
-
-      std::vector<std::string> columns;
-      std::vector<std::tuple<Args...>> data;
-    };
-
-    template <typename T>
-    inline T
-    unique_value(query_result<T> const& r)
+  template <typename... Args>
+  struct query_result {
+    bool
+    empty() const
     {
-      if (r.data.size() != 1ull) {
-        throw sqlite::Exception{sqlite::errors::SQLExecutionError}
-          << "unique_value expected of non-unique query.";
-      }
-      return std::get<T>(r.data[0]);
+      return data.empty();
     }
-
-    template <typename... Args>
-    std::ostream&
-    operator<<(std::ostream& os, query_result<Args...> const& res)
+    auto
+    begin() const
     {
-      using size_t = decltype(res.columns.size());
-      auto const ncolumns = res.columns.size();
-      for (size_t i{}; i != ncolumns; ++i) {
-        os << res.columns[i] << ' ';
-      }
-      os << "\n--------------------------------\n";
-      for (auto const& row : res.data) {
-        //        os << row.str() << '\n';
-      }
-      return os;
+      return data.begin();
     }
+    auto
+    end() const
+    {
+      return data.end();
+    }
+    explicit operator bool() const { return !empty(); }
 
-  } // sqlite
-} // cet
+    std::vector<std::string> columns;
+    std::vector<std::tuple<Args...>> data;
+  };
+
+  template <typename T>
+  inline T
+  unique_value(query_result<T> const& r)
+  {
+    if (r.data.size() != 1ull) {
+      throw sqlite::Exception{sqlite::errors::SQLExecutionError}
+        << "unique_value expected of non-unique query.";
+    }
+    return std::get<T>(r.data[0]);
+  }
+
+  template <typename... Args>
+  std::ostream&
+  operator<<(std::ostream& os, query_result<Args...> const& res)
+  {
+    using size_t = decltype(res.columns.size());
+    auto const ncolumns = res.columns.size();
+    for (size_t i{}; i != ncolumns; ++i) {
+      os << res.columns[i] << ' ';
+    }
+    os << "\n--------------------------------\n";
+    for (auto const& row : res.data) {
+      os << row.str() << '\n';
+    }
+    return os;
+  }
+
+} // cet::sqlite
 
 #endif /* cetlib_sqlite_query_result_h */
 

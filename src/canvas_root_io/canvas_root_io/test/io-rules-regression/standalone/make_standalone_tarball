@@ -1,0 +1,101 @@
+#!/bin/bash
+
+function usage()
+{
+  local prog=${0##*/}
+  local fill=${prog//?/ }
+  cat <<EOF
+Usage: ${prog} [-v <cetmodules-version>] <tar-file-name>
+       ${prog} -h
+EOF
+  exit ${1:-1}
+}
+
+cetmodules_version=v1_04_00
+
+while getopts :hv: OPT; do
+  case $OPT in
+    h)
+      usage 1
+      ;;
+    v)
+      cetmodules_version="$OPTARG"
+      ;;
+    *)
+      usage 2
+  esac
+done
+shift $(( OPTIND - 1 ))
+OPTIND=1
+
+tarball="${1}"
+
+source_dir="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)")"
+
+[[ -n "${tarball}" ]] || \
+  { echo "ERROR: Vacuous tarball specification." 1>&2; usage 1; }
+
+tarball_dir="$(cd "$(dirname "${tarball}")" && pwd -P)"
+tarball="$(basename "${tarball}")"
+
+[[ -w "${tarball_dir}" ]] || \
+  { echo "ERROR: Destination directory ${tarball_dir} for ${tarball} is not writable" 1>&2; exit 1; }
+
+if [[ "${tarball}" =~ \.(tar\.|t)(gz|bz2|xz)?$ ]]; then
+  tarball_extension=${BASH_REMATCH[0]}
+  tarball_compression=${BASH_REMATCH[2]}
+  case $tarball_compression in
+    gz)
+      compression_arg=-z
+      ;;
+    bz2)
+      compression_arg=-j
+      ;;
+    xz)
+      compression_arg=-J
+      ;;
+    "")
+      :
+      ;;
+    *)
+      echo "ERROR: unrecognized tarball extension ${BASH_REMATCH[0]}" 1>&2
+      exit 1
+  esac
+else
+  echo "INFO: Adding .tar.bz2 to tarball specification ${tarball}" 1>&2
+  tarball_extension=.tar.bz2
+  tarball=${tarball}${tarball_extension}
+  tarball_compression=bz2
+  compression_arg=-j
+fi
+
+tarball_stem=$(basename "${tarball}" "${tarball_extension}")
+
+cetmodules_dotversion=${cetmodules_version#v}
+cetmodules_dotversion=${cetmodules_dotversion//_/.}
+
+TMP=`mktemp -d -t make_standalone_tarball.XXXXXX`
+trap "[[ -n \"${TMP}\" ]] && rm -rf \"$TMP\" 2>/dev/null" EXIT
+
+cd "${TMP}" || { echo "ERROR: Unable to make and/or cd to temporary directory ${TMP}" 1>&2; exit 1; }
+mkdir "${tarball_stem}" || { echo "ERROR: Unable to make directory ${TMP}/${tarball_stem}" 1>&2; exit 1; }
+cd "${tarball_stem}" || { echo "ERROR: Unable to cd to directory ${TMP}/${tarball_stem}" 1>&2; exit 1; }
+curl --silent --fail --location --insecure \
+  https://scisoft.fnal.gov/scisoft/packages/cetmodules/$cetmodules_version/cetmodules-$cetmodules_dotversion-noarch.tar.bz2 | \
+  tar xj || \
+  { echo "ERROR: Unable to obtain specified version ${cetmodules_version} of cetmodules from SciSoft." 1>&2; exit 1; }
+
+source_dir_name="$(basename ${source_dir})"
+mkdir "${source_dir_name}" || { echo "ERROR: Unable to make directory ${source_dir_name}" 1>&2; exit 1; }
+cd "${source_dir_name}" || { echo "ERROR: Unable to cd to directory ${source_dir_name}" 1>&2; exit 1; }
+
+tar -c -C "${source_dir}" \
+  --exclude standalone --exclude '*~' --exclude '*~[0-9]*' --exclude '*.bak' \
+  --exclude '*/*.rej' --exclude '#*' . | \
+  tar x || { echo "Unable to transfer test source to staging area." 1>&2; exit 1; }
+
+cd ..
+cp "${source_dir}/standalone/"{setup.sh,run_standalone} .
+mkdir build
+
+tar -C "${TMP}" -c -f "${tarball_dir}/${tarball}" ${compression_arg} "${tarball_stem}"

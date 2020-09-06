@@ -1,169 +1,142 @@
 #ifndef art_Framework_Core_ProductRegistryHelper_h
 #define art_Framework_Core_ProductRegistryHelper_h
-// vim: set sw=2:
+// vim: set sw=2 expandtab :
 
-// -----------------------------------------------------------------
-//
-// ProductRegistryHelper: This class provides the produces()
-// and reconstitutes() function templates used by modules to
-// register what products they create or read in respectively.
+// ===================================================================
+// This class provides the produces() and reconstitutes() function
+// templates used by modules and sources, respectively, to register
+// what products they create or read in respectively.
 //
 // The constructors of an EDProducer or an EDFilter should call
-// produces() for each product inserted into a principal.
-// Instance names should be provided only when the module
-// makes more than one instance of the same product per event.
+// produces() for each product inserted into a principal.  Instance
+// names should be provided only when the module makes more than one
+// instance of the same product per event.
 //
-// The constructors of an InputSource should call reconstitutes()
-// for each product if and only if it does not update the
-// MasterProductRegistry with a product list.
-//
-// -----------------------------------------------------------------
+// The constructors of an InputSource should call reconstitutes() for
+// each product if and only if it does not update the
+// UpdateOutputCallbacks with a product list.
+// ===================================================================
 
+#include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Principal/fwd.h"
-#include "art/Persistency/Provenance/detail/branchNameComponentChecking.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/traits.h"
+#include "canvas/Persistency/Provenance/BranchDescription.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
 #include "canvas/Persistency/Provenance/Persistable.h"
 #include "canvas/Persistency/Provenance/ProductList.h"
-#include "canvas/Persistency/Provenance/ProductTables.h"
 #include "canvas/Persistency/Provenance/TypeLabel.h"
+#include "canvas/Persistency/Provenance/type_aliases.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/TypeID.h"
 #include "cetlib/exempt_ptr.h"
 #include "cetlib_except/exception.h"
 
+#include <array>
+#include <map>
 #include <memory>
-#include <set>
 #include <string>
 
 namespace art {
-  class MasterProductRegistry;
+
   class ModuleDescription;
-  class ProductRegistryHelper;
-}
 
-namespace {
+  enum class product_creation_mode { produces, reconstitutes };
+  class ProductRegistryHelper {
+  public:
+    explicit ProductRegistryHelper(product_creation_mode);
+    ~ProductRegistryHelper();
 
-  inline void
-  verifyFriendlyClassName(std::string const& fcn)
-  {
-    std::string errMsg;
-    if (!art::detail::checkFriendlyName(fcn, errMsg)) {
-      throw art::Exception(art::errors::Configuration)
-        << errMsg
-        << "In particular, underscores are not permissible anywhere in the "
-           "fully-scoped\n"
-           "class name, including namespaces.\n";
+    ProductRegistryHelper(ProductRegistryHelper const&) = delete;
+    ProductRegistryHelper(ProductRegistryHelper&&) = delete;
+    ProductRegistryHelper& operator=(ProductRegistryHelper const&) = delete;
+    ProductRegistryHelper& operator=(ProductRegistryHelper&&) = delete;
+
+    // Used by an input source to provide a product list to be merged
+    // into the set of products that will be registered.
+    void
+    productList(std::unique_ptr<ProductList> p)
+    {
+      productList_ = move(p);
     }
-  }
 
-  inline void
-  verifyModuleLabel(std::string const& ml)
-  {
-    std::string errMsg;
-    if (!art::detail::checkModuleLabel(ml, errMsg)) {
-      throw art::Exception(art::errors::Configuration) << errMsg;
+    void registerProducts(ProductDescriptions& productsToRegister,
+                          ModuleDescription const& md);
+
+    void fillDescriptions(ModuleDescription const& md);
+
+    // Record the reconstitution of an object of type P, in either the
+    // Run, SubRun, or Event, recording that this object was
+    // originally created by a module with label modLabel, and with an
+    // optional instance name.
+    template <typename P, BranchType B>
+    TypeLabel const& reconstitutes(std::string const& modLabel,
+                                   std::string const& instanceName = {});
+
+    template <BranchType B>
+    TypeLabelLookup_t const& expectedProducts() const;
+
+    // Record the production of an object of type P, with optional
+    // instance name, in the Event (by default), Run, or SubRun.
+    template <typename P, BranchType B = InEvent>
+    void produces(std::string const& instanceName = {},
+                  Persistable const persistable = Persistable::Yes);
+
+    ProducesCollector&
+    producesCollector() noexcept
+    {
+      return collector_;
     }
-  }
 
-  inline void
-  verifyInstanceName(std::string const& instanceName)
-  {
-    std::string errMsg;
-    if (!art::detail::checkInstanceName(instanceName, errMsg)) {
-      throw art::Exception(art::errors::Configuration) << errMsg;
-    }
-  }
-
-} // unnamed namespace
-
-class art::ProductRegistryHelper {
-public:
-  // Used by an input source to provide a product list to be merged
-  // into the master product registry later by registerProducts().
-  void
-  productList(ProductList* p)
-  {
-    productList_.reset(p);
-  }
-
-  void registerProducts(MasterProductRegistry& mpr,
-                        ProductDescriptions& productsToRegister,
-                        ModuleDescription const& md);
-
-  // Record the production of an object of type P, with optional
-  // instance name, in the Event (by default), Run, or SubRun.
-  template <typename P, BranchType B = InEvent>
-  void produces(std::string const& instanceName = {},
-                Persistable const persistable = Persistable::Yes);
-
-  // Record the reconstitution of an object of type P, in either the
-  // Run, SubRun, or Event, recording that this object was
-  // originally created by a module with label modLabel, and with an
-  // optional instance name.
-  template <typename P, BranchType B>
-  TypeLabel const& reconstitutes(std::string const& modLabel,
-                                 std::string const& instanceName = {});
+  private:
+    std::unique_ptr<ProductList const> productList_{nullptr};
+    product_creation_mode mode_;
+    ProducesCollector collector_;
+  };
 
   template <BranchType B>
-  std::set<TypeLabel> const&
-  expectedProducts() const
+  inline TypeLabelLookup_t const&
+  ProductRegistryHelper::expectedProducts() const
   {
-    return typeLabelList_[B];
+    return collector_.expectedProducts(B);
   }
 
-private:
-  TypeLabel const&
-  insertOrThrow(BranchType const bt, TypeLabel const& tl)
+  template <typename P, art::BranchType B>
+  inline void
+  ProductRegistryHelper::produces(std::string const& instanceName,
+                                  Persistable const persistable)
   {
-    auto result = typeLabelList_[bt].insert(tl);
-    if (!result.second) {
-      throw Exception(errors::LogicError, "RegistrationFailure")
-        << "The module being constructed attempted to "
-        << "register conflicting products with:\n"
-        << "friendlyClassName: " << tl.friendlyClassName()
-        << " and instanceName: " << tl.productInstanceName() << ".\n";
+    if (mode_ == product_creation_mode::reconstitutes) {
+      throw Exception{errors::ProductRegistrationFailure,
+                      "An error occurred while registering a product.\n"}
+        << "The following product was registered with 'produces' when\n"
+           "'reconstitutes' should have been called instead.\n"
+        << "  Branch type: " << B << '\n'
+        << "  Class name: " << cet::demangle_symbol(typeid(P).name()) << '\n'
+        << "  Instance name: '" << instanceName << "'\n";
     }
-    return *result.first;
+    collector_.produces<P, B>(instanceName, persistable);
   }
 
-  std::array<std::set<TypeLabel>, NumBranchTypes> typeLabelList_;
+  template <typename P, BranchType B>
+  TypeLabel const&
+  ProductRegistryHelper::reconstitutes(std::string const& emulatedModule,
+                                       std::string const& instanceName)
+  {
+    if (mode_ == product_creation_mode::produces) {
+      throw Exception{errors::ProductRegistrationFailure,
+                      "An error occurred while registering a product.\n"}
+        << "The following product was registered with 'reconstitutes' when\n"
+           "'produces' should have been called instead.\n"
+        << "  Branch type: " << B << '\n'
+        << "  Class name: " << cet::demangle_symbol(typeid(P).name()) << '\n'
+        << "  Emulated module name: '" << emulatedModule << "'\n"
+        << "  Instance name: '" << instanceName << "'\n";
+    }
+    return collector_.reconstitutes<P, B>(emulatedModule, instanceName);
+  }
 
-  // Set by an input source for merging into the master product
-  // registry by registerProducts().  Ownership is released to
-  // MasterProductRegistry.
-  std::unique_ptr<ProductList> productList_;
-};
-
-template <typename P, art::BranchType B>
-inline void
-art::ProductRegistryHelper::produces(std::string const& instanceName,
-                                     Persistable const persistable)
-{
-  verifyInstanceName(instanceName);
-  TypeID const productType{typeid(P)};
-  verifyFriendlyClassName(productType.friendlyClassName());
-  bool const isTransient = (persistable == Persistable::No);
-  insertOrThrow(
-    B,
-    TypeLabel{productType, instanceName, SupportsView<P>::value, isTransient});
-}
-
-template <typename P, art::BranchType B>
-art::TypeLabel const&
-art::ProductRegistryHelper::reconstitutes(std::string const& emulatedModule,
-                                          std::string const& instanceName)
-{
-  verifyModuleLabel(emulatedModule);
-  verifyInstanceName(instanceName);
-  TypeID const productType{typeid(P)};
-  verifyFriendlyClassName(productType.friendlyClassName());
-  return insertOrThrow(
-    B,
-    TypeLabel{
-      productType, instanceName, SupportsView<P>::value, emulatedModule});
-}
+} // namespace art
 
 #endif /* art_Framework_Core_ProductRegistryHelper_h */
 

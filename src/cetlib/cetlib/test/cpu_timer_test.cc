@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(init)
 {
   // A newly-constructed timer should have both realTime and cpuTime of
   // zero.
-  BOOST_CHECK_EQUAL(timer().realTime(), 0.0);
-  BOOST_CHECK_EQUAL(timer().cpuTime(), 0.0);
+  BOOST_TEST(timer().realTime() == 0.0);
+  BOOST_TEST(timer().cpuTime() == 0.0);
 }
 
 BOOST_AUTO_TEST_CASE(timer1)
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(timer1)
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
   timer().stop();
 
-  BOOST_CHECK_GE(timer().realTime(), 0.050);
+  BOOST_TEST(timer().realTime() >= 0.050);
   std::cout << "timer1 cpu: " << timer().cpuTime()
             << " real: " << timer().realTime() << std::endl;
   BOOST_CHECK_SMALL(timer().cpuTime(), small_cputime);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(timer2)
   double const cpu = timer().cpuTime();
   double const real = timer().realTime();
 
-  BOOST_CHECK_GE(real, 0.050);
+  BOOST_TEST(real >= 0.050);
   BOOST_CHECK_SMALL(cpu, small_cputime);
 }
 
@@ -132,8 +132,8 @@ BOOST_AUTO_TEST_CASE(doubleStop)
   double cpu = timer().cpuTime();
   timer().stop();
 
-  BOOST_CHECK_EQUAL(timer().realTime(), real);
-  BOOST_CHECK_EQUAL(timer().cpuTime(), cpu);
+  BOOST_TEST(timer().realTime() == real);
+  BOOST_TEST(timer().cpuTime() == cpu);
 }
 
 BOOST_AUTO_TEST_CASE(reset)
@@ -143,12 +143,12 @@ BOOST_AUTO_TEST_CASE(reset)
   double const dur = 0.150;
   std::cout << busy_loop(dur) << "\n";
   timer().stop();
-  BOOST_CHECK_GT(timer().realTime(), 0.0);
-  BOOST_CHECK_GT(timer().cpuTime(), 0.0);
+  BOOST_TEST(timer().realTime() > 0.0);
+  BOOST_TEST(timer().cpuTime() > 0.0);
 
   timer().reset();
-  BOOST_CHECK_EQUAL(timer().realTime(), 0.0);
-  BOOST_CHECK_EQUAL(timer().cpuTime(), 0.0);
+  BOOST_TEST(timer().realTime() == 0.0);
+  BOOST_TEST(timer().cpuTime() == 0.0);
 }
 
 BOOST_AUTO_TEST_CASE(checkUsage)
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(checkUsage)
   std::cout << busy_loop(dur) << "\n";
   timer().stop();
 
-  BOOST_CHECK_GT(timer().realTime(), 0.0);
-  BOOST_CHECK_GT(timer().cpuTime(), 0.0);
+  BOOST_TEST(timer().realTime() > 0.0);
+  BOOST_TEST(timer().cpuTime() > 0.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

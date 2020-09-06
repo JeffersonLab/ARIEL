@@ -1,4 +1,4 @@
-#include "catch/catch.hpp"
+#include "catch2/catch.hpp"
 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/System/FloatingPointControl.h"
@@ -68,7 +68,8 @@ namespace {
   {
     verify_report(os, 0);
   }
-}
+
+} // namespace
 
 namespace Catch {
   template <typename T>
@@ -83,7 +84,7 @@ namespace Catch {
       return result;
     }
   };
-}
+} // namespace Catch
 
 SCENARIO("We wish to affect the floating point control on our system")
 {

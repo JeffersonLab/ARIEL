@@ -1,68 +1,54 @@
 #ifndef canvas_Persistency_Provenance_ProcessConfiguration_h
 #define canvas_Persistency_Provenance_ProcessConfiguration_h
-
-// ======================================================================
-//
-// ProcessConfiguration
-//
-// ======================================================================
+// vim: set sw=2 expandtab :
 
 #include "canvas/Persistency/Provenance/ProcessConfigurationID.h"
 #include "canvas/Persistency/Provenance/ReleaseVersion.h"
 #include "fhiclcpp/ParameterSetID.h"
+
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 namespace art {
 
-  struct ProcessConfiguration {
-    ProcessConfiguration() = default;
+  class ProcessConfiguration {
+  public:
+    ~ProcessConfiguration();
 
-    ProcessConfiguration(std::string const& procName,
-                         fhicl::ParameterSetID const& pSetID,
-                         ReleaseVersion const& relVersion)
-      : processName_{procName}
-      , parameterSetID_{pSetID}
-      , releaseVersion_{relVersion}
-    {}
+    ProcessConfiguration() noexcept;
 
-    std::string const&
-    processName() const
-    {
-      return processName_;
-    }
-    fhicl::ParameterSetID const&
-    parameterSetID() const
-    {
-      return parameterSetID_;
-    }
-    ReleaseVersion const&
-    releaseVersion() const
-    {
-      return releaseVersion_;
-    }
+    // The non-default constructor cannot be noexcept because the
+    // non-default ParameterSetID c'tor can throw.
+    ProcessConfiguration(std::string const& name,
+                         fhicl::ParameterSetID const&,
+                         ReleaseVersion const&) noexcept(false);
+    ProcessConfiguration(ProcessConfiguration const&) noexcept(false);
+    ProcessConfiguration(ProcessConfiguration&&) noexcept(false);
+
+    ProcessConfiguration& operator=(ProcessConfiguration const&);
+    ProcessConfiguration& operator=(ProcessConfiguration&&);
+
+    std::string const& processName() const noexcept;
+    fhicl::ParameterSetID const& parameterSetID() const noexcept;
+    ReleaseVersion const& releaseVersion() const noexcept;
     ProcessConfigurationID id() const;
 
+  private:
     std::string processName_{};
     fhicl::ParameterSetID parameterSetID_{};
     ReleaseVersion releaseVersion_{};
   };
 
   bool operator<(ProcessConfiguration const& a, ProcessConfiguration const& b);
-
   bool operator==(ProcessConfiguration const& a, ProcessConfiguration const& b);
-
-  inline bool
-  operator!=(ProcessConfiguration const& a, ProcessConfiguration const& b)
-  {
-    return !(a == b);
-  }
+  bool operator!=(ProcessConfiguration const& a, ProcessConfiguration const& b);
 
   std::ostream& operator<<(std::ostream& os, ProcessConfiguration const& pc);
 
-} // art
+  using ProcessConfigurations = std::vector<ProcessConfiguration>;
 
-  // ======================================================================
+} // namespace art
 
 #endif /* canvas_Persistency_Provenance_ProcessConfiguration_h */
 

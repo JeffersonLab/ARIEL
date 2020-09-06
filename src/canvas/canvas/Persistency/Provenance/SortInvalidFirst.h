@@ -11,10 +11,11 @@ namespace art {
 template <typename T>
 class art::SortInvalidFirst : public std::binary_function<T, T, bool> {
 public:
-  SortInvalidFirst() : invalidValue_() {}
-  explicit SortInvalidFirst(T const& invalidValue) : invalidValue_(invalidValue)
+  SortInvalidFirst() = default;
+  constexpr explicit SortInvalidFirst(T const& invalidValue)
+    : invalidValue_{invalidValue}
   {}
-  bool
+  constexpr bool
   operator()(T const& left, T const& right) const
   {
     if (left == invalidValue_ && right != invalidValue_) {
@@ -27,7 +28,7 @@ public:
   }
 
 private:
-  T invalidValue_;
+  T invalidValue_{};
 };
 
 #endif /* canvas_Persistency_Provenance_SortInvalidFirst_h */

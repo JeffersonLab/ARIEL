@@ -1,21 +1,14 @@
 #ifndef canvas_Persistency_Provenance_ResultsAuxiliary_h
 #define canvas_Persistency_Provenance_ResultsAuxiliary_h
-////////////////////////////////////////////////////////////////////////
-// ResultsAuxiliary
-//
-// Auxiliary information stored about results.
-//
-////////////////////////////////////////////////////////////////////////
-
-#include <iosfwd>
-#include <set>
+// vim: set sw=2 expandtab :
 
 #include "canvas/Persistency/Provenance/BranchType.h"
 #include "canvas/Persistency/Provenance/ProcessHistoryID.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 
-// Auxiliary run data that is persistent
+#include <iosfwd>
+#include <set>
 
 namespace art {
   class ResultsAuxiliary;

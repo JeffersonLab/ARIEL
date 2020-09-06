@@ -17,7 +17,7 @@ namespace art {
     thread_safe_registry_via_id<ProcessConfigurationID, ProcessConfiguration>;
   using ProcessConfigurationMap = ProcessConfigurationRegistry::collection_type;
 
-} // art
+} // namespace art
 
 // ======================================================================
 

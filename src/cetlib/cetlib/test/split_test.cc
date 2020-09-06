@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(empty_string_test)
   std::string s;
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
-  BOOST_CHECK_EQUAL(v.size(), 0ul);
+  BOOST_TEST(v.size() == 0ul);
 }
 
 BOOST_AUTO_TEST_CASE(a_string_test)
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(a_string_test)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   auto ref = {"a"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(v.begin(), v.end(), ref.begin(), ref.end());
+  BOOST_TEST(v == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(a1_string_test)
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(a1_string_test)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   auto ref = {"a"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(v.begin(), v.end(), ref.begin(), ref.end());
+  BOOST_TEST(v == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(boo_string_test)
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(boo_string_test)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   auto ref = {"boo"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(v.begin(), v.end(), ref.begin(), ref.end());
+  BOOST_TEST(v == ref, boost::test_tools::per_element{});
 }
 
 BOOST_AUTO_TEST_CASE(ab_string_test)
@@ -58,8 +58,7 @@ BOOST_AUTO_TEST_CASE(ab_string_test)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   string_vector const expected{"a", "b"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(
-    v.begin(), v.end(), expected.begin(), expected.end());
+  BOOST_TEST(v == expected);
 }
 
 BOOST_AUTO_TEST_CASE(ab1_string_test)
@@ -68,8 +67,7 @@ BOOST_AUTO_TEST_CASE(ab1_string_test)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   string_vector const expected{"a", "b"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(
-    v.begin(), v.end(), expected.begin(), expected.end());
+  BOOST_TEST(v == expected);
 }
 
 BOOST_AUTO_TEST_CASE(split_test_1)
@@ -78,8 +76,7 @@ BOOST_AUTO_TEST_CASE(split_test_1)
   std::vector<std::string> v;
   split(s, ':', std::back_inserter(v));
   string_vector const expected{"abc", "d", "ef"};
-  BOOST_CHECK_EQUAL_COLLECTIONS(
-    v.begin(), v.end(), expected.begin(), expected.end());
+  BOOST_TEST(v == expected);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

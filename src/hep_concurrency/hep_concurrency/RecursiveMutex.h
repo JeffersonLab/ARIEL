@@ -82,3 +82,7 @@ namespace hep {
 } // namespace hep
 
 #endif /* hep_concurrency_RecursiveMutex_h */
+
+// Local Variables:
+// mode: c++
+// End:

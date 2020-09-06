@@ -17,8 +17,7 @@ using mf::service::ELostreamOutput;
 
 MAKE_PLUGIN_START(auto, string const&, fhicl::ParameterSet const& pset)
 {
-  return make_unique<mf::service::ELostreamOutput>(pset,
-                                                   cet::ostream_handle{cout});
+  return make_unique<ELostreamOutput>(pset, cet::ostream_handle{cout});
 }
 MAKE_PLUGIN_END
 

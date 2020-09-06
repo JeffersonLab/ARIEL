@@ -1,0 +1,7 @@
+# This test will end in failure because BadModuleConfig does not have
+# a module_type and because it is included on the path 'e1'.
+
+process_name: TEST
+
+physics.e1: [BadModuleConfig]
+outputs.BadModuleConfig: { }

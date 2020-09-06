@@ -33,7 +33,7 @@ namespace fhicl {
   using exception = cet::coded_exception<error, detail::translate>;
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* fhiclcpp_exception_h */
 

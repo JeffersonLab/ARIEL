@@ -14,8 +14,8 @@ namespace art {
       using Parameters = ToolConfigTable<Config>;
       DummyClassTool(Parameters const&) {}
     };
-  }
-}
+  } // namespace test
+} // namespace art
 
 #endif /* art_test_Framework_Art_PrintAvailable_DummyClassTool_h */
 

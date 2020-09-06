@@ -16,6 +16,7 @@
 #include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
+#include "canvas/Utilities/Exception.h"
 #include "cetlib/metaprogramming.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -54,8 +55,7 @@ namespace art {
       for (auto const& pr : p) {
         Group const& g = *pr.second;
         if (resolveProducts_) {
-          bool const resolved_product =
-            g.resolveProductIfAvailable(g.producedWrapperType());
+          bool const resolved_product = g.resolveProductIfAvailable();
           if (!resolved_product) {
             continue;
           }
@@ -71,8 +71,7 @@ namespace art {
           // provenance pointer is a precondition to calling
           // prov.isPresent(), getting around this incorrect
           // persistency behavior.
-          wantCallFunc =
-            (g.productProvenancePtr() != nullptr) && prov.isPresent();
+          wantCallFunc = (g.productProvenance() != nullptr) && prov.isPresent();
         }
 
         if (wantCallFunc) {
@@ -333,8 +332,8 @@ namespace art {
       }
     };
 
-  } // detail
-} // art
+  } // namespace detail
+} // namespace art
 
 #endif /* art_Framework_Modules_detail_ProvenanceDumperImpl_h */
 

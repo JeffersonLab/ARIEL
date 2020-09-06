@@ -6,6 +6,8 @@
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/make_ParameterSet.h"
 #include "fhiclcpp/parse.h"
+#include "fhiclcpp/test/boost_test_print_pset.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -47,7 +49,7 @@ BOOST_AUTO_TEST_CASE(doc)
     make_ParameterSet(table, ps2);
   }
 
-  BOOST_CHECK(ps1 == ps2);
+  BOOST_TEST(ps1 == ps2);
 
   // Alternative representation.
   ParameterSet ps3;
@@ -59,7 +61,7 @@ BOOST_AUTO_TEST_CASE(doc)
     make_ParameterSet(table, ps3);
   }
 
-  BOOST_CHECK(ps1 == ps3);
+  BOOST_TEST(ps1 == ps3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

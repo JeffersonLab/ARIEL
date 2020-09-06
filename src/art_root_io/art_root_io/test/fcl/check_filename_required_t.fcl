@@ -1,0 +1,8 @@
+physics.ep: [out]
+outputs.out: {
+  module_type: RootOutput
+  fileName: "out.root"
+  fileProperties: {
+    maxEvents: 1
+  }
+}

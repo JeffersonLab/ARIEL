@@ -9,6 +9,6 @@ namespace arttest {
     auto addOne = art::make_tool<int(int)>(pset, "addOne");
     return addOne(i);
   }
-}
+} // namespace arttest
 
 DEFINE_ART_FUNCTION_TOOL(arttest::callThroughToAddOne, "callThroughToAddOne")

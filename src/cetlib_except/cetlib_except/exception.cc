@@ -74,17 +74,10 @@ exception::exception(Category const& c,
 // ======================================================================
 // copy c'tor:
 
-exception::exception(exception const& other)
+exception::exception(exception const& other) noexcept
   : category_{other.category_}, what_{other.what_}
 {
   ost_ << other.ost_.str();
-}
-
-exception::exception(exception&& other)
-  : category_{std::move(other.category_)}, what_{std::move(other.what_)}
-{
-  ost_ << other.ost_.str();
-  other.ost_.str(""); // Drop the other data.
 }
 
 // ======================================================================

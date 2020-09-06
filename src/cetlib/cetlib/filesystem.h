@@ -15,7 +15,7 @@ namespace cet {
   bool is_relative_filepath(std::string const& qualified_filename);
 }
 
-  // ======================================================================
+// ======================================================================
 
 #endif /* cetlib_filesystem_h */
 

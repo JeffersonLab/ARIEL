@@ -1,0 +1,20 @@
+Product: critic
+
+critic is distributed under the terms of the standard BSD open source license.
+
+Author:  The art Team   artists@fnal.gov
+
+Description:
+
+critic is used to test art and art related things such as gallery.
+It is used for integration testing. It was initially created to test
+the compatibility of art and gallery, although it may be extended
+to include other tests in the future.
+
+https://cdcvs.fnal.gov/redmine/projects/critic/wiki
+
+art is an event-processing framework for particle physics experiments. 
+Experiments use the art framework to build programs that process data 
+in a variety of contexts.
+
+https://cdcvs.fnal.gov/redmine/projects/art/wiki

@@ -36,13 +36,18 @@ namespace cet {
   std::string pluginType() { return cet::PluginTypeDeducer<base>::value; }     \
   EXTERN_C_FUNC_DECLARE_END
 
-template <typename T>
-struct cet::PluginTypeDeducer {
-  static std::string const value;
-};
+namespace cet {
+  template <typename T>
+  struct PluginTypeDeducer {
+    static std::string const value;
+  };
 
-template <typename T>
-std::string const cet::PluginTypeDeducer<T>::value = "Unknown";
+  template <typename T>
+  std::string const PluginTypeDeducer<T>::value = "Unknown";
+
+  template <typename T>
+  std::string const& PluginTypeDeducer_v = PluginTypeDeducer<T>::value;
+}
 
 #endif /* cetlib_PluginTypeDeducer_h */
 

@@ -1,0 +1,83 @@
+#cmakedefine WANT_WRAPPER
+
+#include "TBranch.h"
+#include "TFile.h"
+#include "TH1.h"
+#include "TTree.h"
+
+#include "Vertex.h"
+#ifdef WANT_WRAPPER
+#include "Wrapper.h"
+#endif
+#include "setupRoot.h"
+
+#include <cstdlib>
+#include <memory>
+#include <string>
+#include <unistd.h>
+
+int
+main(int argc, char** argv)
+{
+  arttest::setupRoot();
+  std::string fileName;
+  if (argc == 2) {
+    fileName = argv[1];
+  } else {
+    std::cerr << "Usage: vertexWriter <output-file>\n";
+    exit(1);
+  }
+  try {
+    TFile hfile(fileName.c_str(), "RECREATE");
+    Int_t const split = 99;
+    Int_t const bsize = 65536;
+#ifdef WANT_WRAPPER
+    arttest::Wrapper<std::vector<arttest::Vertex>>* wp_vtx = nullptr;
+#else
+    std::vector<arttest::Vertex>* p_vtx = nullptr;
+#endif
+    TTree* vtree = new TTree("VertexTree", "IO Rules Test Tree", split);
+    vtree->Branch("vertex",
+#ifdef WANT_WRAPPER
+                  "arttest::Wrapper<std::vector<arttest::Vertex> >",
+                  &wp_vtx,
+#else
+                  "std::vector<arttest::Vertex>",
+                  &p_vtx,
+#endif
+                  bsize,
+                  split);
+    auto up_vtx = std::make_unique<std::vector<arttest::Vertex>>(3);
+    auto& vtx = *up_vtx.get();
+
+    for (std::size_t i = 0ull; i < 3; ++i) {
+      vtx[i].id = i;
+      auto mult = i + 1;
+      vtx[i].pos =
+        arttest::Vertex::Point_t(5.125 * mult, 7.125 * mult, 11.125 * mult);
+      for (std::size_t j = 0ull; j < 3; ++j) {
+        for (std::size_t k = 0ull; k <= j; ++k) {
+          vtx[i].cov(j, k) = mult * (j + 1) * (k + 1) * 13.0;
+        }
+      }
+    }
+#ifdef WANT_WRAPPER
+    auto up_wrapper =
+      std::make_unique<arttest::Wrapper<std::vector<arttest::Vertex>>>(
+        std::move(up_vtx));
+    wp_vtx = up_wrapper.get();
+#else
+    p_vtx = up_vtx.get();
+#endif
+    vtree->Fill();
+    vtree->Write();
+    hfile.Close();
+    return 0;
+  }
+  catch (...) {
+    if (!fileName.empty()) {
+      unlink(fileName.c_str());
+    }
+    return 1;
+  }
+}

@@ -1,4 +1,6 @@
 #include "canvas/Persistency/Provenance/ProductTables.h"
+// vim: set sw=2 expandtab :
+
 #include "canvas/Persistency/Provenance/detail/createProductLookups.h"
 #include "canvas/Persistency/Provenance/detail/createViewLookups.h"
 #include "cetlib/container_algorithms.h"
@@ -6,28 +8,23 @@
 using namespace art;
 
 namespace {
+
   auto
   descriptions_for_branch_type(BranchType const bt,
                                ProductDescriptions const& descriptions)
   {
-    ProductDescriptions result;
-    cet::copy_if_all(descriptions, back_inserter(result), [bt](auto const& pd) {
-      return pd.branchType() == bt;
-    });
-    return result;
-  }
-
-  auto
-  available_products(ProductDescriptions const& descriptions)
-  {
-    AvailableProducts_t result;
-    cet::transform_all(descriptions,
-                       inserter(result, begin(result)),
-                       [](auto const& pd) { return pd.productID(); });
+    ProductDescriptionsByID result;
+    for (auto const& pd : descriptions) {
+      if (pd.branchType() != bt) {
+        continue;
+      }
+      result.try_emplace(pd.productID(), pd);
+    }
     return result;
   }
 
   using ProductTables_t = std::array<ProductTable, NumBranchTypes>;
+
   auto
   createProductTables(ProductDescriptions const& descriptions)
   {
@@ -38,40 +35,24 @@ namespace {
     return result;
   }
 
-  auto
-  createProductTables(
-    ProductDescriptions const& descriptions,
-    std::array<AvailableProducts_t, NumBranchTypes> const& availableProducts)
-  {
-    ProductTables_t result{{}};
-    for (std::size_t bt{}; bt < NumBranchTypes; ++bt) {
-      result[bt] = ProductTable{
-        descriptions, static_cast<BranchType>(bt), availableProducts[bt]};
-    }
-    return result;
-  }
-}
+} // unnamed namespace
 
-// =======================================================================
-
-art::ProductTable::ProductTable(ProductDescriptions const& descriptions,
+art::ProductTable::ProductTable(ProductDescriptions const& descs,
                                 BranchType const bt)
-  : ProductTable{
-      descriptions,
-      bt,
-      available_products(descriptions_for_branch_type(bt, descriptions))}
+  : isValid{true}
+  , descriptions{descriptions_for_branch_type(bt, descs)}
+  , productLookup{detail::createProductLookups(descriptions)}
+  , viewLookup{detail::createViewLookups(descriptions)}
 {}
 
-art::ProductTable::ProductTable(ProductDescriptions const& descriptions,
-                                BranchType const bt,
-                                AvailableProducts_t const& availableProducts)
-  : isValid{true}
-  , productLookup{detail::createProductLookups(
-      descriptions_for_branch_type(bt, descriptions))}
-  , viewLookup{detail::createViewLookups(
-      descriptions_for_branch_type(bt, descriptions))}
-  , availableProducts{availableProducts}
-{}
+cet::exempt_ptr<art::BranchDescription const>
+art::ProductTable::description(ProductID const pid) const
+{
+  if (auto it = descriptions.find(pid); it != cend(descriptions)) {
+    return cet::make_exempt_ptr(&it->second);
+  }
+  return nullptr;
+}
 
 art::ProductTables
 art::ProductTables::invalid()
@@ -81,10 +62,4 @@ art::ProductTables::invalid()
 
 art::ProductTables::ProductTables(ProductDescriptions const& descriptions)
   : tables_{createProductTables(descriptions)}
-{}
-
-art::ProductTables::ProductTables(
-  ProductDescriptions const& descriptions,
-  std::array<AvailableProducts_t, NumBranchTypes> const& availableProducts)
-  : tables_{createProductTables(descriptions, availableProducts)}
 {}

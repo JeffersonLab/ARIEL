@@ -1,201 +1,378 @@
 #include "art/Framework/Principal/DataViewImpl.h"
+// vim: set sw=2 expandtab :
 
-#include "art/Framework/Principal/Consumer.h"
+#include "art/Framework/Principal/EventPrincipal.h"
+#include "art/Framework/Principal/Group.h"
 #include "art/Framework/Principal/Principal.h"
+#include "art/Framework/Principal/ResultsPrincipal.h"
+#include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Principal/get_ProductDescription.h"
-#include "art/Persistency/Provenance/ProductMetaData.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Framework/Principal/SubRunPrincipal.h"
+#include "art/Persistency/Provenance/ModuleContext.h"
+#include "art/Persistency/Provenance/ProcessHistoryRegistry.h"
+#include "art/Utilities/Globals.h"
+#include "art/Utilities/ProductSemantics.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Provenance/ProductProvenance.h"
-#include "canvas/Persistency/Provenance/ProductStatus.h"
+#include "canvas/Persistency/Provenance/canonicalProductName.h"
 #include "cetlib/HorizontalRule.h"
 #include "cetlib/container_algorithms.h"
+#include "cetlib/exempt_ptr.h"
+#include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetID.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
+#include "hep_concurrency/RecursiveMutex.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdlib>
+#include <map>
+#include <memory>
+#include <ostream>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 using namespace cet;
 using namespace std;
 
 namespace art {
 
-  DataViewImpl::DataViewImpl(Principal const& pcpl,
-                             ModuleDescription const& md,
-                             BranchType const branchType,
+  class EDProductGetter;
+
+  DataViewImpl::~DataViewImpl() = default;
+
+  DataViewImpl::DataViewImpl(BranchType const bt,
+                             Principal const& principal,
+                             ModuleContext const& mc,
                              bool const recordParents,
-                             cet::exempt_ptr<Consumer> consumer)
-    : principal_{pcpl}
-    , md_{md}
-    , branchType_{branchType}
+                             RangeSet const& rs /* = RangeSet::invalid() */)
+    : branchType_{bt}
+    , principal_{principal}
+    , mc_{mc}
+    , md_{mc.moduleDescription()}
     , recordParents_{recordParents}
-    , consumer_{consumer}
+    , rangeSet_{rs}
   {}
 
-  size_t
-  DataViewImpl::size() const
+  RunID
+  DataViewImpl::runID() const
   {
-    return putProducts_.size() + principal_.size();
+    std::lock_guard lock{mutex_};
+    return principal_.runID();
   }
 
-  GroupQueryResult
-  DataViewImpl::get_(WrappedTypeID const& wrapped,
-                     SelectorBase const& sel) const
+  SubRunID
+  DataViewImpl::subRunID() const
   {
-    return principal_.getBySelector(wrapped, sel);
+    std::lock_guard lock{mutex_};
+    return principal_.subRunID();
   }
 
-  GroupQueryResult
-  DataViewImpl::getByProductID_(ProductID const pid) const
+  EventID
+  DataViewImpl::eventID() const
   {
-    return principal_.getByProductID(pid);
+    std::lock_guard lock{mutex_};
+    return principal_.eventID();
   }
 
-  DataViewImpl::GroupQueryResultVec
-  DataViewImpl::getMany_(WrappedTypeID const& wrapped,
-                         SelectorBase const& sel) const
+  RunNumber_t
+  DataViewImpl::run() const
   {
-    return principal_.getMany(wrapped, sel);
+    std::lock_guard lock{mutex_};
+    return principal_.run();
   }
 
-  GroupQueryResult
-  DataViewImpl::getByLabel_(WrappedTypeID const& wrapped,
-                            string const& label,
-                            string const& productInstanceName,
-                            string const& processName) const
+  SubRunNumber_t
+  DataViewImpl::subRun() const
   {
-    return principal_.getByLabel(
-      wrapped, label, productInstanceName, processName);
+    std::lock_guard lock{mutex_};
+    return principal_.subRun();
   }
 
-  DataViewImpl::GroupQueryResultVec
-  DataViewImpl::getMatchingSequenceByLabel_(string const& label,
-                                            string const& productInstanceName,
-                                            string const& processName) const
+  EventNumber_t
+  DataViewImpl::event() const
   {
-    Selector const sel{ModuleLabelSelector{label} &&
-                       ProductInstanceNameSelector{productInstanceName} &&
-                       ProcessNameSelector{processName}};
-    return principal_.getMatchingSequence(sel);
+    std::lock_guard lock{mutex_};
+    return principal_.event();
+  }
+
+  Timestamp const&
+  DataViewImpl::beginTime() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.beginTime();
+  }
+
+  Timestamp const&
+  DataViewImpl::endTime() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.endTime();
+  }
+
+  Timestamp
+  DataViewImpl::time() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.time();
+  }
+
+  bool
+  DataViewImpl::isRealData() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.isReal();
+  }
+
+  EventAuxiliary::ExperimentType
+  DataViewImpl::experimentType() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.ExperimentType();
+  }
+
+  History const&
+  DataViewImpl::history() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.history();
+  }
+
+  ProcessHistoryID const&
+  DataViewImpl::processHistoryID() const
+  {
+    std::lock_guard lock{mutex_};
+    return principal_.history().processHistoryID();
   }
 
   ProcessHistory const&
   DataViewImpl::processHistory() const
   {
+    std::lock_guard lock{mutex_};
     return principal_.processHistory();
   }
 
-  void
-  DataViewImpl::recordAsParent(Provenance const& prov) const
+  EDProductGetter const*
+  DataViewImpl::productGetter(ProductID const pid) const
   {
-    if (prov.productDescription().transient()) {
-      // If the product retrieved is transient, don't use its
-      // ProductID; use the ProductID's of its parents.
-      auto const& parents = prov.parents();
-      retrievedProducts_.insert(cbegin(parents), cend(parents));
-    } else {
-      retrievedProducts_.insert(prov.productID());
-    }
+    std::lock_guard lock{mutex_};
+    return principal_.productGetter(pid);
   }
 
-  DataViewImpl::RetrievedProductIDs
-  DataViewImpl::retrievedProductIDs() const
+  bool
+  DataViewImpl::getProcessParameterSet(string const& processName,
+                                       fhicl::ParameterSet& ps) const
   {
-    std::vector<ProductID> result;
-    result.reserve(retrievedProducts_.size());
-    result.assign(cbegin(retrievedProducts_), cend(retrievedProducts_));
-    return result;
+    std::lock_guard lock{mutex_};
+    if (branchType_ != InEvent) {
+      return false;
+    }
+    ProcessHistory ph;
+    if (!ProcessHistoryRegistry::get(principal_.history().processHistoryID(),
+                                     ph)) {
+      throw Exception(errors::NotFound)
+        << "ProcessHistoryID " << principal_.history().processHistoryID()
+        << " is not found in the ProcessHistoryRegistry.\n"
+        << "This file is malformed.\n";
+    }
+    ProcessConfiguration config;
+    bool const process_found =
+      ph.getConfigurationForProcess(processName, config);
+    if (process_found) {
+      fhicl::ParameterSetRegistry::get(config.parameterSetID(), ps);
+    }
+    return process_found;
+  }
+
+  cet::exempt_ptr<BranchDescription const>
+  DataViewImpl::getProductDescription(ProductID const pid) const
+  {
+    return principal_.getProductDescription(pid);
   }
 
   void
-  DataViewImpl::checkPutProducts(bool const checkProducts,
-                                 std::set<TypeLabel> const& expectedProducts,
-                                 TypeLabelMap const& putProducts)
+  DataViewImpl::movePutProductsToPrincipal(
+    Principal& principal,
+    bool const checkProducts,
+    map<TypeLabel, BranchDescription> const* expectedProducts)
   {
-    if (!checkProducts)
-      return;
-
-    std::vector<std::string> missing;
-    for (auto const& typeLabel : expectedProducts) {
-      if (putProducts.find(typeLabel) != putProducts.cend())
-        continue;
-
-      std::ostringstream desc;
-      desc << getProductDescription(typeLabel.typeID(),
-                                    typeLabel.productInstanceName());
-      missing.emplace_back(desc.str());
-    }
-
-    if (!missing.empty()) {
-      std::ostringstream errmsg;
-      HorizontalRule rule{25};
-      errmsg << "The following products have been declared with 'produces',\n"
-             << "but they have not been placed onto the event:\n"
-             << rule('=') << '\n';
-      for (auto const& desc : missing) {
-        errmsg << desc << rule('=') << '\n';
+    std::lock_guard lock{mutex_};
+    if (checkProducts) {
+      vector<string> missing;
+      for (auto const& typeLabel_and_bd : *expectedProducts) {
+        if (putProducts_.find(typeLabel_and_bd.first) != putProducts_.cend()) {
+          continue;
+        }
+        ostringstream desc;
+        desc << typeLabel_and_bd.second;
+        missing.emplace_back(desc.str());
       }
-      throw Exception{errors::LogicError, "DataViewImpl::checkPutProducts"}
-        << errmsg.str();
+      if (!missing.empty()) {
+        ostringstream errmsg;
+        HorizontalRule rule{25};
+        errmsg << "The following products have been declared with 'produces',\n"
+               << "but they have not been placed onto the event:\n"
+               << rule('=') << '\n';
+        for (auto const& desc : missing) {
+          errmsg << desc << rule('=') << '\n';
+        }
+        throw Exception{errors::LogicError, "DataViewImpl::checkPutProducts"}
+          << errmsg.str();
+      }
     }
+    for (auto& type_label_and_pmvalue : putProducts_) {
+      auto& pmvalue = type_label_and_pmvalue.second;
+      unique_ptr<ProductProvenance const> pp;
+      if (branchType_ == InEvent) {
+        vector<ProductID> gotPIDs;
+        if (!retrievedProducts_.empty()) {
+          gotPIDs.reserve(retrievedProducts_.size());
+          gotPIDs.assign(retrievedProducts_.begin(), retrievedProducts_.end());
+        }
+        pp = make_unique<ProductProvenance const>(
+          pmvalue.bd_.productID(), productstatus::present(), gotPIDs);
+      } else {
+        pp = make_unique<ProductProvenance const>(pmvalue.bd_.productID(),
+                                                  productstatus::present());
+      }
+      auto rs = detail::range_sets_supported(branchType_) ?
+                  make_unique<RangeSet>(pmvalue.rs_) :
+                  make_unique<RangeSet>();
+      principal.put(pmvalue.bd_, move(pp), move(pmvalue.prod_), move(rs));
+    };
+    putProducts_.clear();
+  }
+
+  void
+  DataViewImpl::movePutProductsToPrincipal(Principal& principal)
+  {
+    std::lock_guard lock{mutex_};
+    for (auto& type_label_and_pmvalue : putProducts_) {
+      auto& pmvalue = type_label_and_pmvalue.second;
+      unique_ptr<ProductProvenance const> pp =
+        make_unique<ProductProvenance const>(pmvalue.bd_.productID(),
+                                             productstatus::present());
+      if ((branchType_ == InRun) || (branchType_ == InSubRun)) {
+        principal.put(pmvalue.bd_,
+                      move(pp),
+                      move(pmvalue.prod_),
+                      make_unique<RangeSet>(pmvalue.rs_));
+      } else {
+        principal.put(
+          pmvalue.bd_, move(pp), move(pmvalue.prod_), make_unique<RangeSet>());
+      }
+    };
+    putProducts_.clear();
+  }
+
+  string const&
+  DataViewImpl::getProcessName_(std::string const& specifiedProcessName) const
+  {
+    return specifiedProcessName == "current_process"s ? md_.processName() :
+                                                        specifiedProcessName;
   }
 
   BranchDescription const&
-  DataViewImpl::getProductDescription(TypeID const& type,
-                                      string const& productInstanceName) const
+  DataViewImpl::getProductDescription_(
+    TypeID const& type,
+    string const& instance,
+    bool const alwaysEnableLookupOfProducedProducts /*= false*/) const
   {
-    return get_ProductDescription(type,
-                                  md_.processName(),
-                                  ProductMetaData::instance().productList(),
-                                  branchType_,
-                                  md_.moduleLabel(),
-                                  productInstanceName);
+    std::lock_guard lock{mutex_};
+    auto const& product_name = canonicalProductName(
+      type.friendlyClassName(), md_.moduleLabel(), instance, md_.processName());
+    ProductID const pid{product_name};
+    auto bd = principal_.getProductDescription(
+      pid, alwaysEnableLookupOfProducedProducts);
+    if (!bd || (bd->producedClassName() != type.className())) {
+      // Either we did not find the product, or the product we
+      // did find does not match (which can happen with Assns
+      // since Assns(A,B) and Assns(B,A) have the same ProductID
+      // but not the same class name.
+      throw Exception(errors::ProductRegistrationFailure,
+                      "DataViewImpl::getProductDescription_: error while "
+                      "trying to retrieve product description:\n")
+        << "No product is registered for\n"
+        << "  process name:                '" << md_.processName() << "'\n"
+        << "  module label:                '" << md_.moduleLabel() << "'\n"
+        << "  product class name:          '" << type.className() << "'\n"
+        << "  product friendly class name: '" << type.friendlyClassName()
+        << "'\n"
+        << "  product instance name:       '" << instance << "'\n"
+        << "  branch type:                 '" << branchType_ << "'\n";
+    }
+    // The description object is owned by either the source or the
+    // event processor, whose lifetimes exceed that of the
+    // DataViewImpl object.  It is therefore safe to dereference.
+    return *bd;
   }
 
   void
-  DataViewImpl::removeNonViewableMatches_(TypeID const& requestedElementType,
-                                          GroupQueryResultVec& results) const
+  DataViewImpl::recordAsParent_(exempt_ptr<Group const> grp) const
   {
-    // To determine if the requested view is allowed, the matched
-    // 'results' (products) must be read.
-    auto not_convertible = [&requestedElementType](auto const& query_result) {
-      // Assns collections do not support views; we therefore do not
-      // need to worry about an exception throw when calling
-      // uniqueProduct.
-      auto group = query_result.result();
-      assert(group->productDescription().supportsView());
-      auto p = group->uniqueProduct();
-      return !detail::upcastAllowed(*p->typeInfo(),
-                                    requestedElementType.typeInfo());
-    };
-    results.erase(std::remove_if(begin(results), end(results), not_convertible),
-                  end(results));
+    if (grp->productDescription().transient()) {
+      // If the product retrieved is transient, don't use its
+      // ProductID; use the ProductID's of its parents.
+      auto const& parents = grp->productProvenance()->parentage().parents();
+      retrievedProducts_.insert(cbegin(parents), cend(parents));
+    } else {
+      retrievedProducts_.insert(grp->productDescription().productID());
+    }
   }
 
-  void
-  DataViewImpl::ensureUniqueProduct_(std::size_t const nFound,
-                                     TypeID const& typeID,
-                                     std::string const& moduleLabel,
-                                     std::string const& productInstanceName,
-                                     std::string const& processName) const
+  exempt_ptr<Group const>
+  DataViewImpl::getContainerForView_(TypeID const& typeID,
+                                     string const& moduleLabel,
+                                     string const& productInstanceName,
+                                     ProcessTag const& processTag) const
   {
-    if (nFound == 1)
-      return;
-
-    Exception e{errors::ProductNotFound};
-    e << "getView: Found "
-      << (nFound == 0 ? "no products" : "more than one product")
-      << " matching all criteria\n"
-      << "Looking for sequence of type: " << typeID << "\n"
-      << "Looking for module label: " << moduleLabel << "\n"
-      << "Looking for productInstanceName: " << productInstanceName << "\n";
-    if (!processName.empty())
-      e << "Looking for processName: " << processName << "\n";
-    throw e;
+    // Check that the consumesView<ELEMENT, BT>(InputTag),
+    // or the mayConsumeView<ELEMENT, BT>(InputTag)
+    // is actually present.
+    ConsumesInfo::instance()->validateConsumedProduct(
+      branchType_,
+      md_,
+      ProductInfo{ProductInfo::ConsumableType::ViewElement,
+                  typeID,
+                  moduleLabel,
+                  productInstanceName,
+                  processTag});
+    // Fetch the specified data products, which must be containers.
+    auto const groups = principal_.getMatchingSequence(
+      mc_,
+      Selector{ModuleLabelSelector{moduleLabel} &&
+               ProductInstanceNameSelector{productInstanceName} &&
+               ProcessNameSelector{processTag.name()}},
+      processTag);
+    auto qrs = resolve_products(groups, TypeID{});
+    // Remove any containers that do not allow upcasting of their
+    // elements to the desired element type.
+    auto new_end =
+      remove_if(qrs.begin(), qrs.end(), [&typeID](auto const& gqr) {
+        auto const group = gqr.result();
+        assert(group->productDescription().supportsView());
+        return !detail::upcastAllowed(*group->uniqueProduct()->typeInfo(),
+                                      typeID.typeInfo());
+      });
+    qrs.erase(new_end, qrs.end());
+    // Throw if there is not one and only one container to return.
+    if (qrs.size() != 1) {
+      Exception e{errors::ProductNotFound};
+      e << "getView: Found "
+        << (qrs.empty() ? "no products" : "more than one product")
+        << " matching all criteria\n"
+        << "Looking for sequence of type: " << typeID << "\n"
+        << "Looking for module label: " << moduleLabel << "\n"
+        << "Looking for productInstanceName: " << productInstanceName << "\n";
+      if (!processTag.name().empty()) {
+        e << "Looking for processName: " << processTag.name() << "\n";
+      }
+      throw e;
+    }
+    // And return the single result.
+    return qrs[0].result();
   }
-
-  void
-  DataViewImpl::removeCachedProduct_(ProductID const pid) const
-  {
-    principal_.removeCachedProduct(pid);
-  }
-
-} // art
+} // namespace art

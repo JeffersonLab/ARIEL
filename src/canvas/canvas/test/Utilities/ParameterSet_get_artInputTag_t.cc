@@ -8,20 +8,23 @@
 #include <vector>
 
 namespace {
+  constexpr bool should_fail{false};
 
   void
-  try_and_print(fhicl::ParameterSet const& pset, std::string const& parm) try {
+  retrieve(fhicl::ParameterSet const& pset,
+           std::string const& parm,
+           bool const should_succeed = true) try {
     pset.get<art::InputTag>(parm);
+    assert(should_succeed);
   }
   catch (fhicl::exception const& e) {
-    std::cout << e.what() << std::endl;
+    assert(not should_succeed);
   }
 }
 
 int
 main()
 {
-
   //===========================================================
   // Test 1-argument InputTag c'tor
   //===========================================================
@@ -42,28 +45,13 @@ main()
   auto const tag = pset.get<art::InputTag>("first_key");
   auto const vec_tags = pset.get<std::vector<art::InputTag>>("second_key");
 
-  std::cout << tag << std::endl << std::endl;
-
-  for (const auto& tag : vec_tags) {
-    std::cout << tag << std::endl;
-  }
-
   auto const vec_tags_empty =
-    pset.get("third_key", std::vector<art::InputTag>());
+    pset.get("third_key", std::vector<art::InputTag>{});
 
-  try {
-    vec_tags_empty.empty() && (std::cout << "\nThis is empty." << std::endl);
-  }
-  catch (...) {
-    std::cout << " Uh oh, this is bad." << std::endl;
-  }
+  assert(vec_tags_empty.empty());
 
   std::vector<art::InputTag> vtag;
-  if (pset.get_if_present("second_key", vtag)) {
-    for (const auto& tag : vtag) {
-      std::cout << "One more time: " << tag << std::endl;
-    }
-  }
+  assert(pset.get_if_present("second_key", vtag));
 
   //===========================================================
   // Test multi-argument constructors
@@ -76,8 +64,8 @@ main()
   pset.put<std::vector<std::string>>(
     "multierr2", {"label", "instance", "process", "something", "else"});
 
-  try_and_print(pset, "multi1");
-  try_and_print(pset, "multi2");
-  try_and_print(pset, "multierr1");
-  try_and_print(pset, "multierr2");
+  retrieve(pset, "multi1");
+  retrieve(pset, "multi2");
+  retrieve(pset, "multierr1", should_fail);
+  retrieve(pset, "multierr2", should_fail);
 }

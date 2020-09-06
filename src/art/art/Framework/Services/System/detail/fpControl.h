@@ -123,8 +123,8 @@ namespace art {
     fp_control_t setFPControl(fp_control_t const& fpControl);
 
     char const* on_or_off(bool const b);
-  }
-}
+  } // namespace fp_detail
+} // namespace art
 
 inline art::fp_detail::fp_control_t
 art::fp_detail::getFPControl()

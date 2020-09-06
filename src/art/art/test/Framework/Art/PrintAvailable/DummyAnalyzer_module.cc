@@ -15,7 +15,7 @@ namespace art {
   namespace test {
     class DummyAnalyzer;
   }
-}
+} // namespace art
 
 class art::test::DummyAnalyzer : public EDAnalyzer {
 public:
