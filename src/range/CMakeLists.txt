@@ -41,6 +41,8 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
 string(REGEX MATCH "(^| )-std=[^ ]*\\+\\+([^ ]*)" std_flag "${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
 set(RANGES_CXX_STD "${CMAKE_MATCH_2}")
 
+set(CMAKE_BUILD_TYPE Release)
+
 option(RANGE_V3_NO_TESTING "" TRUE)
 option(RANGE_V3_NO_EXAMPLE "" TRUE)
 option(RANGE_V3_NO_PERF "" TRUE)
