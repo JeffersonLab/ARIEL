@@ -18,11 +18,6 @@ project(art_root_io LANGUAGES CXX C)
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH
-  $ENV{CANVAS_ROOT_IO_DIR}/Modules
-  $ENV{ART_DIR}/Modules
-  ${CMAKE_CURRENT_SOURCE_DIR}/Modules)
-
 include(CetCMakeEnv)
 cet_cmake_env()
 

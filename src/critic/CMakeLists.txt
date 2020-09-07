@@ -21,8 +21,6 @@ find_package(cetbuildtools 7.17.00 REQUIRED)
 include(CetCMakeEnv)
 cet_cmake_env()
 
-list(APPEND CMAKE_MODULE_PATH $ENV{ART_DIR}/Modules $ENV{CANVAS_ROOT_IO_DIR}/Modules)
-
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
@@ -80,9 +78,6 @@ find_ups_product(range)
 find_ups_product(sqlite)
 find_ups_root()
 find_ups_boost(BOOST_TARGETS)
-
-# SQLite
-cet_find_library(SQLITE3 NAMES sqlite3_ups PATHS ENV SQLITE_LIB NO_DEFAULT_PATH)
 
 # SQLite
 cet_find_library(SQLITE3 NAMES sqlite3_ups PATHS ENV SQLITE_LIB NO_DEFAULT_PATH)
