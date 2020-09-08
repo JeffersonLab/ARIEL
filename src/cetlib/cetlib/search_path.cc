@@ -26,10 +26,9 @@ namespace {
   string
   get_env_if_colon_present(string const& arg)
   {
-    // If no colon and no slash is present, assume the user is specifying an
+    // If no colon is present, assume the user is specifying an
     // environment variable.
-    return (arg.find(':') == string::npos && arg.find('/') == string::npos )
-      ? arg : string{};
+    return arg.find(':') == string::npos ? arg : string{};
   }
 
   vector<string>
