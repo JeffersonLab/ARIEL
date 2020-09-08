@@ -144,6 +144,9 @@ macro( find_ups_root )
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
     endif()
+    if(ROOT_PYTHON_VERSION AND NOT PYTHON_VERSION)
+      find_ups_product(python)
+    endif()
 
     # define some useful library lists
     set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
