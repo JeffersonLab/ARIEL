@@ -14,7 +14,7 @@
 include(CheckUpsVersion)
 
 set(_ufp_depth 0)
-set(_ufp_python "Python2")
+set(_ufp_python "Python3")
 
 macro( _use_find_package PNAME )
 
@@ -44,8 +44,8 @@ if( NOT ${RNAME}_FOUND )
   set(RNAME${_ufp_depth} ${RNAME})
   set(dotver${_ufp_depth} ${dotver})
   math(EXPR _ufp_depth "${_ufp_depth} + 1")
-  # Must specify Python package compnents for find_package(Python2...)
-  # NB: find_package(Python2...) requires CMake 3.12
+  # Must specify Python package components for find_package(Python3...)
+  # NB: find_package(Python3...) requires CMake 3.12
   if( ${PNAME} STREQUAL python )
 #    set(comp "COMPONENTS;Interpreter;Development")
     set(comp "COMPONENTS;Development")
@@ -64,8 +64,8 @@ endif()
 if( NOT ${RNAME}_FOUND )
   find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
-    # UPS "python" is currently v2.7, which is "python2" in pkg-config land
-    string(REGEX REPLACE "(^| )python( |$)" "python2" RNAME ${RNAME})
+    # UPS "python" is "python3" in pkg-config land
+    string(REGEX REPLACE "(^| )python( |$)" "python3" RNAME ${RNAME})
     if(${dotver})
       pkg_check_modules(PC_${RNAME} ${RNAME}>=${dotver})
     else()
