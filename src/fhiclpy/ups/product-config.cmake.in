@@ -4,8 +4,8 @@ set( @product@_UPS_VERSION @version@ )
 
 @PACKAGE_INIT@
 
-if (IS_DIRECTORY "${PACKAGE_PREFIX_DIR}/@product@/@version@/Modules")
-  list(APPEND CMAKE_MODULE_PATH "${PACKAGE_PREFIX_DIR}/@product@/@version@/Modules")
+if (IS_DIRECTORY "@PACKAGE_data_dir@/Modules")
+  list(APPEND CMAKE_MODULE_PATH "@PACKAGE_data_dir@/Modules")
 endif()
 
 @CONFIG_FIND_UPS_COMMANDS@

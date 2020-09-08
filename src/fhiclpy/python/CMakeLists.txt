@@ -1,6 +1,5 @@
 set(PYTHON_MODULE_EXTENSION ".so")
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_ups_product(python)
 find_package(pybind11 REQUIRED CONFIG)
 include_directories(${pybind11_INCLUDE_DIRS})
 
