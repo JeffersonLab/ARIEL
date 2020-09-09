@@ -120,6 +120,11 @@ namespace cet {
   // MD5Digest
   //
 
+#pragma GCC diagnostic push
+#if __APPLE__
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   MD5Digest::MD5Digest() : context_() { MD5_Init(&context_); }
 
   MD5Digest::MD5Digest(std::string const& s) : context_()
@@ -144,3 +149,5 @@ namespace cet {
     return aDigest;
   }
 }
+
+#pragma GCC diagnostic pop

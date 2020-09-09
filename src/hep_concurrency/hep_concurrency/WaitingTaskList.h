@@ -3,7 +3,10 @@
 // vim: set sw=2 expandtab :
 
 #include "hep_concurrency/RecursiveMutex.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-W#pragma-messages"
 #include "tbb/task.h"
+#pragma GCC diagnostic pop
 
 #include <atomic>
 #include <exception>
