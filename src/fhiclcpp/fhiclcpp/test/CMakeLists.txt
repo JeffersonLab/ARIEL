@@ -146,7 +146,7 @@ cet_test(fhicl-write-db-test HANDBUILT
   TEST_ARGS ../WriteSQLiteDB_t.d/test.db "select count(ID) from ParameterSets"
   TEST_PROPERTIES
   DEPENDS WriteSQLiteDB_t
-  PASS_REGULAR_EXPRESSION "^3\n$"
+  PASS_REGULAR_EXPRESSION "^3[^0-9]*$"
   )
 
 cet_test(parse_shimmeddocument_test USE_BOOST_UNIT)
