@@ -9,8 +9,9 @@
 # 22-Jul-2020  Ole Hansen
 
 # Packages to build. The exact order matters.
-PACKAGES="buildtools range catch cetlib_except cetlib hep_concurrency fhiclcpp \
-messagefacility canvas canvas_root_io gallery art toyExperiment"
+PACKAGES="buildtools range catch hep_concurrency cetlib_except cetlib fhiclcpp \
+fhiclpy messagefacility canvas canvas_root_io gallery art art_root_io critic \
+toyExperiment"
 
 TOPDIR="$PWD"
 buildinfo="$TOPDIR/.buildinfo"

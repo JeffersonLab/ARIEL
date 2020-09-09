@@ -32,34 +32,34 @@ fi
 
 case "$1" in
     --debug)
-	debug=1
-	shift
-	;;
+        debug=1
+        shift
+        ;;
     --help)
-	echo ./run-tests.sh [--debug] [--help] [module1 [module2 [module3...]]]
-	exit 0
-	;;
+        echo ./run-tests.sh [--debug] [--help] [module1 [module2 [module3...]]]
+        exit 0
+        ;;
 esac
 
 ostype=$(uname -s)
-path_root="$INSTALLDIR/bin:$PATH"
+path_base="$INSTALLDIR/bin:$PATH"
 if [ "$ostype" = "Darwin" ]; then
     # On macOS, assume Homebrew's GNU getopt
-    path_root="/usr/local/opt/gnu-getopt/bin:$path_root"
+    path_base="/usr/local/opt/gnu-getopt/bin:$path_base"
 fi
-module_path_root="$INSTALLDIR/lib"
-ld_path_root="${ROOTSYS:+$ROOTSYS/lib}"
+module_path_base="$INSTALLDIR/lib"
+ld_path_base="${ROOTSYS:+$ROOTSYS/lib}"
 # Add /usr/local/lib to library path
 # except on macOS, where Homebrew packages interfere
 if [ "$ostype" != "Darwin" ]; then
-    ld_path_root="${ld_path_root:+$ld_load_path:}/usr/local/lib"
+    ld_path_base="${ld_path_base:+$ld_load_path:}/usr/local/lib"
 fi
-export ROOT_INCLUDE_PATH="$INSTALLDIR/include:/usr/local/include"
+include_path_base="$INSTALLDIR/include:/usr/local/include"
 
 # Packages for which to run tests
 if [ $# -eq 0 ]; then
-    PACKAGES="buildtools cetlib_except cetlib hep_concurrency fhiclcpp \
-messagefacility canvas canvas_root_io art"
+    PACKAGES="buildtools hep_concurrency cetlib_except cetlib fhiclcpp \
+messagefacility canvas canvas_root_io art art_root_io gallery critic"
 else
     PACKAGES="$*"
 fi
@@ -74,20 +74,26 @@ for PKG in $PACKAGES; do
         continue
     fi
     cd $PKG
-    export PATH="$PWD/bin:$path_root"
-    export CET_MODULE_PATH="$PWD/lib:$module_path_root"
+    export PATH="$PWD/bin:$path_base"
+    export CET_PLUGIN_PATH="$PWD/lib:$module_path_base"
     export FHICL_FILE_PATH="."
     if [ "$ostype" = "Darwin" ]; then
-        export DYLD_LIBRARY_PATH="$CET_MODULE_PATH${ld_path_root:+:$ld_path_root}"
+        export DYLD_LIBRARY_PATH="$CET_PLUGIN_PATH${ld_path_base:+:$ld_path_base}"
         export CET_TEST_LIBPATH="$DYLD_LIBRARY_PATH"
     else
-        export LD_LIBRARY_PATH="$CET_MODULE_PATH${ld_path_root:+:$ld_path_root}"
+        export LD_LIBRARY_PATH="$CET_PLUGIN_PATH${ld_path_base:+:$ld_path_base}"
     fi
-
+    # Get the package's source directory from CMakeCache.txt
+    # Obviously this will trivially go away in a unified build
+    if [ -r CMakeCache.txt ]; then
+        SRCDIR="$(grep "$PKG"_SOURCE_DIR CMakeCache.txt | awk -F= '{print $2}')"
+    fi
+    export ROOT_INCLUDE_PATH="$SRCDIR${include_path_base:+${SRCDIR:+:}$include_path_base}"
+    echo extra_args = $extra_args
     if [ -z "$debug" ]; then
-	ctest -j$ncpu
+        ctest -j$ncpu
     else
-	ctest -VV
+        ctest -VV --rerun-failed
     fi
     if [ $? -ne 0 ]; then
         exit 1;
