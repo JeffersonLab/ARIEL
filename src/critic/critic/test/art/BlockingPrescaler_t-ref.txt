@@ -27,25 +27,28 @@ Begin processing the 23rd record. run: 1 subRun: 0 event: 23 at <date-time>
 Begin processing the 24th record. run: 1 subRun: 0 event: 24 at <date-time>
 Begin processing the 25th record. run: 1 subRun: 0 event: 25 at <date-time>
 
-TrigReport ---------- Event  Summary ------------
+TrigReport ---------- Event summary -------------
 TrigReport Events total = 25 passed = 10 failed = 15
 
-TrigReport ---------- Path   Summary ------------
+TrigReport ---------- Trigger-path summary ------------
 TrigReport  Trig Bit#        Run     Passed     Failed      Error Name
-TrigReport     1    0         25         10         15          0 p1
+TrigReport          0         25         10         15          0 p1
 
-TrigReport -------End-Path   Summary ------------
-TrigReport  Trig Bit#        Run    Success      Error Name
+TrigReport ---------- End-path summary ---------
+TrigReport        Run    Success      Error
 
-TrigReport ---------- Modules in Path: p1 ------------
+TrigReport ---------- Modules in path: p1 ------------
 TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
-TrigReport     1    0         25         10         15          0 prescale
+TrigReport          0         25         10         15          0 prescale
 
-TrigReport ---------- Module Summary ------------
+TrigReport ---------- Module summary ------------
 TrigReport    Visited        Run     Passed     Failed      Error Name
 TrigReport         25         25         10         15          0 prescale
 
-TimeReport ---------- Time  Summary ---[sec]----
+TimeReport ---------- Time summary [sec] -------
 TimeReport CPU = <duration> Real = <duration>
+
+MemReport  ---------- Memory summary [base-10 MB] ------
+MemReport  VmPeak = <duration> VmHWM = <duration>
 
 Art has completed and will exit with status 0.

@@ -9,6 +9,8 @@
 #include "fhiclcpp/types/detail/TableMemberRegistry.h"
 #include "fhiclcpp/types/detail/strip_containing_names.h"
 
+#include <optional>
+
 namespace fhicl {
 
   //========================================================
@@ -24,15 +26,20 @@ namespace fhicl {
     bool
     hasValue() const
     {
-      return pset_.has_key(detail::strip_first_containing_name(key()));
+      return pset_ &&
+             pset_->has_key(detail::strip_first_containing_name(key()));
     }
 
     template <typename T>
     bool
     get_if_present(T& t) const
     {
+      if (not pset_) {
+        return false;
+      }
+
       auto const trimmed_key = detail::strip_first_containing_name(key());
-      return pset_.get_if_present<T>(trimmed_key, t);
+      return pset_->get_if_present<T>(trimmed_key, t);
     }
 
   private:
@@ -40,10 +47,10 @@ namespace fhicl {
     do_set_value(fhicl::ParameterSet const& pset,
                  bool const /*trimParents*/) override
     {
-      pset_ = pset;
+      pset_ = std::make_optional(pset);
     };
 
-    fhicl::ParameterSet pset_{};
+    std::optional<ParameterSet> pset_{std::nullopt};
   };
 }
 

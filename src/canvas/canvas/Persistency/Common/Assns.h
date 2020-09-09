@@ -493,7 +493,7 @@ art::Assns<L, R, D>::Assns(partner_t const& other)
 {}
 
 template <typename L, typename R, typename D>
-inline typename art::Assns<L, R, void>::size_type
+inline typename art::Assns<L, R, D>::size_type
 art::Assns<L, R, D>::size() const
 {
   return base::size();

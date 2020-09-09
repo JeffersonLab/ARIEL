@@ -36,7 +36,7 @@ else()
 endif()
 
 art_make_library(LIBRARY_NAME ${PROJECT_NAME}
-  SOURCE DataObj.cc Exception.cc exception.cc
+  SOURCE DataObj.cc art_Exception.cc cet_exception.cc
   NO_INSTALL)
 art_dictionary(${PROJECT_NAME}
   NO_DEFAULT_LIBRARIES NO_INSTALL

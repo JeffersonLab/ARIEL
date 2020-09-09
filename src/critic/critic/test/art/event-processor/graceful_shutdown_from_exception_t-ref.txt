@@ -101,15 +101,18 @@ Full event	<duration> <duration> <duration> <duration> <duration> 6
 source:EmptyEvent(read)	<duration> <duration> <duration> <duration> <duration> 6     
 end_path:a1:ThrowingAnalyzer	<duration> <duration> <duration> <duration> <duration> 5     
 
-TrigReport ---------- Event  Summary ------------
+TrigReport ---------- Event summary -------------
 TrigReport Events total = 6 passed = 6 failed = 0
 
-TrigReport ------ Modules in End-Path: end_path ------------
-TrigReport  Trig Bit#        Run    Success      Error Name
-TrigReport     0    0          6          5          1 a1
+TrigReport ---------- Modules in End-path ----------
+TrigReport        Run    Success      Error Name
+TrigReport          6          5          1 a1
 
-TimeReport ---------- Time  Summary ---[sec]----
+TimeReport ---------- Time summary [sec] -------
 TimeReport CPU = <duration> Real = <duration>
+
+MemReport  ---------- Memory summary [base-10 MB] ------
+MemReport  VmPeak = <duration> VmHWM = <duration>
 
 %MSG-s ArtException:  <date-time> ModuleEndJob
 ---- EventProcessorFailure BEGIN

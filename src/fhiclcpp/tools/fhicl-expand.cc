@@ -105,8 +105,7 @@ namespace {
       ("output,o", bpo::value<string>(&opts.output_filename), "output file")
       ("error,e", bpo::value<string>(&opts.error_filename), "error file")
       ("lookup-policy,l",
-         bpo::value<string>()->default_value("permissive"),
-         "lookup policy code (see '--policy-types')")
+         bpo::value<string>()->default_value("permissive"), "see --supported-policies")
       ("path,p",
          bpo::value<string>(&opts.lookup_path)->default_value(fhicl_env_var),
         "path or environment variable to be used by lookup-policy")

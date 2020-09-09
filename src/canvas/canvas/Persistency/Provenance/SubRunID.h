@@ -239,22 +239,12 @@ inline art::SubRunID::SubRunID(RunID rID, SubRunNumber_t srID)
 inline art::SubRunNumber_t
 art::SubRunID::inRangeOrInvalid(SubRunNumber_t sr)
 {
-  if (sr == IDNumber<Level::SubRun>::invalid() ||
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-compare"
-#endif
-      (sr >= IDNumber<Level::SubRun>::first() &&
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-       sr <= IDNumber<Level::SubRun>::max_natural())) {
-    return sr;
-  } else {
+  if (sr == IDNumber<Level::SubRun>::flush_value()) {
     throw Exception(errors::InvalidNumber)
       << "Attempt to construct SubRunID with an invalid number.\n"
       << "Maybe you want SubRunID::flushSubRun()?\n";
   }
+  return sr;
 }
 
 inline void
