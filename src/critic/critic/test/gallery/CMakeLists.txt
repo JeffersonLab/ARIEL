@@ -1,11 +1,6 @@
 # Set the test environment so that pyROOT and interactive ROOT can find all necessary headers
 #
-if (DEFINED ENV{MRB_BUILDDIR})
-  # This first clause should be redundant when cetbuildtools goes to v6.
-  cet_test_env(ROOT_INCLUDE_PATH=$ENV{MRB_BUILDDIR}/canvas:$ENV{ROOT_INCLUDE_PATH})
-else()
-  cet_test_env(ROOT_INCLUDE_PATH=${PROJECT_SOURCE_DIR}:$ENV{ROOT_INCLUDE_PATH})
-endif()
+cet_test_env(ROOT_INCLUDE_PATH=${PROJECT_SOURCE_DIR}:${CMAKE_INSTALL_PREFIX}/${${product}_inc_dir}:/usr/local/include)
 
 set(gallery_tests_libraries
   critic_test_CriticTestObjects
@@ -223,7 +218,7 @@ endif()
 # Use gallery in python to read output from gallery_makeInput5 and
 # gallery_makeInput7.
 cet_test(gallery_t.py HANDBUILT
-  TEST_EXEC python
+  TEST_EXEC python3
   TEST_ARGS gallery_t.py
   DATAFILES gallery_t.py
   REQUIRED_FILES ../gallery_makeInput5.d/test_gallery5.root
