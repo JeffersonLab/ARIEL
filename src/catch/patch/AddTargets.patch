@@ -1,5 +1,5 @@
 diff --git a/contrib/ParseAndAddCatchTests.cmake b/contrib/ParseAndAddCatchTests.cmake
-index 3c551f07..26afc305 100644
+index 5e89cb76..b301f0f6 100644
 --- a/contrib/ParseAndAddCatchTests.cmake
 +++ b/contrib/ParseAndAddCatchTests.cmake
 @@ -24,7 +24,9 @@
@@ -30,17 +30,17 @@ index 3c551f07..26afc305 100644
  
          set(HiddenTagFound OFF)
          foreach(label ${Labels})
-@@ -191,6 +194,9 @@ function(ParseAndAddCatchTests_ParseFile SourceFile TestTarget)
- 
+@@ -196,6 +199,9 @@ function(ParseAndAddCatchTests_ParseFile SourceFile TestTarget)
+             endif()
              # Add the test and set its properties
-             add_test(NAME "\"${CTestName}\"" COMMAND ${OptionalCatchTestLauncher} $<TARGET_FILE:${TestTarget}> ${Name} ${AdditionalCatchParameters})
+             add_test(NAME "${CTestName}" COMMAND ${OptionalCatchTestLauncher} $<TARGET_FILE:${TestTarget}> ${Name} ${AdditionalCatchParameters})
 +            if(PF_TargetsVar)
 +              list(APPEND ${PF_TargetsVar} "${CTestName}")
 +            endif()
              # Old CMake versions do not document VERSION_GREATER_EQUAL, so we use VERSION_GREATER with 3.8 instead
              if(PARSE_CATCH_TESTS_NO_HIDDEN_TESTS AND ${HiddenTagFound} AND ${CMAKE_VERSION} VERSION_GREATER "3.8")
                  ParseAndAddCatchTests_PrintDebugMessage("Setting DISABLED test property")
-@@ -211,15 +217,23 @@ function(ParseAndAddCatchTests_ParseFile SourceFile TestTarget)
+@@ -216,15 +222,23 @@ function(ParseAndAddCatchTests_ParseFile SourceFile TestTarget)
  
  
      endforeach()
