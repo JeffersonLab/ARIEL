@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent canvas	v3_10_00
+parent canvas	v3_10_02
 defaultqual	e19
 #
 fcldir -
@@ -9,7 +9,7 @@ perllib  product_dir
 product         version		<format=2>
 clhep           v2_4_1_3a
 range           v3_0_10_0b
-messagefacility	v2_07_00
+messagefacility	v2_07_02
 cppunit         v1_15_1a        -       only_for_build
 cetbuildtools   v7_17_01        -       only_for_build
 end_product_list

@@ -66,8 +66,7 @@ namespace {
       ("names-in", "Print the top-level names of the supplied key, which "
        "must correspond to a FHiCL table.")
       ("lookup-policy",
-         bpo::value<std::string>()->default_value("permissive"),
-         "lookup policy code (see --policy-types)")
+         bpo::value<std::string>()->default_value("permissive"), "see --supported-policies")
       ("lookup-path",
          bpo::value<std::string>(&opts.lookup_path)->default_value(fhicl_env_var),
          "path or environment variable to be used by lookup-policy")

@@ -4,7 +4,7 @@
 //
 // ======================================================================
 
-#include "exception.h"
+#include "cet_exception.h"
 #include <cctype>
 
 using r10870::exception;

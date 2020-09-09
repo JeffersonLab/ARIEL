@@ -30,8 +30,6 @@ cet_make_library(LIBRARY_NAME ${LIB_NAME}
   sqlite/detail/normalize_statement.cc
   sqlite/exec.cc
   sqlite/helpers.cc
-  sqlite/query_result.cc
-  sqlite/select.cc
   sqlite/statistics.cc
   PluginFactory.cc
   base_converter.cc

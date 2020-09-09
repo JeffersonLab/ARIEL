@@ -51,14 +51,17 @@ Begin processing the 1st record. run: 1 subRun: 0 event: 1 at <date-time>
 ++ endJob finished: pa
 ++ Job ended
 
-TrigReport ---------- Event  Summary ------------
+TrigReport ---------- Event summary -------------
 TrigReport Events total = 1 passed = 1 failed = 0
 
-TrigReport ------ Modules in End-Path: end_path ------------
-TrigReport  Trig Bit#        Run    Success      Error Name
-TrigReport     0    0          1          1          0 pa
+TrigReport ---------- Modules in End-path ----------
+TrigReport        Run    Success      Error Name
+TrigReport          1          1          0 pa
 
-TimeReport ---------- Time  Summary ---[sec]----
+TimeReport ---------- Time summary [sec] -------
 TimeReport CPU = <duration> Real = <duration>
+
+MemReport  ---------- Memory summary [base-10 MB] ------
+MemReport  VmPeak = <duration> VmHWM = <duration>
 
 Art has completed and will exit with status 0.

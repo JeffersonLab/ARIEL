@@ -96,7 +96,7 @@ class cet::filepath_first_absolute_or_lookup_with_dot
 public:
   // The provided string must be the *value* of the environment
   // variable, *not* its name.
-  filepath_first_absolute_or_lookup_with_dot(std::string const& paths);
+  filepath_first_absolute_or_lookup_with_dot(std::string paths);
   std::string operator()(std::string const& filename) override;
   void reset();
 

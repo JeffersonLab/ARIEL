@@ -115,34 +115,34 @@ p1:filt:TestTimeTrackerFilter	<duration> <duration> <duration> <duration> <durat
 end_path:mod1:TestTimeTrackerAnalyzer	<duration> <duration> <duration> <duration> <duration> 100    
 end_path:mod2:TestTimeTrackerAnalyzer	<duration> <duration> <duration> <duration> <duration> 100    
 
-TrigReport ---------- Event  Summary ------------
+TrigReport ---------- Event summary -------------
 TrigReport Events total = 100 passed = 100 failed = 0
 
-TrigReport ---------- Path   Summary ------------
+TrigReport ---------- Trigger-path summary ------------
 TrigReport  Trig Bit#        Run     Passed     Failed      Error Name
-TrigReport     1    0        100         30         70          0 p1
-TrigReport     1    1        100        100          0          0 p2
+TrigReport          0        100         30         70          0 p1
+TrigReport          1        100        100          0          0 p2
 
-TrigReport -------End-Path   Summary ------------
-TrigReport  Trig Bit#        Run    Success      Error Name
-TrigReport     0    0        100        100          0 end_path
+TrigReport ---------- End-path summary ---------
+TrigReport        Run    Success      Error
+TrigReport        100        100          0
 
-TrigReport ---------- Modules in Path: p1 ------------
+TrigReport ---------- Modules in path: p1 ------------
 TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
-TrigReport     1    0        100        100          0          0 prod1
-TrigReport     1    0        100         30         70          0 filt
+TrigReport          0        100        100          0          0 prod1
+TrigReport          0        100         30         70          0 filt
 
-TrigReport ---------- Modules in Path: p2 ------------
+TrigReport ---------- Modules in path: p2 ------------
 TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
-TrigReport     1    1        100        100          0          0 prod1
-TrigReport     1    1        100        100          0          0 prod2
+TrigReport          1        100        100          0          0 prod1
+TrigReport          1        100        100          0          0 prod2
 
-TrigReport ------ Modules in End-Path: end_path ------------
-TrigReport  Trig Bit#        Run    Success      Error Name
-TrigReport     0    0         30         30          0 mod1
-TrigReport     0    0        100        100          0 mod2
+TrigReport ---------- Modules in End-path ----------
+TrigReport        Run    Success      Error Name
+TrigReport         30         30          0 mod1
+TrigReport        100        100          0 mod2
 
-TrigReport ---------- Module Summary ------------
+TrigReport ---------- Module summary ------------
 TrigReport    Visited        Run     Passed     Failed      Error Name
 TrigReport        100        100         30         70          0 filt
 TrigReport        100         30         30          0          0 mod1
@@ -150,7 +150,10 @@ TrigReport        100        100        100          0          0 mod2
 TrigReport        200        100        100          0          0 prod1
 TrigReport        100        100        100          0          0 prod2
 
-TimeReport ---------- Time  Summary ---[sec]----
+TimeReport ---------- Time summary [sec] -------
 TimeReport CPU = <duration> Real = <duration>
+
+MemReport  ---------- Memory summary [base-10 MB] ------
+MemReport  VmPeak = <duration> VmHWM = <duration>
 
 Art has completed and will exit with status 0.

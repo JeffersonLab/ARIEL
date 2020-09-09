@@ -1,4 +1,4 @@
-parent fhiclpy v4_00_01
+parent fhiclpy v4_00_02
 defaultqual e19
 #
 fcldir -
@@ -7,21 +7,20 @@ define_pythonpath
 #
 # define product/version pairs
 product         version		<format=2>
-cetlib          v3_11_00
-fhiclcpp        v4_12_01
+fhiclcpp        v4_12_02
 pybind11        v2_5_0a
 python          v3_8_3b
 cetbuildtools   v7_17_01        -       only_for_build
 end_product_list
 
 # Matrix of qualifiers versus dependent products
-qualifier  cetlib     fhiclcpp   pybind11 python notes
-e20:debug  e20:debug  e20:debug  -nq-     -nq-
-e20:prof   e20:prof   e20:prof   -nq-     -nq-
-e19:debug  e19:debug  e19:debug  -nq-     -nq-
-e19:prof   e19:prof   e19:prof   -nq-     -nq-
-c7:debug   c7:debug   c7:debug   -nq-     -nq-
-c7:prof    c7:prof    c7:prof    -nq-     -nq-
+qualifier  fhiclcpp   pybind11 python notes
+e20:debug  e20:debug  -nq-     -nq-
+e20:prof   e20:prof   -nq-     -nq-
+e19:debug  e19:debug  -nq-     -nq-
+e19:prof   e19:prof   -nq-     -nq-
+c7:debug   c7:debug   -nq-     -nq-
+c7:prof    c7:prof    -nq-     -nq-
 end_qualifier_list
 
 # Local Variables:

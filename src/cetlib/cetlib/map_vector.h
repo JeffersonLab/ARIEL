@@ -34,7 +34,7 @@ namespace cet {
 class cet::map_vector_key {
 public:
   // c'tors:
-  constexpr map_vector_key() noexcept : key_(-1l) {}
+  constexpr map_vector_key() noexcept : key_{-1ul} {}
   explicit map_vector_key(int key);
   constexpr explicit map_vector_key(unsigned const key) noexcept : key_{key} {}
   constexpr explicit map_vector_key(unsigned long key) noexcept;

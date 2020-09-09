@@ -110,8 +110,7 @@ namespace {
          "assignment (mutually exclusive with 'annotate' option)")
       ("quiet,q", "suppress output to STDOUT")
       ("lookup-policy,l",
-         bpo::value<string>()->default_value("permissive"),
-         "lookup policy code (see '--policy-types')")
+         bpo::value<string>()->default_value("permissive"), "see --supported-policies")
       ("path,p",
          bpo::value<std::string>(&opts.lookup_path)->default_value(fhicl_env_var),
          "path or environment variable to be used by lookup-policy")

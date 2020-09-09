@@ -96,6 +96,10 @@ cet_test(delegatedParameter_t USE_BOOST_UNIT
   DATAFILES
   delegatedParameter_t.fcl)
 
+cet_test(optionalDelegatedParameter_t USE_BOOST_UNIT
+  DATAFILES
+  optionalDelegatedParameter_t.fcl)
+
 cet_test(return_values_from_fcl_t USE_BOOST_UNIT
   DATAFILES
   return_values_from_fcl_t.fcl)

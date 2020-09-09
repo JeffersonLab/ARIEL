@@ -7,7 +7,7 @@
 //
 // ======================================================================
 
-#include "exception.h"
+#include "cet_exception.h"
 #include <string>
 
 namespace r10870 {
