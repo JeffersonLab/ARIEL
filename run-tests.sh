@@ -89,7 +89,6 @@ for PKG in $PACKAGES; do
         SRCDIR="$(grep "$PKG"_SOURCE_DIR CMakeCache.txt | awk -F= '{print $2}')"
     fi
     export ROOT_INCLUDE_PATH="$SRCDIR${include_path_base:+${SRCDIR:+:}$include_path_base}"
-    echo extra_args = $extra_args
     if [ -z "$debug" ]; then
         ctest -j$ncpu
     else
