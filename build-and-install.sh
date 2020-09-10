@@ -57,6 +57,9 @@ if [[ -z "$BUILDPROG" ]]; then
     BUILDPROG="make -j$ncpu"
 fi
 
+module_path_base="$INSTALLDIR/lib"
+include_path_base="$INSTALLDIR/include:/usr/local/include"
+
 # Build and install the packages.
 # The current CMake scripts only work with installed packages.
 for PKG in $PACKAGES; do
@@ -77,6 +80,10 @@ for PKG in $PACKAGES; do
         echo Cannot find source for $PKG. Exiting.
         exit 2
     fi
+
+    export CET_PLUGIN_PATH="$PWD/lib:$module_path_base"
+    export ROOT_INCLUDE_PATH="$SRCDIR${include_path_base:+:$include_path_base}"
+
     cmake $GENERATOR -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
     $BUILDPROG install
     if [ $? -ne 0 ]; then
