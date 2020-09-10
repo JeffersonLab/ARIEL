@@ -345,11 +345,18 @@ cet_test(BlockingPrescaler_t HANDBUILT
 # processing level.  We set errorOnSIGINT to false so that we need
 # only one STDOUT reference file (i.e. return code is 0).
 foreach(SIGNAL sigint sigquit sigterm sigusr2)
+  # The SIGUSR2 return code differs between Linux and Darwin, so we
+  # must have separate references.
+  if (${SIGNAL} MATCHES "sigusr2")
+    set(SIGNAL_PLATFORM "sigusr2_${CMAKE_SYSTEM_NAME}")
+  else ()
+    set(SIGNAL_PLATFORM ${SIGNAL})
+  endif()
   cet_test(signal_handling_${SIGNAL}_t HANDBUILT
     TEST_EXEC art
     TEST_ARGS -c signal_${SIGNAL}.fcl --errorOnSIGINT=false --process-name="Test${SIGNAL}"
     REF "${CMAKE_CURRENT_SOURCE_DIR}/signal_handling_t-ref.txt"
-    "${CMAKE_CURRENT_SOURCE_DIR}/signal_handling_${SIGNAL}_rc-ref.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/signal_handling_${SIGNAL_PLATFORM}_rc-ref.txt"
     DATAFILES
     fcl/signal_base.fcl
     fcl/signal_${SIGNAL}.fcl
