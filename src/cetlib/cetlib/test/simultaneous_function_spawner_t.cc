@@ -2,6 +2,7 @@
 #include "cetlib/quiet_unit_test.hpp"
 
 #include "cetlib/SimultaneousFunctionSpawner.h"
+#include <iostream>
 
 BOOST_AUTO_TEST_SUITE(simultaneous_function_spawner)
 
