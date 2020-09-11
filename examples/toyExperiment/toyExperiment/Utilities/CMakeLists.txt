@@ -7,7 +7,7 @@ art_make(
   canvas
   fhiclcpp
   cetlib cetlib_except
-  ${Boost_SYSTEM_LIBRARY})
+  Boost::system)
 
 install_headers()
 install_source()

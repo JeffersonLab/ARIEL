@@ -19,7 +19,7 @@ find_ups_product(canvas_root_io)
 find_ups_product(messagefacility)
 find_ups_product(clhep)
 find_ups_root()
-find_ups_boost()
+find_ups_boost(BOOST_TARGETS)
 
 # define CLHEP
 cet_find_library(CLHEP  NAMES CLHEP   PATHS ENV CLHEP_LIB_DIR NO_DEFAULT_PATH)

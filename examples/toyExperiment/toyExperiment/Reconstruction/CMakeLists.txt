@@ -9,7 +9,7 @@ art_make(
     art_Utilities
     canvas
     cetlib cetlib_except
-    ${Boost_SYSTEM_LIBRARY}
+    Boost::system
   MODULE_LIBRARIES
     toyExperiment_Conditions_Conditions_service
     toyExperiment_Geometry_Geometry_service
