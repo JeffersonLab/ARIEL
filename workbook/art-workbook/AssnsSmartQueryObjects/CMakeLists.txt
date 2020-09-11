@@ -1,9 +1,9 @@
 art_make(
   MODULE_LIBRARIES
-    art_Persistency_Provenance
-    toyExperiment_RecoDataProducts
-    toyExperiment_MCDataProducts
-    cetlib_except
+    ${ART_PERSISTENCY_PROVENANCE}
+    ${TOYEXPERIMENT_RECODATAPRODUCTS}
+    ${TOYEXPERIMENT_MCDATAPRODUCTS}
+    ${CETLIB_EXCEPT}
   )
 
 add_subdirectory(model)

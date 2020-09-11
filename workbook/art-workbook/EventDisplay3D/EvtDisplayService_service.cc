@@ -9,7 +9,7 @@
 #include "NavState.h"
 
 // ART includes
-#include "art/Framework/IO/Root/RootInput.h"
+#include "art_root_io/RootInput.h"
 
 // ROOT includes
 #include "TApplication.h"

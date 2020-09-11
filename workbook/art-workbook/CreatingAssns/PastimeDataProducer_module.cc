@@ -47,7 +47,8 @@ private:
 };
 
 
-awb::PastimeDataProducer::PastimeDataProducer(fhicl::ParameterSet const &)
+awb::PastimeDataProducer::PastimeDataProducer(fhicl::ParameterSet const & p)
+  : art::EDProducer{p}
 {
   produces<People>();
   produces<Pastimes>();

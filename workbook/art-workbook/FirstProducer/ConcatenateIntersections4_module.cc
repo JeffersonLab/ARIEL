@@ -26,7 +26,9 @@ namespace tex {
 
 }
 
-tex::ConcatenateIntersections4::ConcatenateIntersections4(fhicl::ParameterSet const& ){
+tex::ConcatenateIntersections4::ConcatenateIntersections4(fhicl::ParameterSet const& pset)
+  : art::EDProducer{pset}
+{
   produces<IntersectionCollection>();
 }
 

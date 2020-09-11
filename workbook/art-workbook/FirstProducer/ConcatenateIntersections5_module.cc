@@ -34,7 +34,9 @@ namespace tex {
 }
 
 tex::ConcatenateIntersections5::ConcatenateIntersections5(fhicl::ParameterSet const& pset ):
-  tag_(pset.get<std::string>("tag")){
+  art::EDProducer{pset},
+  tag_(pset.get<std::string>("tag"))
+{
   produces<MCRunSummary,art::InRun>();
 }
 

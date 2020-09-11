@@ -32,6 +32,7 @@ namespace tex {
 }
 
 tex::MinGens::MinGens(fhicl::ParameterSet const& pset ):
+  art::EDFilter{pset},
   gensTag_(pset.get<std::string>("genParticlesInputTag")),
   minGens_(pset.get<int>("minimumGenParticles")){
 }

@@ -8,33 +8,33 @@ SET(CET_DICT_FUNCTIONS TRUE)
 
 art_make(
    LIB_LIBRARIES
-    ${ROOT_CORE}
+    ROOT::Core
    SERVICE_LIBRARIES
     art-workbook_EventDisplay3D
-    art_framework_core
-    art_framework_io_root_rootinput_source
-    art_framework_io_root
+    art_root_io_RootInput_source
+    art_root_io
+    art_Framework_Core
     art_Framework_Principal
-    mf_messagelogger
-    toyexperiment_analyzers
+    MF_MessageLogger
+    toyExperiment_Analyzers
     cetlib_except
-    ${ROOT_EVE}
+    ROOT::Eve
    MODULE_LIBRARIES
     art-workbook_EventDisplay3D_EvtDisplayService_service
     art-workbook_EventDisplay3D
     art_Persistency_Provenance
-    toyexperiment_conditions_conditions_service
-    toyexperiment_geometry_geometry_service
-    toyexperiment_geometry
-    toyexperiment_analyzers
-    toyexperiment_pdt_pdt_service
-    toyexperiment_pdt
-    toyexperiment_mcdataproducts
-    toyexperiment_recodataproducts
-    toyexperiment_utilities
-    ${ROOT_GUI}
-    ${ROOT_GEOM}
-    ${ROOT_EVE}
-    ${ROOT_EG}
-    ${ROOT_RGL}
+    toyExperiment_Conditions_Conditions_service
+    toyExperiment_Geometry_Geometry_service
+    toyExperiment_Geometry
+    toyExperiment_Analyzers
+    toyExperiment_PDT_PDT_service
+    toyExperiment_PDT
+    toyExperiment_MCDataProducts
+    toyExperiment_RecoDataProducts
+    toyExperiment_Utilities
+    ROOT::Gui
+    ROOT::Geom
+    ROOT::Eve
+    ROOT::EG
+    ROOT::RGL
   )

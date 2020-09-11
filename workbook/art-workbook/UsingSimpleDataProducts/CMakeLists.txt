@@ -1,7 +1,7 @@
 art_make(
   MODULE_LIBRARIES
     art-workbook_SimpleDataProducts
-    art_Persistency_Provenance
-    cetlib_except
+    ${ART_PERSISTENCY_PROVENANCE}
+    ${CETLIB_EXCEPT}
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}
   )

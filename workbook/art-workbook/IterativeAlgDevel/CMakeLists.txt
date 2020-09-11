@@ -7,26 +7,26 @@ add_subdirectory(detail)
 art_make(
   LIB_LIBRARIES
     art-workbook_ExUtilities
-    toyexperiment_recodataproducts
-    toyexperiment_pdt
-    toyexperiment_utilities
-    canvas
-    cetlib
-    cetlib_except
+    ${TOYEXPERIMENT_RECODATAPRODUCTS}
+    ${TOYEXPERIMENT_PDT}
+    ${TOYEXPERIMENT_UTILITIES}
+    ${CANVAS}
+    ${CETLIB}
+    ${CETLIB_EXCEPT}
     ${CLHEP}
 
   MODULE_LIBRARIES
     art-workbook_ExDataProducts
     art-workbook_IterativeAlgDevel
     art-workbook_ExUtilities
-    art_Persistency_Provenance
-    toyexperiment_recodataproducts
-    toyexperiment_reconstruction
-    toyexperiment_conditions_conditions_service
-    toyexperiment_conditions
-    toyexperiment_pdt_pdt_service
-    toyexperiment_pdt
-    cetlib_except
+    ${ART_PERSISTENCY_PROVENANCE}
+    ${TOYEXPERIMENT_RECODATAPRODUCTS}
+    ${TOYEXPERIMENT_RECONSTRUCTION}
+    ${TOYEXPERIMENT_CONDITIONS_CONDITIONS_SERVICE}
+    ${TOYEXPERIMENT_CONDITIONS}
+    ${TOYEXPERIMENT_PDT_PDT_SERVICE}
+    ${TOYEXPERIMENT_PDT}
+    ${CETLIB_EXCEPT}
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}
 
   SUBDIRS

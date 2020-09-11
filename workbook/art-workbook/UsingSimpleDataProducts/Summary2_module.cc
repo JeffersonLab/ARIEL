@@ -34,6 +34,7 @@ namespace tex {
 }
 
 tex::Summary2::Summary2(fhicl::ParameterSet const& pset ):
+  art::EDProducer{pset},
   fitsTag_(pset.get<std::string>("fitsTag")){
 
   produces<EventSummary>();

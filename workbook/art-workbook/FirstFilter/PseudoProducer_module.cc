@@ -29,6 +29,7 @@ namespace tex {
 }
 
 tex::PseudoProducer::PseudoProducer(fhicl::ParameterSet const& pset ):
+  art::EDProducer{pset},
   label_(pset.get<std::string>("module_label")){
 }
 

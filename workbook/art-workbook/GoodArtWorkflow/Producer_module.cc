@@ -63,7 +63,7 @@ namespace {
   class Producer : public art::EDProducer {
   public:
 
-    Producer(fhicl::ParameterSet const&){}
+    Producer(fhicl::ParameterSet const& p) : art::EDProducer{p} {}
 
     void beginJob() override;
     void produce(art::Event &) override;

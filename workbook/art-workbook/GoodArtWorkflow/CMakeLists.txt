@@ -9,8 +9,8 @@ art_make_library( LIBRARY_NAME art-workbook_GoodWorkflow
 
 art_make_exec( fhicl-dump 
                LIBRARIES
-               CETLIB
-               FHICLCPP
-               ${Boost_PROGRAM_OPTIONS_LIBRARY}
+               ${CETLIB}
+               ${FHICLCPP}
+               Boost::program_options
 )
 simple_plugin(Producer "module" art-workbook_GoodWorkflow)

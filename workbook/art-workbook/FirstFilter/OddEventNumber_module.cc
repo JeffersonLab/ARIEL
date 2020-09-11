@@ -22,7 +22,10 @@ namespace tex {
 
 }
 
-tex::OddEventNumber::OddEventNumber(fhicl::ParameterSet const& ){
+tex::OddEventNumber::OddEventNumber(fhicl::ParameterSet const& pset)
+  : art::EDFilter{pset}
+{
+
 }
 
 bool tex::OddEventNumber::filter(art::Event& event ){

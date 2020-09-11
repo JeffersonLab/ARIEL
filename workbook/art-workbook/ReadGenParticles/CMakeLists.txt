@@ -1,5 +1,5 @@
 art_make(MODULE_LIBRARIES
-  toyexperiment_mcdataproducts
-  art_Persistency_Provenance
-  cetlib_except
+  ${TOYEXPERIMENT_MCDATAPRODUCTS}
+  ${ART_PERSISTENCY_PROVENANCE}
+  ${CETLIB_EXCEPT}
   )

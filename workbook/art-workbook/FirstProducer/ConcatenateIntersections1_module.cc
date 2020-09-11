@@ -34,6 +34,7 @@ namespace tex {
 }
 
 tex::ConcatenateIntersections1::ConcatenateIntersections1(fhicl::ParameterSet const& pset ):
+  art::EDProducer{pset},
   innerTag_(pset.get<std::string>("innerTag")),
   outerTag_(pset.get<std::string>("outerTag")){
 

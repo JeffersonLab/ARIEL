@@ -1,7 +1,7 @@
 art_make(
   LIB_LIBRARIES
-    toyexperiment_recodataproducts
-    canvas
+    ${TOYEXPERIMENT_RECODATAPRODUCTS}
+    ${CANVAS}
     ${CLHEP}
   DICT_LIBRARIES
     art-workbook_ExDataProducts

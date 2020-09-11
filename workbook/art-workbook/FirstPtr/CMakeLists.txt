@@ -6,13 +6,13 @@ file( GLOB ROOT_MACROS_DO_NOT_BUILD RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.C )
 art_make(
   EXCLUDE  ${ROOT_MACROS_DO_NOT_BUILD}
   LIB_LIBRARIES
-    canvas
-    cetlib_except
+    ${CANVAS}
+    ${CETLIB_EXCEPT}
   MODULE_LIBRARIES
     art-workbook_FirstPtr
-    art_Persistency_Provenance
-    toyexperiment_mcdataproducts
-    toyexperiment_pdt_pdt_service
+    ${ART_PERSISTENCY_PROVENANCE}
+    ${TOYEXPERIMENT_MCDATAPRODUCTS}
+    ${TOYEXPERIMENT_PDT_PDT_SERVICE}
     ${WORKBOOK_BASIC_ROOT_LIBRARIES}
     ${CLHEP}
   )

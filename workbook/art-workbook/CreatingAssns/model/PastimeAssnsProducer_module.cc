@@ -51,6 +51,7 @@ private:
 
 awb::PastimeAssnsProducer::PastimeAssnsProducer(fhicl::ParameterSet const & p)
  :
+  art::EDProducer{p},
   pastimeLabel_(p.get<std::string>("pastimeLabel",
                                    p.get<std::string>("peopleLabel",
                                                       p.get<std::string>("dataLabel")))),

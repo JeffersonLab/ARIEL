@@ -1,9 +1,10 @@
 # Link list fragment for a module making histograms
 set( WORKBOOK_BASIC_ROOT_LIBRARIES
-   art_framework_services_optional_tfileservice_service
-   art_framework_services_registry
-   art_framework_services_optional
-   ${ROOT_HIST}
+   ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+   ${ART_FRAMEWORK_SERVICES_REGISTRY}
+   ${ART_ROOT_IO_TFILE_SUPPORT}
+   ROOT::Core
+   ROOT::Hist
 )
 
 add_subdirectory(AssnsSmartQueryObjects)
