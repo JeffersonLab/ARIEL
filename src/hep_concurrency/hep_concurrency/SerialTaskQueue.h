@@ -5,7 +5,9 @@
 #include "hep_concurrency/RecursiveMutex.h"
 #include "hep_concurrency/tsan.h"
 #pragma GCC diagnostic push
+#if defined(__clang__)
 #pragma GCC diagnostic ignored "-W#pragma-messages"
+#endif
 #include "tbb/task.h"
 #pragma GCC diagnostic pop
 
