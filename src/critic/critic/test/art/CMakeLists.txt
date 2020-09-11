@@ -401,13 +401,15 @@ simple_plugin(TestEmptyEventTimestamp "plugin" NO_INSTALL
   art_Framework_Core
   art_Framework_Principal
   fhiclcpp
-  Boost::filesystem)
+  Boost::filesystem
+  Boost::system)
 
 simple_plugin(TestEmptyEventTimestampNoRSRTS "plugin" NO_INSTALL
   art_Framework_Core
   art_Framework_Principal
   fhiclcpp
-  Boost::filesystem)
+  Boost::filesystem
+  Boost::system)
 
 cet_test(TestEmptyEventTimestamp_t HANDBUILT
   TEST_EXEC art

@@ -60,6 +60,7 @@ art_make_library(
   canvas
   fhiclcpp
   Boost::date_time
+  Boost::system
   ROOT::Hist
   ROOT::Tree)
 

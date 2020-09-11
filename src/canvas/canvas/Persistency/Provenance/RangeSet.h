@@ -28,6 +28,7 @@ namespace art {
 
   public: // TYPES
     using const_iterator = std::vector<EventRange>::const_iterator;
+    using value_type = EventRange;
 
   public: // MEMBER FUNCTIONS -- Static API
     static constexpr unsigned
