@@ -24,9 +24,9 @@ This release is based on *art* 3.06.03.
 
 Minimum system requirements/dependencies (approximate, newer is better):
 
-* Linux or macOS. Examples: CentOS 7, macOS 10.12
-* C++11 compiler (gcc 4.8, clang 5, Xcode 9)
-* [CMake](https://cmake.org/) 3.10
+* Recent Linux or macOS. Examples: CentOS 8, macOS 10.14
+* C++17 compiler (gcc 8, clang 10, Xcode 11)
+* [CMake](https://cmake.org/) 3.12
 * [ROOT](https://root.cern/) 6.12.6
 * [Boost](https://www.boost.org/) 1.66
 * [SQLite](https://www.sqlite.org/) 3.20.1
@@ -40,7 +40,9 @@ Additional dependencies on macOS:
 
 * [GNU getopt](https://github.com/karelzak/util-linux/) (any version)
 
-These dependencies must be installed separately on the target system, *e.g.* through a local package manager or in a central installation. Generally, dependencies can have any version at or above the minimum specified;  an exact version match is not required. One can thus upgrade *art* without necessarily having to pull in upgrades of various large dependencies as well. (This is the expected behavior for Unix software distributions.) If *art* and dependency versions are to be locked, this should be handled with a suitable external package manager.
+ROOT must have been compiled with the exact same compiler that will be used for building JERM.
+
+Generally, dependencies can have any version at or above the minimum specified;  an exact version match is not required. One can thus upgrade JERM without necessarily having to pull in upgrades of various large dependencies as well. (This is the typical behavior for Unix software distributions.) If JERM versions and dependency versions are to be locked, this should be handled with a suitable external package manager.
 
 The following packages are included in this repository as submodules because they are often not available through package managers:
 
@@ -49,6 +51,39 @@ The following packages are included in this repository as submodules because the
 
 There is no need to install these two components separately.
 
+### Building
+
+* Install dependencies listed above
+* Clone this repository and `cd` to the repository root directory:
+
+    `git clone https://github.com/hansenjo/JERM.git`
+    `cd JERM`
+
+* Pick an installation location. Currently, the build process requires installing each subpackage immediately after building.
+* For convenience, set an environment variable that points to the top of the installation tree. For example
+
+   `export JERM=/usr/local/JERM`
+
+* Run the build script. The script expects the installation location as its first argument:
+
+   `./build-and-install.sh $JERM`
+
+   This will take a while. Expect 10-20 minutes on a modern 8-core machine.
+* Run the tests to ensure a correct build:
+
+   `./run-tests.sh`
+
+* Add the installation location to your environment. For example
+
+   `export PATH=$JERM/bin:$PATH`
+   `export LD_LIBRARY_PATH=$JERM/lib:$LD_LIBRARY_PATH`
+
+   As usual, use `DYLD_LIBRARY_PATH` instead of `LD_LIBRARY_PATH` on macOS.
+
+### Using the workbook
+
+See `workbook/README.md`
+ 
 ### Repository Organization
 
 The _base_ branch contains selected point releases of the unmodified Fermilab sources. _develop_ contains patches and additions to those sources. JERM releases correspond to tags on the _develop_ branch.
