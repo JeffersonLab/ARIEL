@@ -43,7 +43,7 @@ print "Checking for GLOBAL services\n";
 my $cpp_files_str = `find -L $top_level_dir \\( \\( -name .svn -o -name .git -o -name CVS \\) -prune \\) -o \\( -name '*.c' -o -name '*.cxx' -o -name '*.cc' -o -name '*.cpp' -o -name '*.C' -o -name '*.h' -o -name '*.hxx' -o -name '*.hh' -o -name '*.hpp' -o -name '*.[it]cc' -o -name '*.H*' \\) -exec grep -l GLOBAL '{}' \\;`;
 
 if ($cpp_files_str =~ /^\s*$/) {
-    return;
+    exit;
 }
 
 my @candidate_files = split /^/m, $cpp_files_str;
