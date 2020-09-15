@@ -27,7 +27,7 @@ while ( not ev.atEnd()) :
     iEvent = 1; # Events numbers go from 1 to 5 and repeat 1 to 5
   assert(iEvent == aux.id().event()), "Unexpected event number in EventAuxiliary"
 
-  eventIDInt = ev.getValidHandle(ROOT.arttest.IntProduct)(inputTagEventID);
+  eventIDInt = ev.getValidHandle[ROOT.arttest.IntProduct](inputTagEventID);
   assert(eventIDInt.value == aux.id().event());
 
   triggerResultsHandle = ROOT.gallery.Handle(ROOT.art.TriggerResults)();
@@ -46,17 +46,17 @@ while ( not ev.atEnd()) :
   # This will throw
   #test4 = triggerResultsHandle.parameterSetID().to_string();
 
-  triggerResults = ev.getValidHandle(ROOT.art.TriggerResults)(inputTagTriggerResults);
+  triggerResults = ev.getValidHandle[ROOT.art.TriggerResults](inputTagTriggerResults);
   print(triggerResults.parameterSetID().to_string())
 
   test3 = triggerResults.parameterSetID().to_string();
   assert(test1 == test3);
   assert(test2 == test3);
 
-  stringProduct62 = ev.getValidHandle(ROOT.arttest.StringProduct)(inputTags62);
+  stringProduct62 = ev.getValidHandle[ROOT.arttest.StringProduct](inputTags62);
   assert(stringProduct62.name_ == "s621");
 
-  ptrTestProduct = ev.getValidHandle(ROOT.critictest.LitePtrTestProduct)(inputTagPtrTest);
+  ptrTestProduct = ev.getValidHandle[ROOT.critictest.LitePtrTestProduct](inputTagPtrTest);
 
   eventInt = aux.id().event();
   value = ptrTestProduct.ptrInt1.get()[0]
@@ -175,7 +175,7 @@ while ( not ev.atEnd()) :
 
   findMaker = ROOT.gallery.FindMaker();
 
-  findOne = findMaker.makeFindOne(int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct)))(hVStringProduct, ev, inputTagAssnTest1);
+  findOne = findMaker.makeFindOne[int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct))](hVStringProduct, ev, inputTagAssnTest1);
   assert(findOne.at(0).isValid());
   if (ev.fileEntry() == 0) :
     assert(findOne.at(0).ref() == 121);
@@ -192,7 +192,7 @@ while ( not ev.atEnd()) :
   ev.getByLabel(inputTag111, hB);
   assert(hB.isValid());
 
-  findOneBA = findMaker.makeFindOne(ROOT.arttest.StringProduct, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(int)))(hB, ev, inputTagAssnTest1);
+  findOneBA = findMaker.makeFindOne[ROOT.arttest.StringProduct, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(int))](hB, ev, inputTagAssnTest1);
   assert(findOneBA.at(1).isValid());
   if (ev.fileEntry() == 0) :
     assert(findOneBA.at(1).ref() == ROOT.arttest.StringProduct(ROOT.std.string("s111")));
@@ -205,7 +205,7 @@ while ( not ev.atEnd()) :
     assert(findOneBA.data(1).ref().label == "D");
     assert(findOneBA.data(2).ref().label == "C");
 
-  findOneP = findMaker.makeFindOneP(int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct)))(hVStringProduct, ev, inputTagAssnTest1);
+  findOneP = findMaker.makeFindOneP[int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct))](hVStringProduct, ev, inputTagAssnTest1);
   assert(findOneP.at(0).isNonnull());
   assert(findOneP.at(0).isAvailable());
   if (ev.fileEntry() == 0) :
@@ -219,7 +219,7 @@ while ( not ev.atEnd()) :
     assert(findOneP.data(0).ref().label == "D");
     assert(findOneP.data(2).ref().label == "C");
 
-  findManyBA = findMaker.makeFindMany(ROOT.arttest.StringProduct, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(int)))(hB, ev, inputTagAssnTest1);
+  findManyBA = findMaker.makeFindMany[ROOT.arttest.StringProduct, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(int))](hB, ev, inputTagAssnTest1);
   assert(findManyBA.at(1).size() == 1);
   if (ev.fileEntry() == 0) :
     assert(findManyBA.at(1).at(0) == ROOT.arttest.StringProduct(ROOT.std.string("s111")));
@@ -232,7 +232,7 @@ while ( not ev.atEnd()) :
     assert(findManyBA.data(1).at(0).label == "D");
     assert(findManyBA.data(2).at(0).label == "C");
 
-  findManyP = findMaker.makeFindManyP(int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct)))(hVStringProduct, ev, inputTagAssnTest1);
+  findManyP = findMaker.makeFindManyP[int, ROOT.critictest.LiteAssnTestData, ROOT.gallery.Handle(ROOT.std.vector(ROOT.arttest.StringProduct))](hVStringProduct, ev, inputTagAssnTest1);
   assert(findManyP.at(0).size() == 1);
   if (ev.fileEntry() == 0) :
     assert(findManyP.at(0).at(0).get()[0] == 121);
