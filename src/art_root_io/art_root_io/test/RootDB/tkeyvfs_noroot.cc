@@ -13,6 +13,7 @@
 #pragma clang diagnostic ignored "-Wc++11-narrowing"
 #else
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wnarrowing"
 #endif
 
 extern "C" {
