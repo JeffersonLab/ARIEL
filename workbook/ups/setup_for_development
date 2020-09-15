@@ -56,6 +56,8 @@ test $osname = "Darwin" || setenv LD_LIBRARY_PATH "${CETPKG_BUILD}/lib:${LD_LIBR
 test $osname = "Darwin" || setenv LD_LIBRARY_PATH "`dropit -D -p "$LD_LIBRARY_PATH"`"
 tnotnull CET_PLUGIN_PATH && setenv CET_PLUGIN_PATH "${CETPKG_BUILD}/lib:${CET_PLUGIN_PATH}"
 tnotnull CET_PLUGIN_PATH || setenv CET_PLUGIN_PATH "${CETPKG_BUILD}/lib"
+tnotnull DYLD_LIBRARY_PATH && test $osname = "Darwin" && setenv CET_PLUGIN_PATH "${CET_PLUGIN_PATH}:${DYLD_LIBRARY_PATH}"
+tnotnull LD_LIRBARY_PATH && test $osname = "Darwin" || setenv CET_PLUGIN_PATH "${CET_PLUGIN_PATH}:${LD_LIBRARY_PATH}"
 setenv CET_PLUGIN_PATH "`dropit -D -p "${CET_PLUGIN_PATH}"`"
 # report library path
 test $osname = "Darwin" && echo $CETPKG_BUILD/lib has been added to DYLD_LIBRARY_PATH and CET_PLUGIN_PATH
