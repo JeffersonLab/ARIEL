@@ -273,7 +273,7 @@ namespace {
       // Make a first pass over the list of keys to determine the maximum length
       // key.  Keys are assumed to be strings.
       std::size_t keymaxlen{};
-      for (auto const& pr : dict) {
+      for (auto const pr : dict) {
         auto const key_str = pr.first.cast<std::string>();
         if (key_str.size() > keymaxlen)
           keymaxlen = key_str.size();
@@ -281,7 +281,7 @@ namespace {
 
       // Second pass, loop over keys and values and convert them to strings.
       char sep = '{';
-      for (auto const& [key, value] : dict) {
+      for (auto const [key, value] : dict) {
         auto const key_str = key.cast<std::string>();
         auto const py_value =
           format(value, indent + keymaxlen + 7, indent + 2, maxlen);

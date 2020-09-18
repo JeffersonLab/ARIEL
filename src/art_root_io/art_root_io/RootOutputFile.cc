@@ -997,7 +997,7 @@ namespace art {
               while (not empty(stacked_pp)) {
                 auto current_pp = stacked_pp.back();
                 stacked_pp.pop_back();
-                for (auto const parent_bid :
+                for (auto const& parent_bid :
                      current_pp->parentage().parents()) {
                   // Note: Suppose the parent ProductID corresponds to
                   //       product that has been requested to be

@@ -68,11 +68,11 @@ namespace {
       auto run_value_tuples = table().run_values();
       auto subrun_value_tuples = table().subrun_values();
       std::map<RunID, int> run_values;
-      for (auto const tup : run_value_tuples) {
+      for (auto const& tup : run_value_tuples) {
         run_values.emplace(std::get<0>(tup), std::get<1>(tup));
       }
       std::map<SubRunID, int> subrun_values;
-      for (auto const tup : subrun_value_tuples) {
+      for (auto const& tup : subrun_value_tuples) {
         auto const& subrun_tup = std::get<0>(tup);
         subrun_values.emplace(
           SubRunID{std::get<0>(subrun_tup), std::get<1>(subrun_tup)},

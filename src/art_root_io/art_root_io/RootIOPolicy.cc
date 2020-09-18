@@ -94,7 +94,7 @@ art::RootIOPolicy::openAndReadMetaData(std::string filename, MixOpList& mixOps)
       << ".\n";
   }
   auto dbCount = 0;
-  for (auto const tree : currentDataTrees_) {
+  for (auto const& tree : currentDataTrees_) {
     if (tree.get()) {
       dataBranches_[dbCount].reset(tree.get());
     }

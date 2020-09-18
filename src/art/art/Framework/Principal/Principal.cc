@@ -879,7 +879,7 @@ namespace art {
     std::vector<cet::exempt_ptr<Group>>& res) const
   {
     std::size_t found{}; // Horrible hack that should go away
-    for (auto const pid : vpid) {
+    for (auto const& pid : vpid) {
       auto group = getGroupLocal(pid);
       if (!group) {
         continue;

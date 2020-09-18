@@ -413,7 +413,7 @@ namespace art {
       // Keep track of all matched groups so that a helpful error
       // message can be reported.
       std::vector<cet::exempt_ptr<art::Group>> matched_groups;
-      for (auto const group : groups_per_process) {
+      for (auto const& group : groups_per_process) {
         if (group->tryToResolveProduct(wrapped.wrapped_product_type)) {
           matched_groups.emplace_back(group.get());
         }
