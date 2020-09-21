@@ -65,7 +65,13 @@ else
 fi
 
 # Run tests for each requested package
-ncpu=$(nproc)
+if which nproc > /dev/null; then
+    ncpu=$(nproc)
+else
+    echo NOTICE: Cannot find nproc. Assuming 2 CPUs. Install coreutils to fix
+    sleep 3
+    ncpu=2
+fi
 for PKG in $PACKAGES; do
     echo ========= Testing $PKG =========
     cd "$BUILDDIR"
