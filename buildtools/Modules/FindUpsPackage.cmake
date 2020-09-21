@@ -30,7 +30,7 @@ endif()
 #message(STATUS "_use_find_package: dotver is ${dotver}")
 #message(STATUS "_use_find_package: looking for ${PNAME} ${dotver}")
 
-# Map product name "sqlite" to "sqlite3"
+# Map product names to standard ones for find_package
 string(REGEX REPLACE "sqlite( |$)" "SQLite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
@@ -66,6 +66,8 @@ if( NOT ${RNAME}_FOUND )
   if(PKG_CONFIG_FOUND)
     # UPS "python" is "python3" in pkg-config land
     string(REGEX REPLACE "(^| )python( |$)" "python3" RNAME ${RNAME})
+    # Similarly, "SQLite3" is "sqlite3" for pkg-config
+    string(REGEX REPLACE "(^| )SQLite3( |$)" "sqlite3" RNAME ${RNAME})
     if(${dotver})
       pkg_check_modules(PC_${RNAME} ${RNAME}>=${dotver})
     else()
