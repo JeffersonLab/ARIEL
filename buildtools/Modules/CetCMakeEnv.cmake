@@ -167,11 +167,11 @@ endmacro(_expand_std_dirs)
 
 # Set installation directories
 # (at least for binaries/data - see InstallSource.cmake for additional definitions)
-# Any JERM_INSTALL_<TYPE>DIR definitions override, otherwise use results from cet_report,
+# Any ARIEL_INSTALL_<TYPE>DIR definitions override, otherwise use results from cet_report,
 # which scans the product_deps file for the package author's preferences
 macro( cet_set_lib_directory )
-  if (JERM_INSTALL_LIBDIR)
-    set( ${product}_lib_dir ${JERM_INSTALL_LIBDIR} CACHE STRING "Package lib directory" FORCE )
+  if (ARIEL_INSTALL_LIBDIR)
+    set( ${product}_lib_dir ${ARIEL_INSTALL_LIBDIR} CACHE STRING "Package lib directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} libdir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
@@ -194,8 +194,8 @@ macro( cet_set_lib_directory )
 endmacro( cet_set_lib_directory )
 
 macro( cet_set_bin_directory )
-  if (JERM_INSTALL_BINDIR)
-    set( ${product}_bin_dir ${JERM_INSTALL_BINDIR} CACHE STRING "Package bin directory" FORCE )
+  if (ARIEL_INSTALL_BINDIR)
+    set( ${product}_bin_dir ${ARIEL_INSTALL_BINDIR} CACHE STRING "Package bin directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} bindir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
@@ -218,10 +218,10 @@ macro( cet_set_bin_directory )
 endmacro( cet_set_bin_directory )
 
 macro( cet_set_fcl_directory )
-  if (JERM_INSTALL_FCLDIR)
-    set( ${product}_fcl_dir ${JERM_INSTALL_FCLDIR} CACHE STRING "Package fcl directory" FORCE )
-  elseif (JERM_INSTALL_DATADIR)
-    set( ${product}_fcl_dir ${JERM_INSTALL_DATADIR}/fcl CACHE STRING "Package fcl directory" FORCE )
+  if (ARIEL_INSTALL_FCLDIR)
+    set( ${product}_fcl_dir ${ARIEL_INSTALL_FCLDIR} CACHE STRING "Package fcl directory" FORCE )
+  elseif (ARIEL_INSTALL_DATADIR)
+    set( ${product}_fcl_dir ${ARIEL_INSTALL_DATADIR}/fcl CACHE STRING "Package fcl directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} fcldir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
@@ -243,8 +243,8 @@ macro( cet_set_fcl_directory )
 endmacro( cet_set_fcl_directory )
 
 macro( cet_set_data_directory )
-  if (JERM_INSTALL_DATADIR)
-    set( ${product}_data_dir ${JERM_INSTALL_DATADIR} CACHE STRING "Package data directory" FORCE )
+  if (ARIEL_INSTALL_DATADIR)
+    set( ${product}_data_dir ${ARIEL_INSTALL_DATADIR} CACHE STRING "Package data directory" FORCE )
   else()
     set( ${product}_data_dir share/${product} CACHE STRING "Package data directory" FORCE )
   endif()
@@ -252,8 +252,8 @@ macro( cet_set_data_directory )
 endmacro( cet_set_data_directory )
 
 macro( cet_set_fw_directory )
-  if (JERM_INSTALL_FWDIR)
-    set( ${product}_fw_dir ${JERM_INSTALL_FWDIR} CACHE STRING "Package fw directory" FORCE )
+  if (ARIEL_INSTALL_FWDIR)
+    set( ${product}_fw_dir ${ARIEL_INSTALL_FWDIR} CACHE STRING "Package fw directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} fwdir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_FW_DIR_MSG
@@ -275,8 +275,8 @@ macro( cet_set_fw_directory )
 endmacro( cet_set_fw_directory )
 
 macro( cet_set_gdml_directory )
-  if (JERM_INSTALL_GDMLDIR)
-    set( ${product}_gdml_dir ${JERM_INSTALL_GDMLDIR} CACHE STRING "Package gdml directory" FORCE )
+  if (ARIEL_INSTALL_GDMLDIR)
+    set( ${product}_gdml_dir ${ARIEL_INSTALL_GDMLDIR} CACHE STRING "Package gdml directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} gdmldir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
@@ -298,8 +298,8 @@ macro( cet_set_gdml_directory )
 endmacro( cet_set_gdml_directory )
 
 macro( cet_set_perllib_directory )
-  if (JERM_INSTALL_PERLLIBDIR)
-    set( ${product}_perllib ${JERM_INSTALL_PERLLIBDIR} CACHE STRING "Package perllib directory" FORCE )
+  if (ARIEL_INSTALL_PERLLIBDIR)
+    set( ${product}_perllib ${ARIEL_INSTALL_PERLLIBDIR} CACHE STRING "Package perllib directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} perllib ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_PERLLIB_MSG
@@ -343,8 +343,8 @@ macro( cet_set_wp_directory )
 endmacro( cet_set_wp_directory )
 
 macro( cet_set_inc_directory )
-  if (JERM_INSTALL_INCLUDEDIR)
-    set( ${product}_inc_dir ${JERM_INSTALL_INCLUDEDIR} CACHE STRING "Package include directory" FORCE )
+  if (ARIEL_INSTALL_INCLUDEDIR)
+    set( ${product}_inc_dir ${ARIEL_INSTALL_INCLUDEDIR} CACHE STRING "Package include directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} incdir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_INC_DIR_MSG
@@ -367,8 +367,8 @@ endmacro( cet_set_inc_directory )
 
 macro( cet_set_test_directory )
   # The default is share/product_dir/test
-  if (JERM_INSTALL_TESTDIR)
-    set( ${product}_test_dir ${JERM_INSTALL_TESTDIR} CACHE STRING "Package test directory" FORCE )
+  if (ARIEL_INSTALL_TESTDIR)
+    set( ${product}_test_dir ${ARIEL_INSTALL_TESTDIR} CACHE STRING "Package test directory" FORCE )
   else()
     execute_process(COMMAND ${CET_REPORT} testdir ${cet_ups_dir}
       OUTPUT_VARIABLE REPORT_TEST_DIR_MSG

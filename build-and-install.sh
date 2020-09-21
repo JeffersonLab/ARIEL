@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Quick and dirty build and install script for JERM.
+# Quick and dirty build and install script for ARIEL.
 # Intended to be replaced with a top-level CMakeLists.txt eventually.
 #
 # Usage:
@@ -63,7 +63,7 @@ if [ "x$do_clean" != "x" -o ! -e "$BUILDDIR" ]; then
 fi
 
 # Write .buildinfo so other scripts know what we did
-echo \# JERM build started $(date) > $buildinfo
+echo \# ARIEL build started $(date) > $buildinfo
 echo INSTALLDIR=\"$INSTALLDIR\" >> $buildinfo
 echo BUILDDIR=\"$BUILDDIR\" >> $buildinfo
 

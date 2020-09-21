@@ -87,7 +87,7 @@ test "$fcldir" = "NONE" && unset fcldir
 tnotnull fcldir && setenv FHICL_FILE_PATH ".:${CETPKG_BUILD}/${fcldir}:${FHICL_FILE_PATH}"
 
 # Specific to workbook project: also need path to toyExperiment's FHICL files
-tnotnull JERM && setenv FHICL_FILE_PATH "${FHICL_FILE_PATH}:${JERM}/share/toyExperiment"
+tnotnull ARIEL && setenv FHICL_FILE_PATH "${FHICL_FILE_PATH}:${ARIEL}/share/toyExperiment"
 
 setenv FHICL_FILE_PATH "`dropit -D -p "$FHICL_FILE_PATH"`"
 echo FHICL_FILE_PATH is now ${FHICL_FILE_PATH}

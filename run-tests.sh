@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to run JERM tests
+# Script to run ARIEL tests
 # Intended to be replaced with CTest eventually.
 #
 # Usage:

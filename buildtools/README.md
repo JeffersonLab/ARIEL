@@ -1,4 +1,4 @@
-JERM buildtools
+ARIEL buildtools
 ===============
 
 This is a significantly modified version of Fermilab's

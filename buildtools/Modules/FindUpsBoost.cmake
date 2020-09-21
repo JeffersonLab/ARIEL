@@ -62,7 +62,7 @@ if( ${found_product_match} LESS 0 )
 
   # Hint at library location - if Boost is available in our software environment,
   # prefer it over the system libraries
-  set(BOOST_ROOT $ENV{JERM_ROOT})
+  set(BOOST_ROOT $ENV{ARIEL})
 
   # Be sure to find the thread-safe libraries
   set(Boost_USE_MULTITHREADED ON)

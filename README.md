@@ -1,4 +1,4 @@
-# JERM
+# ARIEL
 
 A software environment providing a collection of APIs and services for processing nuclear and particle physics event data.
 
@@ -40,9 +40,9 @@ Additional dependencies on macOS:
 
 * [GNU getopt](https://github.com/karelzak/util-linux/) (any version)
 
-ROOT must have been compiled with the exact same compiler that will be used for building JERM.
+ROOT must have been compiled with the exact same compiler that will be used for building ARIEL.
 
-Generally, dependencies can have any version at or above the minimum specified;  an exact version match is not required. One can thus upgrade JERM without necessarily having to pull in upgrades of various large dependencies as well. (This is the typical behavior for Unix software distributions.) If JERM versions and dependency versions are to be locked, this should be handled with a suitable external package manager.
+Generally, dependencies can have any version at or above the minimum specified;  an exact version match is not required. One can thus upgrade ARIEL without necessarily having to pull in upgrades of various large dependencies as well. (This is the typical behavior for Unix software distributions.) If ARIEL versions and dependency versions are to be locked, this should be handled with a suitable external package manager.
 
 The following packages are included in this repository as submodules because they are often not available through package managers:
 
@@ -56,17 +56,17 @@ There is no need to install these two components separately.
 * Install dependencies listed above
 * Clone this repository and `cd` to the repository root directory:
 
-    `git clone https://github.com/hansenjo/JERM.git`
-    `cd JERM`
+    `git clone https://github.com/JeffersonLab/ARIEL.git`
+    `cd ARIEL`
 
 * Pick an installation location. Currently, the build process requires installing each subpackage immediately after building.
 * For convenience, set an environment variable that points to the top of the installation tree. For example
 
-   `export JERM=/usr/local/JERM`
+   `export ARIEL=~/Software/ARIEL`
 
 * Run the build script. The script expects the installation location as its first argument:
 
-   `./build-and-install.sh $JERM`
+   `./build-and-install.sh $ARIEL`
 
    This will take a while. Expect 10-20 minutes on a modern 8-core machine.
 * Run the tests to ensure a correct build:
@@ -75,8 +75,8 @@ There is no need to install these two components separately.
 
 * Add the installation location to your environment. For example
 
-   `export PATH=$JERM/bin:$PATH`
-   `export LD_LIBRARY_PATH=$JERM/lib:$LD_LIBRARY_PATH`
+   `export PATH=$ARIEL/bin:$PATH`
+   `export LD_LIBRARY_PATH=$ARIEL/lib:$LD_LIBRARY_PATH`
 
    As usual, use `DYLD_LIBRARY_PATH` instead of `LD_LIBRARY_PATH` on macOS.
 
@@ -86,11 +86,11 @@ See `workbook/README.md`
  
 ### Repository Organization
 
-The _base_ branch contains selected point releases of the unmodified Fermilab sources. _develop_ contains patches and additions to those sources. JERM releases correspond to tags on the _develop_ branch.
+The _base_ branch contains selected point releases of the unmodified Fermilab sources. _develop_ contains patches and additions to those sources. ARIEL releases correspond to tags on the _develop_ branch.
 
 ### About the name
 
-JERM = JLab Event Reconstruction Manager. The germ of an idea for a good, reusable software environment.
+ARIEL: Art-based integrated event-processing library.
 
 ### License
 
