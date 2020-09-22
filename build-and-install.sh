@@ -107,7 +107,7 @@ for PKG in $PACKAGES; do
     fi
     cd $PKG
     unset SRCDIR
-    for D in "$TOPDIR/src" "$TOPDIR/examples" "$TOPDIR"; do
+    for D in "$TOPDIR/externals" "$TOPDIR/src" "$TOPDIR/examples" "$TOPDIR"; do
         if [[ -d "$D/$PKG" ]]; then
             SRCDIR="$D/$PKG"
             break;
