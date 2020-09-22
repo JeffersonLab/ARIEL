@@ -31,7 +31,6 @@ Minimum system requirements/dependencies (approximate, newer is better):
 * [Boost](https://www.boost.org/) 1.66
 * [SQLite](https://www.sqlite.org/) 3.20.1
 * [cppunit](https://www.freedesktop.org/wiki/Software/cppunit/) 1.13.2
-* [CLHEP](https://proj-clhep.web.cern.ch/proj-clhep/) 2.3.4.6
 * [TBB](https://www.threadingbuildingblocks.org/) 2018_U2
 * Python 3.6
 * Perl 5.18
@@ -44,10 +43,11 @@ ROOT must have been compiled with the exact same compiler that will be used for 
 
 Generally, dependencies can have any version at or above the minimum specified;  an exact version match is not required. One can thus upgrade ARIEL without necessarily having to pull in upgrades of various large dependencies as well. (This is the typical behavior for Unix software distributions.) If ARIEL versions and dependency versions are to be locked, this should be handled with a suitable external package manager.
 
-The following packages are included in this repository as submodules because they are often not available through package managers:
+The following packages are included in this repository as submodules because they are often not readily available through the platform package manager:
 
+* [CLHEP](https://proj-clhep.web.cern.ch/proj-clhep/) 2.4.1.3
 * [catch](https://github.com/catchorg/Catch2/) 2.13.1
-* [range-v3](https://github.com/ericniebler/range-v3/) 0.10.5
+* [range-v3](https://github.com/ericniebler/range-v3/) 0.10.0
 
 There is no need to install these two components separately.
 

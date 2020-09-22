@@ -5,3 +5,6 @@
 	path = externals/catch/catch
 	url = https://github.com/catchorg/Catch2.git
 	branch = Catch1.x
+[submodule "externals/CLHEP"]
+	path = externals/CLHEP
+	url = https://gitlab.cern.ch/CLHEP/CLHEP.git

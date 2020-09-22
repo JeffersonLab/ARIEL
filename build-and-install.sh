@@ -9,9 +9,9 @@
 # 22-Jul-2020  Ole Hansen
 
 # Packages to build. The exact order matters.
-PACKAGES="buildtools range catch hep_concurrency cetlib_except cetlib fhiclcpp \
-fhiclpy messagefacility canvas canvas_root_io gallery art art_root_io critic \
-toyExperiment"
+PACKAGES="buildtools CLHEP range catch hep_concurrency cetlib_except cetlib \
+fhiclcpp fhiclpy messagefacility canvas canvas_root_io gallery \
+art art_root_io critic toyExperiment"
 
 # Basic check for prerequisites
 if ! which root-config > /dev/null; then
@@ -22,10 +22,17 @@ fi
 TOPDIR="$PWD"
 buildinfo="$TOPDIR/.buildinfo"
 
+# Default
+BUILDTYPE="-DCMAKE_BUILD_TYPE=Release"
 case "$1" in
     --debug)
         # Build Debug version
         BUILDTYPE="-DCMAKE_BUILD_TYPE=Debug"
+        shift
+        ;;
+    --reldeb)
+        # Build Release With Debug Info version
+        BUILDTYPE="-DCMAKE_BUILD_TYPE=RelWithDebInfo"
         shift
         ;;
     --release)
@@ -127,8 +134,17 @@ for PKG in $PACKAGES; do
         export LD_LIBRARY_PATH="$CET_PLUGIN_PATH${ld_path_base:+:$ld_path_base}"
     fi
 
-    echo cmake $GENERATOR $BUILDTYPE -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
-    cmake $GENERATOR $BUILDTYPE -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
+    case "$PKG" in
+    CLHEP)
+        BUILDOPTS="-DCLHEP_BUILD_CXXSTD=-std=c++17"
+        ;;
+    *)
+        BUILDOPTS=""
+        ;;
+    esac
+
+    echo cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
+    cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
     $BUILDPROG install
     if [ $? -ne 0 ]; then
         exit 1
