@@ -61,7 +61,7 @@
         childLookup_.clear();
         for (auto const& lookup : onfile.childLookup_) {
           std::set<art::ProductID> descendents;
-          for (art::BranchID const desc : lookup.second) {
+          for (art::BranchID const& desc : lookup.second) {
             descendents.emplace(desc.id());
           }
           childLookup_[art::ProductID{lookup.first.id()}] = descendents;
