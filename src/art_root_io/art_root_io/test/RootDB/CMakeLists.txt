@@ -4,6 +4,8 @@ set_source_files_properties(
   PROPERTIES
   COMPILE_DEFINITIONS TKEYVFS_NO_ROOT)
 
+cet_add_compiler_flags(-Wno-unused-result)
+
 cet_script(dbtest_wrap_sql NO_INSTALL)
 
 cet_test(tkeyvfs_t_01 NO_AUTO
