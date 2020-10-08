@@ -11,7 +11,7 @@
 # Packages to build. The exact order matters.
 PACKAGES="buildtools CLHEP range catch hep_concurrency cetlib_except cetlib \
 fhiclcpp fhiclpy messagefacility canvas canvas_root_io gallery \
-art art_root_io critic toyExperiment"
+art art_root_io critic toyExperiment cmake"
 
 # Basic check for prerequisites
 if ! which root-config > /dev/null; then
