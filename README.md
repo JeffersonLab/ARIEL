@@ -91,6 +91,10 @@ For convenience, set an environment variable that points to the top of the insta
 
 See the [workbook README](examples/workbook/README.md)
  
+### Containers
+
+A definition file for a Singularity container can be found in the `container` directory.
+
 ### Repository Organization
 
 The _base_ branch contains selected point releases of the unmodified Fermilab sources. _develop_ contains patches and additions to those sources. ARIEL releases correspond to tags on the _develop_ branch.
