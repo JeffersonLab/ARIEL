@@ -1,4 +1,4 @@
-# ARIEL
+![ARIEL logo](ariel.png)
 
 A software environment providing a collection of APIs and services for processing nuclear and particle physics event data.
 
@@ -56,33 +56,40 @@ There is no need to install these two components separately.
 * Install dependencies listed above
 * Clone this repository and `cd` to the repository root directory:
 
-    `git clone https://github.com/JeffersonLab/ARIEL.git`
-    `cd ARIEL`
+~~~~~~~~~~bash
+   git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
+   cd ARIEL
+~~~~~~~~~~
 
 * Pick an installation location. Currently, the build process requires installing each subpackage immediately after building.
-* For convenience, set an environment variable that points to the top of the installation tree. For example
+For convenience, set an environment variable that points to the top of the installation tree. For example
 
-   `export ARIEL=~/Software/ARIEL`
+~~~~~~~~~~bash
+   export ARIEL=~/Software/ARIEL
+~~~~~~~~~~
 
 * Run the build script. The script expects the installation location as its first argument:
 
-   `./build-and-install.sh $ARIEL`
+~~~~~~~~~~bash
+   ./build-and-install.sh $ARIEL
+~~~~~~~~~~
 
    This will take a while. Expect 10-20 minutes on a modern 8-core machine.
 * Run the tests to ensure a correct build:
 
-   `./run-tests.sh`
+~~~~~~~~~~bash
+   ./run-tests.sh
+~~~~~~~~~~
 
-* Add the installation location to your environment. For example
+* Set up the runtime environment in your shell (currently only sh/bash are supported):
 
-   `export PATH=$ARIEL/bin:$PATH`
-   `export LD_LIBRARY_PATH=$ARIEL/lib:$LD_LIBRARY_PATH`
-
-   As usual, use `DYLD_LIBRARY_PATH` instead of `LD_LIBRARY_PATH` on macOS.
+~~~~~~~~~~bash
+   source $ARIEL/bin/setup.sh
+~~~~~~~~~~
 
 ### Using the workbook
 
-See `workbook/README.md`
+See the [workbook README](examples/workbook/README.md)
  
 ### Repository Organization
 
@@ -94,6 +101,6 @@ ARIEL: Art-based integrated event-processing library.
 
 ### License
 
-Standard 3-clause BSD. See in the included LICENSE files.
+Standard 3-clause BSD. See in the included [LICENSE](LICENSE.md) files.
 
 Author:  Ole Hansen (ole@jlab.org)
