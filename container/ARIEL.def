@@ -19,36 +19,61 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
    update-locale LANG=en_US.UTF-8
    apt-get install -qy less wget nano
 
-# Prerequisites for building ROOT
-   apt-get install -qy dpkg-dev cmake g++ gcc binutils patch git libx11-dev libxpm-dev libxft-dev \
-       libxext-dev libssl-dev python3 python3-numpy \
+# Prerequisites for building ROOT and dependencies
+   apt-get install -qy dpkg-dev cmake g++ gcc binutils patch git rsync \
+       libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-numpy \
        gfortran libpcre3-dev libglu1-mesa-dev libglew-dev libftgl-dev libmysqlclient-dev libfftw3-dev \
        libgraphviz-dev python3-dev libxml2-dev libkrb5-dev libgsl-dev zlib1g-dev libzstd-dev \
        libfreetype6-dev liblz4-dev liblzma-dev libgif-dev libtiff-dev libpng-dev libsqlite3-dev \
-       libxxhash-dev libafterimage-dev libglew-dev libgl2ps-dev libtbb-dev \
-       libopenblas-dev vc-dev libz3-dev libpythia8-dev
+       libpq-dev libxxhash-dev libglew-dev libgl2ps-dev libtbb-dev libopenblas-dev libz3-dev
 # ROOT optional
 #   apt-get install -qy libcfitsio-dev libavahi-compat-libdnssd-dev libldap2-dev qtwebengine5-dev
 
 # Clean up from possible previous build attempt
-   rm -rf /tmp/VecGeom /tmp/ROOT /tmp/ARIEL
+   rm -rf /tmp/Vc /tmp/VecGeom /tmp/pythia8 /tmp/ROOT /tmp/ARIEL
 
-# VecGeom prerequisite for ROOT
-#   cd /tmp
-#   git clone -q https://gitlab.cern.ch/VecGeom/VecGeom.git
-#   git checkout -q v1.1.7
-#   mkdir -p /tmp/VecGeom/build && cd /tmp/VecGeom/build
+# Vc external for ROOT (vc-dev in the Ubuntu repos works, but is not the most recent)
+   mkdir -p /tmp/Vc && cd /tmp/Vc
+   VCVERSION=1.4.1
+   VCTARFILE=${VCVERSION}.tar.gz
+   wget https://github.com/VcDevel/Vc/archive/$VCTARFILE
+   tar xf $VCTARFILE --strip-components=1
+   mkdir build && cd build
+   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
+         -DBUILD_TESTING=OFF \
+         /tmp/Vc
+   cmake --build . --parallel $(nproc) --target install
+   cd
+   rm -rf /tmp/Vc
 
+# VecGeom external for ROOT (needs Vc)
    mkdir -p /tmp/VecGeom && cd /tmp/VecGeom
-   VGTARFILE=VecGeom-v1.1.7.tar.bz2
-   wget https://gitlab.cern.ch/VecGeom/VecGeom/-/archive/v1.1.7/$VGTARFILE
+   VGVERSION=v1.1.7
+   VGTARFILE=VecGeom-${VGVERSION}.tar.bz2
+   wget https://gitlab.cern.ch/VecGeom/VecGeom/-/archive/${VGVERSION}/${VGTARFILE}
    tar xf $VGTARFILE --strip-components=1
    mkdir build && cd build
-
-   cmake -DBACKEND=vc -DBUILTIN_VECCORE=ON -DCTEST=OFF /tmp/VecGeom
+   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
+         -DBACKEND=vc -DBUILTIN_VECCORE=ON -DCTEST=OFF \
+         /tmp/VecGeom
    cmake --build . --parallel $(nproc) --target install
    cd
    rm -rf /tmp/VecGeom
+
+# Pythia8 external for ROOT
+# TODO: Add HepMC support
+   mkdir -p /tmp/pythia8 && cd /tmp/pythia8
+   PYTHIATARFILE=pythia8303.tgz
+   #wget http://home.thep.lu.se/~torbjorn/pythia8/$PYTHIATARFILE
+   wget https://hallaweb.jlab.org/software/$PYTHIATARFILE
+   tar xf $PYTHIATARFILE --strip-components=1
+   ./configure --prefix=/usr/local --cxx=g++ \
+               --cxx-common="-O2 -std=c++17 -pedantic -W -Wall -Wshadow -fPIC" \
+               --with-python-include=/usr/include/python3.8 --with-gzip --with-openmp
+   make -j$(nproc) install
+   /sbin/ldconfig
+   cd
+   rm -rf /tmp/pythia8
 
 # Get ROOT source
    cd /tmp
@@ -89,7 +114,7 @@ EOF
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_STANDARD=17 \
           -Dgnuinstall:BOOL=OFF \
-          -Dbuiltin_afterimage:BOOL=OFF \
+          -Dbuiltin_afterimage:BOOL=ON \
           -Dbuiltin_cfitsio:BOOL=OFF \
           -Dbuiltin_davix:BOOL=OFF \
           -Dbuiltin_fftw3:BOOL=OFF \
@@ -144,11 +169,11 @@ EOF
           -Dminuit2:BOOL=ON \
           -Dmonalisa:BOOL=OFF \
           -Dmt:BOOL=ON \
-          -Dmysql:BOOL=OFF \
+          -Dmysql:BOOL=ON \
           -Dodbc:BOOL=OFF \
           -Dopengl:BOOL=ON \
           -Doracle:BOOL=OFF \
-          -Dpgsql:BOOL=OFF \
+          -Dpgsql:BOOL=ON \
           -Dpythia6:BOOL=OFF \
           -Dpythia8:BOOL=ON \
           -Dpyroot:BOOL=ON \
@@ -157,7 +182,7 @@ EOF
           -Drfio:BOOL=OFF \
           -Droofit:BOOL=ON \
           -Drpath:BOOL=OFF \
-          -Druntime_cxxmodules:BOOL=OFF \
+          -Druntime_cxxmodules:BOOL=ON \
           -Dshadowpw:BOOL=ON \
           -Dshared:BOOL=ON \
           -Dsoversion:BOOL=ON \
@@ -177,7 +202,7 @@ EOF
           -Dx11:BOOL=ON \
           -Dxml:BOOL=ON \
           -Dxrootd:BOOL=ON \
-          -Dfail-on-missing:BOOL=OFF \
+          -Dfail-on-missing:BOOL=ON \
           -Dtesting:BOOL=OFF \
           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
           -DCLANG_ENABLE_STATIC_ANALYZER=ON \
@@ -241,7 +266,7 @@ EOF
 
 # Clone ARIEL and submodules
    cd /tmp
-   git clone --recurse-submodules https://github.com/hansenjo/ARIEL.git
+   git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
 
 # Build and install ARIEL
    cd /tmp/ARIEL
@@ -256,7 +281,7 @@ EOF
   cp -av examples/workbook $ARIEL/
 
 # Install a PDF viewer so users can read the documentation ;)
-  apt-get install -qy evince
+  apt-get install -qy evince libcanberra-gtk3-module
 
 # Final cleanup
    cd
@@ -267,6 +292,7 @@ EOF
 %environment
    export LC_ALL=C
    export LANG=en_US.UTF-8
+   export PYTHONPATH=/usr/local/lib    # For pythia8 Python module
    . /usr/local/ARIEL/bin/setup.sh
 
 %test
@@ -282,7 +308,7 @@ EOF
 
 %labels
    Author Ole Hansen (ole@jlab.org)
-   Version 0.5.0
+   Version 0.6.0
 
 %help
  This is ARIEL, the art-based integrated event-processing library.
@@ -310,7 +336,7 @@ EOF
    Singularity> cd ~/Analysis/art-workbook/build
    Singularity> source $ARIEL/workbook/ups/setup_for_development
    Singularity> cmake $ARIEL/workbook
-   Singularity> make -j4
+   Singularity> make -j$(nproc)
 
  Then run the examples in the "fcl" directory like so:
 

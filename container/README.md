@@ -84,9 +84,8 @@ sudo -E singularity build ARIEL.sif ARIEL.def
 
 Depending on the host system, this may take anywhere between
 approximately 15 and 120 minutes. The build process will use all
-available CPU threads. The system should have at least 1 GB and
-preferably 1.5 GB of RAM per thread. There should be at least 5 GB of
-free disk space on `/home`.
+available CPU threads. 1 GB of RAM per thread and 5 GB of free disk
+space on `/home` are recommended.
 
 ### Using the container
 
