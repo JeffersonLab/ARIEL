@@ -36,7 +36,7 @@ cd singularity
 make -j$(nproc) -C builddir
 sudo make -C builddir install
 cd
-rm -rf /tmp/singularity
+rm -rf /tmp/singularity /tmp/singularity-${VERSION}.tar.gz
 singularity --version
 singularity version 3.6.4
 ~~~~~~~~~~

@@ -7,14 +7,13 @@ The workbook document is somewhat out of date at this time. Some information ref
 Build the workbook code as follows:
 
 ~~~~~~~~~~bash
-export ARIEL=<top_of_installation_tree>
-source $ARIEL/bin/setup.sh
+source <top_of_ARIEL_installation_tree>/bin/setup.sh
 mkdir -p ~Analysis/art-workbook/{build,output}
-export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
 cd ~Analysis/art-workbook/build
+export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
 source $ARIEL/workbook/ups/setup_for_development
 cmake $ARIEL/workbook
-make -j4
+make -j$(nproc)
 ~~~~~~~~~~
 
 Then run the examples in the `fcl` directory like so:

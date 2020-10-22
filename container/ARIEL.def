@@ -20,7 +20,7 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
    apt-get install -qy less wget nano
 
 # Prerequisites for building ROOT and dependencies
-   apt-get install -qy dpkg-dev cmake g++ gcc binutils patch git rsync \
+   apt-get install -qy dpkg-dev cmake g++ gcc binutils patch git rsync mesa-utils \
        libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-numpy \
        gfortran libpcre3-dev libglu1-mesa-dev libglew-dev libftgl-dev libmysqlclient-dev libfftw3-dev \
        libgraphviz-dev python3-dev libxml2-dev libkrb5-dev libgsl-dev zlib1g-dev libzstd-dev \
@@ -278,10 +278,10 @@ EOF
   ./run-tests.sh
 
 # Copy workbook to installation destination
-  cp -av examples/workbook $ARIEL/
+  cp -a examples/workbook $ARIEL/
 
 # Install a PDF viewer so users can read the documentation ;)
-  apt-get install -qy evince libcanberra-gtk3-module
+  apt-get install -qy evince
 
 # Final cleanup
    cd
@@ -308,7 +308,7 @@ EOF
 
 %labels
    Author Ole Hansen (ole@jlab.org)
-   Version 0.6.0
+   Version 0.6.1
 
 %help
  This is ARIEL, the art-based integrated event-processing library.
@@ -322,18 +322,18 @@ EOF
 
  This is a beta version of this container. Expect things to change.
 
- Getting started:
- The "art workbook" contains a lot of user-friendly documentation for
- beginners. To view the PDF document, do
+ ** Getting started **
+ The "art workbook" contains user-friendly documentation for beginners.
+ To view the workbook PDF document, do
 
    > singularity shell ARIEL.sif
-   Singularity> evince $ARIEL/workbook/doc/art-workbook-v0_91.pdf &
+   Singularity> evince $ARIEL/workbook/doc/art-workbook-v0_91.pdf 2>/dev/null &
 
  The workbook code can be built as follows:
 
    Singularity> mkdir -p ~/Analysis/art-workbook/{build,output}
-   Singularity> export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
    Singularity> cd ~/Analysis/art-workbook/build
+   Singularity> export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
    Singularity> source $ARIEL/workbook/ups/setup_for_development
    Singularity> cmake $ARIEL/workbook
    Singularity> make -j$(nproc)
@@ -342,9 +342,68 @@ EOF
 
    Singularity> art -c fcl/FirstModule/first.fcl
 
- etc.
+ etc. See also here:
 
- Note: The workbook document has not been updated in a while. Some information
+ https://github.com/JeffersonLab/ARIEL/tree/develop/examples/workbook
+
+ The workbook document has not been updated in a while, so some information
  may be outdated. Any references to the UPS package manager, buildtool etc.
- should be ignored. Neverthless, the bulk of the  material about programming
+ should be ignored. Neverthless, the bulk of the material about programming
  in C++ and writing art modules is still applicable.
+
+ ** 3D accelerated graphics **
+ The event display example in the workbook requires OpenGL graphics.
+ (This applies to all of ROOT's OpenGL functions.) Currently, this is only
+ supported if
+
+ * Singularity runs on the console of a machine with an Nvidia graphics card
+ * Nvidia graphics drivers are installed and active
+ * Singularity is started with the --nv option:
+
+   > singularity shell --nv ARIEL.sif
+   (if you get an error here, your system does not meet the requirements)
+   Singularity> cd ~/Analysis/art-workbook/build
+   Singularity> source $ARIEL/workbook/ups/setup_for_development
+   Singularity> art -c fcl/EventDisplay3D/eventDisplay01.fcl
+
+ Specifically, OpenGL will *not* work over an ssh connection, even with
+ X-forwarding enabled. (Regular X11 graphics, e.g. drawing histograms,
+ do work with X-forwarding.)
+
+ ** Modifying the container **
+ At some point, advanced users may want to install additional software into
+ the container or reconfigure certain aspects of the operating system. To enable
+ modfications, extract the container to a "sandbox" directory (e.g. myARIEL/)
+ and run Singularity on this directory as root in writable mode:
+
+   > singularity build --sandbox myARIEL ARIEL.sif
+   > sudo singularity shell --writable myARIEL
+   Singularity> apt-get update
+   Singularity> apt-get install <new packages you want>
+   Singularity> <other configuration commands you want to run as root>
+
+ When done, you can run the modified sandbox as a regular user to test things
+ out:
+
+   > singularity shell myARIEL
+
+ Once you are happy with the results, you can generate a new compressed
+ container file from the sandbox:
+
+   > sudo singularity build myARIEL.sif myARIEL
+
+ Please note, however, that a container generated in this way will have
+ no record of how it was created. If you care about reproducibility (you
+ should), take careful notes of all the modifications you make. Then add
+ those modifications (e.g. additional apt-get commands, etc.) to the
+ definition file of the original container. (See below as to how to extract
+ the definition file directly from the container.) Finally, build a new
+ container file from the new definition file:
+
+   > singularity inspect --deffile ARIEL.sif > myARIEL.def
+   > <edit myARIEL.def>
+   > sudo singularity build myARIEL.sif myARIEL.def
+
+ Additional information can be found here:
+
+   https://github.com/JeffersonLab/ARIEL/tree/develop/container
