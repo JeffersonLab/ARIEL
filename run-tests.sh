@@ -49,11 +49,6 @@ if [ "$ostype" = "Darwin" ]; then
 fi
 module_path_base="$INSTALLDIR/lib"
 ld_path_base="${ROOTSYS:+$ROOTSYS/lib}"
-# Add /usr/local/lib to library path
-# except on macOS, where Homebrew packages interfere
-if [ "$ostype" != "Darwin" ]; then
-    ld_path_base="${ld_path_base:+$ld_path_base:}/usr/local/lib"
-fi
 include_path_base="$INSTALLDIR/include:/usr/local/include"
 
 # Packages for which to run tests

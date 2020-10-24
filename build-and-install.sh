@@ -21,53 +21,81 @@ fi
 
 TOPDIR="$PWD"
 buildinfo="$TOPDIR/.buildinfo"
+[[ -r "$buildinfo" ]] && . "$buildinfo"
 
-# Default
+# Default build type = Release
 BUILDTYPE="-DCMAKE_BUILD_TYPE=Release"
-case "$1" in
-    --debug)
-        # Build Debug version
-        BUILDTYPE="-DCMAKE_BUILD_TYPE=Debug"
-        shift
-        ;;
-    --reldeb)
-        # Build Release With Debug Info version
-        BUILDTYPE="-DCMAKE_BUILD_TYPE=RelWithDebInfo"
-        shift
-        ;;
-    --release)
-        # Build Release version
-        BUILDTYPE="-DCMAKE_BUILD_TYPE=Release"
-        shift
-        ;;
-    --help)
-        echo ./build-and-install.sh [--debug|--release] [--help] INSTALL_DIR
-        exit 0
-        ;;
-esac
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --debug)
+            # Build Debug version
+            BUILDTYPE="-DCMAKE_BUILD_TYPE=Debug"
+            shift
+            ;;
+        --reldeb)
+            # Build Release With Debug Info version
+            BUILDTYPE="-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+            shift
+            ;;
+        --release)
+            # Build Release version
+            BUILDTYPE="-DCMAKE_BUILD_TYPE=Release"
+            shift
+            ;;
+        --configure)
+            # Force configuration to run, even if already configured
+            do_config=1
+            shift
+            ;;
+        --clean)
+            # Start clean
+            do_clean=1
+            shift
+            ;;
+        --build-in-tmp)
+            tmpbuild=1
+            shift
+            ;;
+        --help)
+            echo ./build-and-install.sh [--debug|--release] [--help] INSTALL_DIR
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+set -- "${POSITIONAL[@]}"
 
 # Installation location
-if [[ $# -eq 0 ]]; then
-    if [[ -r "$buildinfo" ]]; then
-        source "$buildinfo"
-    else
-        echo ERROR: must give installation directory: ./build-and-install.sh INSTALL_DIR
-        exit 1
-    fi
-else
-    BUILDDIR="$TOPDIR/tmp-build"
+if [[ $# -gt 0 ]]; then
     INSTALLDIR="$1"
 fi
+if [[ -z $INSTALLDIR ]]; then
+    echo ERROR: must give installation directory: ./build-and-install.sh INSTALL_DIR
+    exit 1
+fi
+# Build location
+if [[ -z $BUILDDIR ]]; then
+    if [[ -n $tmpbuild ]]; then
+        BUILDDIR="/tmp/ARIEL-build"
+    else
+        BUILDDIR="$TOPDIR/ARIEL-build"
+    fi
+fi
+configstat="$BUILDDIR/.configured"
+[[ -n $do_config ]] && rm -f "$configstat"
+
 echo Using BUILDDIR="$BUILDDIR", INSTALLDIR="$INSTALLDIR"
 
 # This is probably the easiest way to help CMake find the installed packages ...
 export PATH="$INSTALLDIR/bin:$PATH"
 
 # Create/clean build directory
-if [ "x$do_clean" != "x" -o ! -e "$BUILDDIR" ]; then
-    rm -rf "$BUILDDIR"
-    mkdir "$BUILDDIR"
-fi
+[[ -n $do_clean ]] && rm -rf "$BUILDDIR"
+mkdir -p "$BUILDDIR"
 
 # Write .buildinfo so other scripts know what we did
 echo \# ARIEL build started $(date) > $buildinfo
@@ -97,11 +125,6 @@ ostype=$(uname -s)
 module_path_base="$INSTALLDIR/lib"
 # ROOTSYS might not be set if ROOT is installed in system directories
 ld_path_base="${ROOTSYS:+$ROOTSYS/lib}"
-# Add /usr/local/lib to library path
-# except on macOS, where Homebrew packages interfere
-if [ "$ostype" != "Darwin" ]; then
-    ld_path_base="${ld_path_base:+$ld_path_base:}/usr/local/lib"
-fi
 include_path_base="$INSTALLDIR/include:/usr/local/include"
 
 # Build and install the packages.
@@ -143,12 +166,15 @@ for PKG in $PACKAGES; do
         ;;
     esac
 
-    echo cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
-    cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
-    $BUILDPROG install
-    if [ $? -ne 0 ]; then
-        exit 1
+    if [ -n "$do_config" -o ! -e "$configstat" ]; then
+        echo cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
+        cmake $GENERATOR $BUILDTYPE $BUILDOPTS -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" "$SRCDIR"
+        [ $? -ne 0 ] && exit 1
     fi
+    $BUILDPROG install
+    [ $? -ne 0 ] && exit 1
 done
+echo \# ARIEL build completed $(date) >> $buildinfo
+touch "$configstat"
 
 cd "$TOPDIR"
