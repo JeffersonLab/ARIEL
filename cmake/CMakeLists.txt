@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 3.12...3.14 FATAL_ERROR)
 project(ARIEL_BUILDTOOLS LANGUAGES CXX C)
+set(ARIEL_VERSION 0.6.2)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Modules")
 
@@ -18,3 +19,4 @@ find_ups_root()
 
 # Currently, this is all we do here: create the environment setup script
 include(ArielCreateSetup)
+include(ArielCreateModulesfiles)

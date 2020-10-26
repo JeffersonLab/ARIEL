@@ -1,0 +1,37 @@
+#%Module 1.0
+#
+# ARIEL modulefile
+#
+proc ModulesHelp { } {
+    global version
+
+    puts stderr "\tSets up environment for ARIEL v$version."
+    puts stderr "\tFor more information see https://github.com/JeffersonLab/ARIEL"
+}
+
+set version @ARIEL_VERSION@
+set osname  [uname sysname]
+# Support relocation
+set prefix  [file dirname [file normalize [info script]/..]]
+
+module load root
+
+module-whatis   "ARIEL event processing framework version $version"
+conflict        ariel
+setenv          ARIEL                   $prefix
+setenv          FHICL_FILE_PATH         .
+prepend-path    PATH                    $prefix/bin
+prepend-path    CMAKE_PREFIX_PATH       $prefix
+prepend-path    PYTHONPATH              $prefix/lib
+prepend-path    ROOT_INCLUDE_PATH       $prefix/include
+
+if { $osname eq "Darwin" } then {
+    prepend-path     DYLD_LIBRARY_PATH   $prefix/lib
+} else {
+    prepend-path     LD_LIBRARY_PATH     $prefix/lib
+}
+
+# Local Variables:
+# mode: Tcl
+# comment-column: 0
+# End:
