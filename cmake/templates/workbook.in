@@ -1,0 +1,72 @@
+#%Module 1.0
+#
+# ARIEL workbook modulefile
+#
+proc ModulesHelp { } {
+    puts stderr "\tSets up environment for ARIEL workbook.\n"
+    puts stderr "\tMUST be loaded from the workbook build directory."
+    puts stderr "\tTo build the workbook code, do:\n"
+    puts stderr "\t  cd \[workbook build dir\]"
+    puts stderr "\t  export ART_WORKBOOK_OUTPUT=\[output dir\]  # optional"
+    puts stderr "\t  module load workbook"
+    puts stderr "\t  cmake \[options\] \$CETPKG_SOURCE"
+    puts stderr "\t  make -jN\n"
+    puts stderr "\t\$ART_WORKBOOK_OUTPUT defaults to \[build dir\]/../output\n"
+    puts stderr "\tFor more information see"
+    puts stderr "\t  https://github.com/JeffersonLab/ARIEL/examples/workbook"
+}
+
+module-whatis "ARIEL workbook source code"
+
+prereq          ariel
+conflict        workbook
+
+set osname      [uname sysname]
+
+# Support relocation
+set prefix      [file dirname [file normalize [info script]/.. ]]
+
+# Build directory FIXME: take from environment variable if set
+set builddir    [pwd]
+
+# Find source diretcory
+if { [file exists $prefix/workbook] } then {
+    set srcdir $prefix/workbook
+} elseif { [file exists @PROJECT_SOURCE_DIR@/../examples/workbook] } then {
+    set srcdir [file normalize @PROJECT_SOURCE_DIR@/../examples/workbook]
+} else {
+    puts stderr "Cannot find workbook source code"
+    exit 1
+}
+
+set outdir      [getenv ART_WORKBOOK_OUTPUT]
+
+if { $outdir eq "_UNDEFINED_" } then {
+    set outdir [file normalize $builddir/../output]
+    if { ! [file exists $outdir] } then {
+        file mkdir $outdir
+    }
+    setenv ART_WORKBOOK_OUTPUT $outdir
+    puts stderr "Set ART_WORKBOOK_OUTPUT = $outdir"
+}
+
+file mkdir $builddir/lib $builddir/bin
+
+setenv          CETPKG_SOURCE           $srcdir
+setenv          CETPKG_BUILD            $builddir
+prepend-path    CET_PLUGIN_PATH         $builddir/lib
+prepend-path    ROOT_INCLUDE_PATH       $srcdir:$builddir
+prepend-path    PATH                    $builddir/bin
+prepend-path    FHICL_FILE_PATH         .:$builddir/fcl
+append-path     FHICL_FILE_PATH         $prefix/share/toyExperiment
+
+if { $osname eq "Darwin" } then {
+    prepend-path     DYLD_LIBRARY_PATH  $builddir/lib
+} else {
+    prepend-path     LD_LIBRARY_PATH    $builddir/lib
+}
+
+# Local Variables:
+# mode: Tcl
+# comment-column: 0
+# End:

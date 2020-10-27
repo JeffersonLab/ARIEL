@@ -2,7 +2,7 @@
 
 set(MODULES_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/modulefiles)
 
-foreach(mod root ariel)
+foreach(mod root ariel workbook)
   configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/../templates/${mod}.in
     ${MODULES_INSTALL_DIR}/${mod}
