@@ -53,9 +53,10 @@ while [[ $# -gt 0 ]]; do
             do_clean=1
             shift
             ;;
-        --build-in-tmp)
-            tmpbuild=1
-            shift
+        --builddir)
+            # Set build location
+            BUILDDIR="$2"
+            shift 2
             ;;
         --help)
             echo ./build-and-install.sh [--debug|--release] [--help] INSTALL_DIR
@@ -79,11 +80,7 @@ if [[ -z $INSTALLDIR ]]; then
 fi
 # Build location
 if [[ -z $BUILDDIR ]]; then
-    if [[ -n $tmpbuild ]]; then
-        BUILDDIR="/tmp/ARIEL-build"
-    else
-        BUILDDIR="$TOPDIR/ARIEL-build"
-    fi
+    BUILDDIR="$TOPDIR/ARIEL-build"
 fi
 configstat="$BUILDDIR/.configured"
 [[ -n $do_config ]] && rm -f "$configstat"
