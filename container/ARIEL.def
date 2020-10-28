@@ -6,89 +6,112 @@ OSVersion: focal
 MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
 # MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
-%runscript
-   exec art "$@"
+%labels
+   Author Ole Hansen (ole@jlab.org)
+   Version 0.6.2
 
-%post
+%runscript
+   . /etc/profile.d/modules.sh
+   [ -r $HOME/.arielrc ] && . $HOME/.arielrc
+   exec /bin/bash --login "$@"
+
+%setup
+   # If we have local copy of the installation, bring it in
+   if [ -d usr/local/ARIEL ]; then
+       mkdir -p ${SINGULARITY_ROOTFS}/usr/local
+       rsync -rl usr/local/ ${SINGULARITY_ROOTFS}/usr/local/
+   fi
+
+%post -c /bin/bash
+   export DEBIAN_FRONTEND=noninteractive
    echo "deb http://mirrors.edge.kernel.org/ubuntu focal universe" > /etc/apt/sources.list.d/universe.list
    apt-get update
 
-# Useful things
+   # Useful things
    apt-get install -qy locales
    locale-gen en_US.UTF-8
    update-locale LANG=en_US.UTF-8
-   apt-get install -qy less wget nano
+   apt-get install -qy less wget nano tcl environment-modules
 
-# Prerequisites for building ROOT and dependencies
+   # Prerequisites for building ROOT and dependencies
    apt-get install -qy dpkg-dev cmake g++ gcc binutils patch git rsync mesa-utils \
        libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-numpy \
        gfortran libpcre3-dev libglu1-mesa-dev libglew-dev libftgl-dev libmysqlclient-dev libfftw3-dev \
        libgraphviz-dev python3-dev libxml2-dev libkrb5-dev libgsl-dev zlib1g-dev libzstd-dev \
        libfreetype6-dev liblz4-dev liblzma-dev libgif-dev libtiff-dev libpng-dev libsqlite3-dev \
        libpq-dev libxxhash-dev libglew-dev libgl2ps-dev libtbb-dev libopenblas-dev libz3-dev
-# ROOT optional
-#   apt-get install -qy libcfitsio-dev libavahi-compat-libdnssd-dev libldap2-dev qtwebengine5-dev
+   # ROOT optional
+   #   apt-get install -qy libcfitsio-dev libavahi-compat-libdnssd-dev libldap2-dev qtwebengine5-dev
 
-# Clean up from possible previous build attempt
-   rm -rf /tmp/Vc /tmp/VecGeom /tmp/pythia8 /tmp/ROOT /tmp/ARIEL
+   # Clean up from possible previous build attempt
+   rm -rf /tmp/{Vc,VecGeom,pythia8,ROOT,ARIEL,pythia8} /var/tmp/$LOGNAME-{ROOT,ARIEL}-build
 
-# Vc external for ROOT (vc-dev in the Ubuntu repos works, but is not the most recent)
-   mkdir -p /tmp/Vc && cd /tmp/Vc
-   VCVERSION=1.4.1
-   VCTARFILE=${VCVERSION}.tar.gz
-   wget https://github.com/VcDevel/Vc/archive/$VCTARFILE
-   tar xf $VCTARFILE --strip-components=1
-   mkdir build && cd build
-   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
-         -DBUILD_TESTING=OFF \
-         /tmp/Vc
-   cmake --build . --parallel $(nproc) --target install
-   cd
-   rm -rf /tmp/Vc
+   # Vc external for ROOT (vc-dev in the Ubuntu repos works, but is not the most recent)
+   if [ ! -f /usr/local/lib/libVc.a ]; then
+       mkdir -p /tmp/Vc && cd /tmp/Vc
+       VCVERSION=1.4.1
+       VCTARFILE=${VCVERSION}.tar.gz
+       wget https://github.com/VcDevel/Vc/archive/$VCTARFILE
+       tar xf $VCTARFILE --strip-components=1
+       mkdir build && cd build
+       cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
+             -DBUILD_TESTING=OFF \
+             /tmp/Vc
+       cmake --build . --parallel $(nproc) --target install
+       cd
+       rm -rf /tmp/Vc
+   fi
 
-# VecGeom external for ROOT (needs Vc)
-   mkdir -p /tmp/VecGeom && cd /tmp/VecGeom
-   VGVERSION=v1.1.7
-   VGTARFILE=VecGeom-${VGVERSION}.tar.bz2
-   wget https://gitlab.cern.ch/VecGeom/VecGeom/-/archive/${VGVERSION}/${VGTARFILE}
-   tar xf $VGTARFILE --strip-components=1
-   mkdir build && cd build
-   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
-         -DBACKEND=vc -DBUILTIN_VECCORE=ON -DCTEST=OFF \
-         /tmp/VecGeom
-   cmake --build . --parallel $(nproc) --target install
-   cd
-   rm -rf /tmp/VecGeom
+   # VecGeom external for ROOT (needs Vc)
+   if [ ! -f /usr/local/lib/libvecgeom.a ]; then
+       mkdir -p /tmp/VecGeom && cd /tmp/VecGeom
+       VGVERSION=v1.1.7
+       VGTARFILE=VecGeom-${VGVERSION}.tar.bz2
+       wget https://gitlab.cern.ch/VecGeom/VecGeom/-/archive/${VGVERSION}/${VGTARFILE}
+       tar xf $VGTARFILE --strip-components=1
+       mkdir build && cd build
+       cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
+             -DBACKEND=vc -DBUILTIN_VECCORE=ON -DCTEST=OFF \
+             /tmp/VecGeom
+       cmake --build . --parallel $(nproc) --target install
+       cd
+       rm -rf /tmp/VecGeom
+   fi
 
-# Pythia8 external for ROOT
-# TODO: Add HepMC support
-   mkdir -p /tmp/pythia8 && cd /tmp/pythia8
-   PYTHIATARFILE=pythia8303.tgz
-   #wget http://home.thep.lu.se/~torbjorn/pythia8/$PYTHIATARFILE
-   wget https://hallaweb.jlab.org/software/$PYTHIATARFILE
-   tar xf $PYTHIATARFILE --strip-components=1
-   ./configure --prefix=/usr/local --cxx=g++ \
-               --cxx-common="-O2 -std=c++17 -pedantic -W -Wall -Wshadow -fPIC" \
-               --with-python-include=/usr/include/python3.8 --with-gzip --with-openmp
-   make -j$(nproc) install
-   /sbin/ldconfig
-   cd
-   rm -rf /tmp/pythia8
+   # Pythia8 external for ROOT
+   # TODO: Add HepMC support
+   if [ ! -f /usr/local/lib/libpythia8.so ]; then
+       mkdir -p /tmp/pythia8 && cd /tmp/pythia8
+       PYTHIATARFILE=pythia8303.tgz
+       #wget http://home.thep.lu.se/~torbjorn/pythia8/$PYTHIATARFILE
+       wget https://hallaweb.jlab.org/software/$PYTHIATARFILE
+       tar xf $PYTHIATARFILE --strip-components=1
+       ./configure --prefix=/usr/local --cxx=g++ \
+                   --cxx-common="-O2 -std=c++17 -pedantic -W -Wall -Wshadow -fPIC" \
+                   --with-python-include=/usr/include/python3.8 --with-gzip --with-openmp
+       make -j$(nproc) install
+       /sbin/ldconfig
+       cd
+       rm -rf /tmp/pythia8
+   fi
 
-# Get ROOT source
-   cd /tmp
-   ROOTVER=6.22.02
-   ROOTINSTALL=/usr/local/ROOT
-   ROOTSYS=$ROOTINSTALL/$ROOTVER
-   ROOTDIST=root_v${ROOTVER}.source.tar.gz
-   mkdir -p $ROOTSYS
-   mkdir -p /tmp/ROOT && cd /tmp/ROOT
-   wget https://root.cern.ch/download/$ROOTDIST
-   tar xf $ROOTDIST
-   rm $ROOTDIST
+   # ROOT
+   ROOTVER=6.22-02
+   if [ ! -f /usr/local/ROOT/$ROOTVER/bin/thisroot.sh ]; then
+       # Get ROOT source
+       cd /tmp
+       ROOTINSTALL=/usr/local/ROOT
+       ROOTSYS=$ROOTINSTALL/$ROOTVER
+       ROOTDOTVER=`echo $ROOTVER | sed 's|-|.|g'`
+       ROOTDIST=root_v${ROOTDOTVER}.source.tar.gz
+       mkdir -p $ROOTSYS
+       mkdir -p /tmp/ROOT && cd /tmp/ROOT
+       wget https://root.cern.ch/download/$ROOTDIST
+       tar xf $ROOTDIST
+       rm $ROOTDIST
 
-# Patch for building ROOT against VecGeom successfully
-   cat >vecgeom.patch <<EOF
+       # Patch for building ROOT against VecGeom successfully
+       cat >vecgeom.patch <<EOF
 --- geom/vecgeom/CMakeLists.txt.orig	2020-09-19 15:37:06.700277918 -0400
 +++ geom/vecgeom/CMakeLists.txt	2020-09-19 15:06:13.802811082 -0400
 @@ -9,7 +9,7 @@
@@ -101,191 +124,156 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
     include_directories( AFTER SYSTEM \${Vc_INCLUDE_DIRS})
     if (NOT "\${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
 EOF
-   cd root-$ROOTVER
-   patch -p0 < ../vecgeom.patch
-   cd ..
+       cd root-$ROOTDOTVER
+       patch -p0 < ../vecgeom.patch
+       cd ..
 
-# Configure & build ROOT
-   export LDFLAGS="-Wl,--no-undefined"
-   export GOFLAGS="-buildmode=pie -trimpath -modcacherw"
+       # Configure & build ROOT
+       export LDFLAGS="-Wl,--no-undefined"
+       export GOFLAGS="-buildmode=pie -trimpath -modcacherw"
 
-   mkdir build && cd build
-   cmake  -DCMAKE_INSTALL_PREFIX=$ROOTSYS \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_STANDARD=17 \
-          -Dgnuinstall:BOOL=OFF \
-          -Dbuiltin_afterimage:BOOL=ON \
-          -Dbuiltin_cfitsio:BOOL=OFF \
-          -Dbuiltin_davix:BOOL=OFF \
-          -Dbuiltin_fftw3:BOOL=OFF \
-          -Dbuiltin_freetype:BOOL=OFF \
-          -Dbuiltin_ftgl:BOOL=OFF \
-          -Dbuiltin_gl2ps:BOOL=OFF \
-          -Dbuiltin_glew:BOOL=OFF \
-          -Dbuiltin_gsl:BOOL=OFF \
-          -Dbuiltin_clang:BOOL=ON \
-          -Dbuiltin_llvm:BOOL=ON \
-          -Dbuiltin_lzma:BOOL=OFF \
-          -Dbuiltin_lz4:BOOL=OFF \
-          -Dbuiltin_openssl:BOOL=OFF \
-          -Dbuiltin_pcre:BOOL=OFF \
-          -Dbuiltin_tbb:BOOL=OFF \
-          -Dbuiltin_unuran:BOOL=ON \
-          -Dbuiltin_vc:BOOL=OFF \
-          -Dbuiltin_vdt:BOOL=ON \
-          -Dbuiltin_xrootd:BOOL=ON \
-          -Dbuiltin_zlib:BOOL=OFF \
-          -Dalien:BOOL=OFF \
-          -Dasimage:BOOL=ON \
-          -Dcastor:BOOL=OFF \
-          -Dccache:BOOL=OFF \
-          -Dchirp:BOOL=OFF \
-          -Dcocoa:BOOL=OFF \
-          -Droot7:BOOL=ON \
-          -Dcxxmodules:BOOL=OFF \
-          -Dcuda:BOOL=OFF \
-          -Dcudnn:BOOL=OFF \
-          -Ddataframe:BOOL=ON \
-          -Ddavix:BOOL=OFF \
-          -Ddcache:BOOL=OFF \
-          -Dexceptions:BOOL=ON \
-          -Dfftw3:BOOL=ON \
-          -Dfitsio:BOOL=OFF \
-          -Dfortran:BOOL=ON \
-          -Dgdml:BOOL=ON \
-          -Dgenvector:BOOL=ON \
-          -Dgfal:BOOL=OFF \
-          -Dgl2ps:BOOL=ON \
-          -Dglite:BOOL=OFF \
-          -Dglobus:BOOL=OFF \
-          -Dgsl_shared:BOOL=ON \
-          -Dgviz:BOOL=ON \
-          -Dhdfs:BOOL=OFF \
-          -Dhttp:BOOL=ON \
-          -Dimt:BOOL=ON \
-          -Djemalloc:BOOL=OFF \
-          -Dlibcxx:BOOL=OFF \
-          -Dmathmore:BOOL=ON \
-          -Dminuit2:BOOL=ON \
-          -Dmonalisa:BOOL=OFF \
-          -Dmt:BOOL=ON \
-          -Dmysql:BOOL=ON \
-          -Dodbc:BOOL=OFF \
-          -Dopengl:BOOL=ON \
-          -Doracle:BOOL=OFF \
-          -Dpgsql:BOOL=ON \
-          -Dpythia6:BOOL=OFF \
-          -Dpythia8:BOOL=ON \
-          -Dpyroot:BOOL=ON \
-          -Dqt5web:BOOL=OFF \
-          -Dr:BOOL=OFF \
-          -Drfio:BOOL=OFF \
-          -Droofit:BOOL=ON \
-          -Drpath:BOOL=OFF \
-          -Druntime_cxxmodules:BOOL=ON \
-          -Dshadowpw:BOOL=ON \
-          -Dshared:BOOL=ON \
-          -Dsoversion:BOOL=ON \
-          -Dspectrum:BOOL=ON \
-          -Dsqlite:BOOL=ON \
-          -Dssl:BOOL=ON \
-          -Dtbb:BOOL=ON \
-          -Dtcmalloc:BOOL=OFF \
-          -Dthread:BOOL=ON \
-          -Dtmva:BOOL=ON \
-          -Dunuran:BOOL=ON \
-          -Dvc:BOOL=ON \
-          -Dvdt:BOOL=ON \
-          -Dveccore:BOOL=ON \
-          -Dvecgeom:BOOL=ON \
-          -Dwebgui:BOOL=ON \
-          -Dx11:BOOL=ON \
-          -Dxml:BOOL=ON \
-          -Dxrootd:BOOL=ON \
-          -Dfail-on-missing:BOOL=ON \
-          -Dtesting:BOOL=OFF \
-          -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-          -DCLANG_ENABLE_STATIC_ANALYZER=ON \
-          -DCLANG_ANALYZER_BUILD_Z3=ON \
-       /tmp/ROOT/root-$ROOTVER
+       mkdir /var/tmp/$LOGNAME-ROOT-build && cd /var/tmp/$LOGNAME-ROOT-build
+       cmake  -DCMAKE_INSTALL_PREFIX=$ROOTSYS \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_CXX_STANDARD=17 \
+              -Dgnuinstall:BOOL=OFF \
+              -Dbuiltin_afterimage:BOOL=ON \
+              -Dbuiltin_cfitsio:BOOL=OFF \
+              -Dbuiltin_davix:BOOL=OFF \
+              -Dbuiltin_fftw3:BOOL=OFF \
+              -Dbuiltin_freetype:BOOL=OFF \
+              -Dbuiltin_ftgl:BOOL=OFF \
+              -Dbuiltin_gl2ps:BOOL=OFF \
+              -Dbuiltin_glew:BOOL=OFF \
+              -Dbuiltin_gsl:BOOL=OFF \
+              -Dbuiltin_clang:BOOL=ON \
+              -Dbuiltin_llvm:BOOL=ON \
+              -Dbuiltin_lzma:BOOL=OFF \
+              -Dbuiltin_lz4:BOOL=OFF \
+              -Dbuiltin_openssl:BOOL=OFF \
+              -Dbuiltin_pcre:BOOL=OFF \
+              -Dbuiltin_tbb:BOOL=OFF \
+              -Dbuiltin_unuran:BOOL=ON \
+              -Dbuiltin_vc:BOOL=OFF \
+              -Dbuiltin_vdt:BOOL=ON \
+              -Dbuiltin_xrootd:BOOL=ON \
+              -Dbuiltin_zlib:BOOL=OFF \
+              -Dalien:BOOL=OFF \
+              -Dasimage:BOOL=ON \
+              -Dcastor:BOOL=OFF \
+              -Dccache:BOOL=OFF \
+              -Dchirp:BOOL=OFF \
+              -Dcocoa:BOOL=OFF \
+              -Droot7:BOOL=ON \
+              -Dcxxmodules:BOOL=OFF \
+              -Dcuda:BOOL=OFF \
+              -Dcudnn:BOOL=OFF \
+              -Ddataframe:BOOL=ON \
+              -Ddavix:BOOL=OFF \
+              -Ddcache:BOOL=OFF \
+              -Dexceptions:BOOL=ON \
+              -Dfftw3:BOOL=ON \
+              -Dfitsio:BOOL=OFF \
+              -Dfortran:BOOL=ON \
+              -Dgdml:BOOL=ON \
+              -Dgenvector:BOOL=ON \
+              -Dgfal:BOOL=OFF \
+              -Dgl2ps:BOOL=ON \
+              -Dglite:BOOL=OFF \
+              -Dglobus:BOOL=OFF \
+              -Dgsl_shared:BOOL=ON \
+              -Dgviz:BOOL=ON \
+              -Dhdfs:BOOL=OFF \
+              -Dhttp:BOOL=ON \
+              -Dimt:BOOL=ON \
+              -Djemalloc:BOOL=OFF \
+              -Dlibcxx:BOOL=OFF \
+              -Dmathmore:BOOL=ON \
+              -Dminuit2:BOOL=ON \
+              -Dmonalisa:BOOL=OFF \
+              -Dmt:BOOL=ON \
+              -Dmysql:BOOL=ON \
+              -Dodbc:BOOL=OFF \
+              -Dopengl:BOOL=ON \
+              -Doracle:BOOL=OFF \
+              -Dpgsql:BOOL=ON \
+              -Dpythia6:BOOL=OFF \
+              -Dpythia8:BOOL=ON \
+              -Dpyroot:BOOL=ON \
+              -Dqt5web:BOOL=OFF \
+              -Dr:BOOL=OFF \
+              -Drfio:BOOL=OFF \
+              -Droofit:BOOL=ON \
+              -Drpath:BOOL=OFF \
+              -Druntime_cxxmodules:BOOL=ON \
+              -Dshadowpw:BOOL=ON \
+              -Dshared:BOOL=ON \
+              -Dsoversion:BOOL=ON \
+              -Dspectrum:BOOL=ON \
+              -Dsqlite:BOOL=ON \
+              -Dssl:BOOL=ON \
+              -Dtbb:BOOL=ON \
+              -Dtcmalloc:BOOL=OFF \
+              -Dthread:BOOL=ON \
+              -Dtmva:BOOL=ON \
+              -Dunuran:BOOL=ON \
+              -Dvc:BOOL=ON \
+              -Dvdt:BOOL=ON \
+              -Dveccore:BOOL=ON \
+              -Dvecgeom:BOOL=ON \
+              -Dwebgui:BOOL=ON \
+              -Dx11:BOOL=ON \
+              -Dxml:BOOL=ON \
+              -Dxrootd:BOOL=ON \
+              -Dfail-on-missing:BOOL=ON \
+              -Dtesting:BOOL=OFF \
+              -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+              -DCLANG_ENABLE_STATIC_ANALYZER=ON \
+              -DCLANG_ANALYZER_BUILD_Z3=ON \
+              /tmp/ROOT/root-$ROOTDOTVER
 
-   cmake --build . --parallel $(nproc) --target install
+       cmake --build . --parallel $(nproc) --target install
 
-# Generate a true "sh" compatible ROOT setup script
-   mkdir -p $ROOTSYS/bin
-   cat >$ROOTSYS/bin/setup.sh <<EOF
-export ROOTSYS=$ROOTSYS
-if [ -z "\${PATH}" ]; then
-   PATH=\$ROOTSYS/bin; export PATH
-else
-   PATH=\$ROOTSYS/bin:\$PATH; export PATH
-fi
-if [ -z "\${LD_LIBRARY_PATH}" ]; then
-   LD_LIBRARY_PATH=\$ROOTSYS/lib
-   export LD_LIBRARY_PATH
-else
-   LD_LIBRARY_PATH=\$ROOTSYS/lib:\$LD_LIBRARY_PATH
-   export LD_LIBRARY_PATH
-fi
-if [ -z "\${PYTHONPATH}" ]; then
-   PYTHONPATH=\$ROOTSYS/lib
-   export PYTHONPATH
-else
-   PYTHONPATH=\$ROOTSYS/lib:\$PYTHONPATH
-   export PYTHONPATH
-fi
-if [ -z "\${CMAKE_PREFIX_PATH}" ]; then
-   CMAKE_PREFIX_PATH=\$ROOTSYS; export CMAKE_PREFIX_PATH
-else
-   CMAKE_PREFIX_PATH=\$ROOTSYS:\$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
-fi
-if [ -z "\${JUPYTER_PATH}" ]; then
-   JUPYTER_PATH=\$ROOTSYS/etc/notebook; export JUPYTER_PATH
-else
-   JUPYTER_PATH=\$ROOTSYS/etc/notebook:\$JUPYTER_PATH; export JUPYTER_PATH
-fi
-if [ -z "\${JUPYTER_CONFIG_DIR}" ]; then
-   JUPYTER_CONFIG_DIR=\$ROOTSYS/etc/notebook; export JUPYTER_CONFIG_DIR
-else
-   JUPYTER_CONFIG_DIR=\$ROOTSYS/etc/notebook:\$JUPYTER_CONFIG_DIR; export JUPYTER_CONFIG_DIR
-fi
-EOF
+       # Cleanup ROOT build
+       cd
+       rm -rf /tmp/ROOT /var/tmp/$LOGNAME-ROOT-build
+   fi
 
-# Cleanup ROOT build
-   cd
-   rm -rf /tmp/ROOT
-
-# ARIEL/art development prerequisites
+   # ARIEL/art development prerequisites
    apt-get install -qy ninja-build sqlite3 libboost-dev libboost-chrono-dev \
-       libboost-date-time-dev libboost-filesystem-dev libboost-graph-dev libboost-iostreams-dev \
-       libboost-locale-dev libboost-program-options-dev libboost-random-dev libboost-timer-dev \
-       libboost-wave-dev pybind11-dev libcppunit-dev
+           libboost-date-time-dev libboost-filesystem-dev libboost-graph-dev libboost-iostreams-dev \
+           libboost-locale-dev libboost-program-options-dev libboost-random-dev libboost-timer-dev \
+           libboost-wave-dev pybind11-dev libcppunit-dev
 
-# Ensure that Boost is found under /usr/lib, not just /lib.
+   # Ensure that Boost is found under /usr/lib, not just /lib.
    export Boost_ROOT=/usr
 
-# Clone ARIEL and submodules
-   cd /tmp
-   git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
-
-# Build and install ARIEL
-   cd /tmp/ARIEL
+   # Clone ARIEL and submodules
    export ARIEL=/usr/local/ARIEL
-   . /usr/local/ROOT/6.22.02/bin/setup.sh
-   ./build-and-install.sh --release $ARIEL
+   if [ ! -d $ARIEL ]; then
+       cd /tmp
+       git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
 
-# Verify installation (must be run from the build location)
-  ./run-tests.sh
+       # Build and install ARIEL
+       cd /tmp/ARIEL
+       . /usr/local/ROOT/$ROOTVER/bin/thisroot.sh
+       ./build-and-install.sh --builddir /var/tmp/$LOGNAME-ARIEL-build --release $ARIEL
 
-# Copy workbook to installation destination
-  cp -a examples/workbook $ARIEL/
+       # Verify installation (must be run from the build location)
+       ./run-tests.sh
 
-# Install a PDF viewer so users can read the documentation ;)
-  apt-get install -qy evince
+       # Copy workbook to installation destination
+       cp -a examples/workbook $ARIEL/
 
-# Final cleanup
-   cd
-   rm -rf /tmp/ARIEL
+       # Cleanup ARIEL build
+       cd
+       rm -rf /tmp/ARIEL /var/tmp/$LOGNAME-ARIEL-build
+   fi
+
+   # Install a PDF viewer so users can read the documentation ;)
+   apt-get install -qy evince
+
+   # Final cleanup
    apt-get clean
    apt-get autoremove
 
@@ -293,22 +281,24 @@ EOF
    export LC_ALL=C
    export LANG=en_US.UTF-8
    export PYTHONPATH=/usr/local/lib    # For pythia8 Python module
-   . /usr/local/ARIEL/bin/setup.sh
+   export TERM=xterm-256color          # For environment modules
+   . /etc/profile.d/modules.sh
+   module use /usr/local/ARIEL/modulefiles
+   module -s load ariel
 
 %test
-   . /usr/local/ARIEL/bin/setup.sh
    root --version
    if [ $? -eq 0 ]; then
-      echo "ROOT set up successfully"
+       echo "ROOT set up successfully"
+   else
+       exit 1
    fi
    art --version
    if [ $? -eq 0 ]; then
-      echo "art set up successfully"
+       echo "art set up successfully"
+   else
+       exit 1
    fi
-
-%labels
-   Author Ole Hansen (ole@jlab.org)
-   Version 0.6.1
 
 %help
  This is ARIEL, the art-based integrated event-processing library.
@@ -326,7 +316,7 @@ EOF
  The "art workbook" contains user-friendly documentation for beginners.
  To view the workbook PDF document, do
 
-   > singularity shell ARIEL.sif
+   > ./ARIEL.sif
    Singularity> evince $ARIEL/workbook/doc/art-workbook-v0_91.pdf 2>/dev/null &
 
  The workbook code can be built as follows:
@@ -334,7 +324,7 @@ EOF
    Singularity> mkdir -p ~/Analysis/art-workbook/{build,output}
    Singularity> cd ~/Analysis/art-workbook/build
    Singularity> export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
-   Singularity> source $ARIEL/workbook/ups/setup_for_development
+   Singularity> module load workbook
    Singularity> cmake $ARIEL/workbook
    Singularity> make -j$(nproc)
 
