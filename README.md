@@ -46,8 +46,8 @@ Generally, dependencies can have any version at or above the minimum specified; 
 The following packages are included in this repository as submodules because they are often not readily available through the platform package manager:
 
 * [CLHEP](https://proj-clhep.web.cern.ch/proj-clhep/) 2.4.1.3
-* [catch](https://github.com/catchorg/Catch2/) 2.13.1
-* [range-v3](https://github.com/ericniebler/range-v3/) 0.10.0
+* [catch](https://github.com/catchorg/Catch2/) 2.13.3
+* [range-v3](https://github.com/ericniebler/range-v3/) 0.11.0
 
 There is no need to install these two components separately.
 
@@ -61,8 +61,7 @@ There is no need to install these two components separately.
    cd ARIEL
 ~~~~~~~~~~
 
-* Pick an installation location. Currently, the build process requires installing each subpackage immediately after building.
-For convenience, set an environment variable that points to the top of the installation tree. For example
+* Pick an installation location. Currently, the build process requires installing each subpackage immediately after building. For convenience, set an environment variable that points to the top of the installation tree. For example
 
 ~~~~~~~~~~bash
    export ARIEL=~/Software/ARIEL
@@ -81,7 +80,15 @@ For convenience, set an environment variable that points to the top of the insta
    ./run-tests.sh
 ~~~~~~~~~~
 
-* Set up the runtime environment in your shell (currently only sh/bash are supported):
+* Set up the runtime environment in your shell (assuming you use
+[environment modules](https://modules.readthedocs.io/en/latest/)):
+
+~~~~~~~~~~bash
+   module use $ARIEL/modulefiles
+   module load ariel
+~~~~~~~~~~
+
+   Alternatively, there is a bash setup script:
 
 ~~~~~~~~~~bash
    source $ARIEL/bin/setup.sh

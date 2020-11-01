@@ -23,6 +23,7 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
    fi
 
 %post -c /bin/bash
+   LOGNAME=`whoami`
    export DEBIAN_FRONTEND=noninteractive
    echo "deb http://mirrors.edge.kernel.org/ubuntu focal universe" > /etc/apt/sources.list.d/universe.list
    apt-get update
@@ -353,7 +354,7 @@ EOF
    > singularity shell --nv ARIEL.sif
    (if you get an error here, your system does not meet the requirements)
    Singularity> cd ~/Analysis/art-workbook/build
-   Singularity> source $ARIEL/workbook/ups/setup_for_development
+   Singularity> module load workbook
    Singularity> art -c fcl/EventDisplay3D/eventDisplay01.fcl
 
  Specifically, OpenGL will *not* work over an ssh connection, even with

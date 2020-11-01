@@ -6,6 +6,6 @@ This is a packaging wrapper for the experimental
 
 A top-level CMake list file is provided that interfaces with the included build tools.
 
-The range repository is included as a submodule, currently at version 0.3.5.
+The range repository is included as a submodule, currently at version 0.11.0
 
 Author:  Ole Hansen (ole@jlab.org)
