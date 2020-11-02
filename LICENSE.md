@@ -1,8 +1,8 @@
 BSD 3-Clause License
 
-Copyright (c) 2018, Jefferson Lab.  All rights reserved.
+Copyright (c) 2018,2020, Jefferson Lab.  All rights reserved.
 
-Portions of this software are Copyright (c) 2009-2018, FERMI NATIONAL
+Portions of this software are Copyright (c) 2009-2020, FERMI NATIONAL
 ACCELERATOR LABORATORY.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
