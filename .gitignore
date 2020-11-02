@@ -12,5 +12,5 @@
 *.DS_Store
 
 # Build artifacts
-/tmp-build*
+/ARIEL-build*
 .buildinfo

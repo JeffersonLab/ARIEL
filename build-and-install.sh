@@ -14,7 +14,7 @@ fhiclcpp fhiclpy messagefacility canvas canvas_root_io gallery \
 art art_root_io critic toyExperiment cmake"
 
 # Basic check for prerequisites
-if ! which root-config > /dev/null; then
+if ! which root-config > /dev/null 2>&1; then
     echo 'Cannot find ROOT. Please source <where-ROOT-is>/bin/thisroot.(c)sh'
     exit 1
 fi
