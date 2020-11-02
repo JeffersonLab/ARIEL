@@ -72,7 +72,7 @@ find_ups_product(cetlib_except v1_01_00)
 find_ups_product(clhep)
 find_ups_product(hep_concurrency)
 find_ups_product(sqlite)
-find_ups_product(range)
+find_ups_product(range-v3 v0_11_0)
 find_ups_boost(BOOST_TARGETS)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Modules)

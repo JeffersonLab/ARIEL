@@ -1,6 +1,3 @@
-[submodule "src/range/range"]
-	path = externals/range/range
-	url = https://github.com/ericniebler/range-v3.git
 [submodule "src/catch/catch"]
 	path = externals/catch/catch
 	url = https://github.com/catchorg/Catch2.git
@@ -8,3 +5,6 @@
 [submodule "externals/CLHEP"]
 	path = externals/CLHEP
 	url = https://gitlab.cern.ch/CLHEP/CLHEP.git
+[submodule "externals/range"]
+	path = externals/range
+	url = https://github.com/ericniebler/range-v3.git

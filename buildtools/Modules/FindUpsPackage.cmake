@@ -35,6 +35,7 @@ string(REGEX REPLACE "sqlite( |$)" "SQLite3" RNAME ${PNAME})
 string(REGEX REPLACE "(^| )tbb( |$)" "TBB" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )clhep( |$)" "CLHEP" RNAME ${RNAME})
 string(REGEX REPLACE "(^| )python( |$)" "${_ufp_python}" RNAME ${RNAME})
+string(REGEX REPLACE "(^| )range( |$)" "range-v3" RNAME ${RNAME})
 
 # use find_package to check the version
 # assume the package's ${RNAME}Config.cmake will set up include_diretcories,
