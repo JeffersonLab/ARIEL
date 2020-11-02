@@ -253,11 +253,12 @@ EOF
    export ARIEL=/usr/local/ARIEL
    if [ ! -d $ARIEL ]; then
        cd /tmp
-       git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
+       git clone https://github.com/JeffersonLab/ARIEL.git
+       cd ARIEL
+       git submodule update --init
 
        # Build and install ARIEL
-       cd /tmp/ARIEL
-       . /usr/local/ROOT/$ROOTVER/bin/thisroot.sh
+       source /usr/local/ROOT/$ROOTVER/bin/thisroot.sh
        ./build-and-install.sh --builddir /var/tmp/$LOGNAME-ARIEL-build --release $ARIEL
 
        # Verify installation (must be run from the build location)

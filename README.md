@@ -57,8 +57,9 @@ There is no need to install these two components separately.
 * Clone this repository and `cd` to the repository root directory:
 
 ~~~~~~~~~~bash
-   git clone --recurse-submodules https://github.com/JeffersonLab/ARIEL.git
+   git clone  https://github.com/JeffersonLab/ARIEL.git
    cd ARIEL
+   git submodule update --init
 ~~~~~~~~~~
 
 * Pick an installation location. Currently, the build process requires installing each subpackage immediately after building. For convenience, set an environment variable that points to the top of the installation tree. For example
