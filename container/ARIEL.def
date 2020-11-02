@@ -305,14 +305,50 @@ EOF
 %help
  This is ARIEL, the art-based integrated event-processing library.
 
- The main executables are
-   root   ROOT analysis framework from CERN (https://root.cern)
-   art    ART event processing framework from FNAL (https://art.fnal.gov)
- To run either, do
-   > singularity exec ARIEL.sif (root|art)
- with appropriate arguments. (Use --help for more information.)
+ This container provides a full installation of
+   root 6.22.02  ROOT analysis framework from CERN (https://root.cern)
+   art  3.06.03  ART event processing framework from FNAL (https://art.fnal.gov)
 
  This is a beta version of this container. Expect things to change.
+
+ The preferred way to access the software is to run the container binary
+ directly, which is equivalent to invoking a bash login shell within the
+ container environment. Examples
+
+   # Interactive shell
+   > ./ARIEL.sif
+   Singularity> art --version
+   art 3.06.03
+
+   # Non-interactive shell
+   > ./ARIEL.sif -c 'root -l'
+   root [0] b = new TBrowser;
+   root [1] .q
+
+ When started like this, the shell is properly initialized as a software
+ development environment. Before launching the bash shell, the file
+ $HOME/.arielrc is sourced to allow user-specific initialization
+ such as setting environment variables. To avoid nuisance messages from
+ graphics applications, it is recommended to put at least
+   unset XDG_RUNTIME_DIR
+ in this file.
+
+ The container sets up enironment modules with configuration modules for the
+ ARIEL software. The 'root' and 'ariel' modules are loaded automatically.
+ To see all available modules, do
+
+   > ./ARIEL.sif
+   Singularity> module avail
+   ----------------- /usr/local/ARIEL/modulefiles ---------------------------
+   ariel  root  workbook
+   ...
+   Singularity> module list
+   Currently Loaded Modulefiles:
+   1) root   2) ariel
+
+ Avoid using the "singularity exec" and "singularity shell" commands for
+ loading and developing ARIEL plugins as these commands do not fully
+ initialize the environment and do not load $HOME/.arielrc.
 
  ** Getting started **
  The "art workbook" contains user-friendly documentation for beginners.
@@ -325,16 +361,15 @@ EOF
 
    Singularity> mkdir -p ~/Analysis/art-workbook/{build,output}
    Singularity> cd ~/Analysis/art-workbook/build
-   Singularity> export ART_WORKBOOK_OUTPUT=~/Analysis/art-workbook/output
    Singularity> module load workbook
    Singularity> cmake $ARIEL/workbook
    Singularity> make -j$(nproc)
 
- Then run the examples in the "fcl" directory like so:
+ Once built, you can run the various examples in the "fcl" directory like so:
 
    Singularity> art -c fcl/FirstModule/first.fcl
 
- etc. See also here:
+ See also here:
 
  https://github.com/JeffersonLab/ARIEL/tree/develop/examples/workbook
 

@@ -7,7 +7,7 @@ The workbook document is out of date at this time. Some information refers to ol
 Build the workbook code as follows:
 
 ~~~~~~~~~~bash
-module use $ARIEL/modulefiles
+module use [ariel-install-prefix]/modulefiles
 module load ariel
 mkdir -p ~Analysis/art-workbook/{build,output}
 cd ~Analysis/art-workbook/build
