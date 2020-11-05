@@ -3,17 +3,20 @@
 # ARIEL workbook modulefile
 #
 proc ModulesHelp { } {
-    puts stderr "\tSets up environment for ARIEL workbook.\n"
-    puts stderr "\tMUST be loaded from the workbook build directory."
-    puts stderr "\tTo build the workbook code, do:\n"
-    puts stderr "\t  cd \[workbook build dir\]"
-    puts stderr "\t  export ART_WORKBOOK_OUTPUT=\[output dir\]  # optional"
-    puts stderr "\t  module load workbook"
-    puts stderr "\t  cmake \[options\] \$CETPKG_SOURCE"
-    puts stderr "\t  make -jN\n"
-    puts stderr "\t\$ART_WORKBOOK_OUTPUT defaults to \[build dir\]/../output\n"
-    puts stderr "\tFor more information see"
-    puts stderr "\t  https://github.com/JeffersonLab/ARIEL/examples/workbook"
+    puts stderr " Sets up environment for ARIEL workbook.\n"
+    puts stderr " To build the workbook code, do:\n"
+    puts stderr "   module load workbook"
+    puts stderr "   cmake \[options\] \$CETPKG_SOURCE"
+    puts stderr "   make -jN\n"
+    puts stderr " The CMake build directory defaults to the current directory."
+    puts stderr " If \$ARIEL_WORKDIR is set, it will be used as the build directory.\n"
+    puts stderr " The workbook output directory defaults to \[build dir\]/../output."
+    puts stderr " Set \$ART_WORKBOOK_OUTPUT or \$ART_WORKBOOK_OUTPUT_BASE if you want"
+    puts stderr " to use a different output directory.\n"
+    puts stderr " Environment variables may be defined in \$HOME/.arielrc or in"
+    puts stderr " \$HOME/.bash_profile\n"
+    puts stderr " For more information see"
+    puts stderr "   https://github.com/JeffersonLab/ARIEL/examples/workbook"
 }
 
 module-whatis "ARIEL workbook source code"
@@ -22,35 +25,91 @@ prereq          ariel
 conflict        workbook
 
 set osname      [uname sysname]
+set is_load     [module-info mode load]
 
 # Support relocation
 set prefix      [file dirname [file normalize [info script]/.. ]]
 
-# Build directory FIXME: take from environment variable if set
-set builddir    [pwd]
+# Build directory
+set ariel_workdir [getenv ARIEL_WORKDIR]
+set workdir_setbymodule [ expr { [getenv ARIEL_WORKDIR_setbymodule] ne "_UNDEFINED_" } ]
+if { $ariel_workdir eq "_UNDEFINED_" || $workdir_setbymodule } then {
+    set builddir [pwd]
+    setenv ARIEL_WORKDIR $builddir
+    setenv ARIEL_WORKDIR_setbymodule "1"
+    if { $is_load } then {
+        puts stderr "...  Setting  ARIEL_WORKDIR = $builddir"
+    }
+} else {
+    if { $is_load } then {
+        puts stderr "...  Using    ARIEL_WORKDIR = $ariel_workdir"
+    }
+    set builddir [file normalize $ariel_workdir]
+    if { ! [file exists $builddir] && $is_load } then {
+        puts stderr "...  Creating ARIEL_WORKDIR = $builddir"
+        file mkdir $builddir
+    }
+}
 
-# Find source diretcory
+# Find source directory
+set project_srcdir @PROJECT_SOURCE_DIR@/../examples/workbook
 if { [file exists $prefix/workbook] } then {
     set srcdir $prefix/workbook
-} elseif { [file exists @PROJECT_SOURCE_DIR@/../examples/workbook] } then {
-    set srcdir [file normalize @PROJECT_SOURCE_DIR@/../examples/workbook]
+} elseif { [file exists $project_srcdir] } then {
+    set srcdir [file normalize $project_srcdir]
+} elseif { !$is_load } then {
+    # Let help/display/test succeed even if srcdir doesn't exist
+    set srcdir $prefix/workbook
 } else {
-    puts stderr "Cannot find workbook source code"
+    puts stderr "...  Cannot find workbook source code"
     exit 1
 }
 
-set outdir      [getenv ART_WORKBOOK_OUTPUT]
-
-if { $outdir eq "_UNDEFINED_" } then {
-    set outdir [file normalize $builddir/../output]
-    if { ! [file exists $outdir] } then {
-        file mkdir $outdir
+# FIXME: CMake should create these directories
+if $is_load then {
+    if { ! [file exists $builddir/bin] } then {
+        puts stderr "...  Creating $builddir/bin"
+        file mkdir $builddir/bin
     }
-    setenv ART_WORKBOOK_OUTPUT $outdir
-    puts stderr "Set ART_WORKBOOK_OUTPUT = $outdir"
+    if { ! [file exists $builddir/lib] } then {
+        puts stderr "...  Creating $builddir/lib"
+        file mkdir $builddir/lib
+    }
 }
 
-file mkdir $builddir/lib $builddir/bin
+# Workbook output directory
+set outdir [getenv ART_WORKBOOK_OUTPUT]
+set outdir_base [getenv ART_WORKBOOK_OUTPUT_BASE]
+set outdir_setbymodule [ expr { [getenv ART_WORKBOOK_OUTPUT_setbymodule] ne "_UNDEFINED_" } ]
+if { ($outdir eq "_UNDEFINED_" && $outdir_base eq "_UNDEFINED_") || $outdir_setbymodule } then {
+    if { $outdir eq "_UNDEFINED_" || $outdir_setbymodule } then {
+        set outdir [file normalize $builddir/../output]
+        setenv ART_WORKBOOK_OUTPUT $outdir
+        setenv ART_WORKBOOK_OUTPUT_setbymodule "1"
+        if $is_load then {
+            if { ! [file exists $outdir] } then {
+                puts stderr "...  Creating ART_WORKBOOK_OUTPUT = $builddir"
+                file mkdir $outdir
+            } else {
+                puts stderr "...  Setting  ART_WORKBOOK_OUTPUT = $outdir"
+            }
+        }
+    }
+} elseif $is_load {
+    if { $outdir ne "_UNDEFINED_" } then {
+        puts stderr "...  Using    ART_WORKBOOK_OUTPUT = $outdir"
+    } else {
+        puts stderr "...  Using    ART_WORKBOOK_OUTPUT_BASE = $outdir_base"
+    }
+}
+
+if $is_load then {
+    puts stderr "...  Setting  CETPKG_SOURCE = $srcdir"
+    if { $builddir ne [pwd] } then {
+        puts stderr "...  Changing directory to $builddir"
+        chdir $builddir
+    }
+}
 
 setenv          CETPKG_SOURCE           $srcdir
 setenv          CETPKG_BUILD            $builddir
@@ -64,6 +123,14 @@ if { $osname eq "Darwin" } then {
     prepend-path     DYLD_LIBRARY_PATH  $builddir/lib
 } else {
     prepend-path     LD_LIBRARY_PATH    $builddir/lib
+}
+
+# Noob help
+if $is_load then {
+    puts stderr "...  Successfully set up development environment in $builddir"
+    puts stderr "...  To build the code, do"
+    puts stderr "...     cmake \[options\] \$CETPKG_SOURCE"
+    puts stderr "...     make -j4"
 }
 
 # Local Variables:
