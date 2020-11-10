@@ -7,7 +7,7 @@
 #     will contain a link to it, named output.
 #
 #  2) If 1) is not satisfied, and if ART_WORKBOOK_OUTPUT_BASE is defined,
-#     then the output direcotry will be
+#     then the output directory will be
 #     ${ART_WORKBOOK_OUTPUT_BASE}/$(whoami)/art_workbook_output
 #     and the cwd will contain a link to it, named output.
 #
@@ -44,7 +44,7 @@ elif [[ ! -d "${link_name}" ]] && [[  -h "${link_name}" ]]; then
 
 The current working directory contains a symbolic link named output.
 That link does not point to an existing directory.
-Please fix this and rerun buildtool.
+Please fix this and rerun make.
 
 EOF
   exit 1
@@ -58,7 +58,7 @@ Please make an output directory outside of this heirarchy and do:
 ln -s <real_directory> output
 where you replace <real_directory> with the name of your real output directory.
 
-Then rerun buildtool.
+Then rerun make.
 
 EOF
   exit 1
