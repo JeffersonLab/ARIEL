@@ -14,8 +14,11 @@ include(CetCMakeEnv)
 cet_cmake_env()
 set(ARIEL_VERSION ${cet_dot_version})
 
-# Get ROOTSYS
+# Get ROOTSYS (for root modulefile)
 find_ups_root()
+
+# Get Python version (for PYTHONPATH)
+find_ups_product(python)
 
 # Currently, this is all we do here: create the environment setup script
 include(ArielCreateSetup)

@@ -22,7 +22,7 @@ setenv          ARIEL                   $prefix
 setenv          FHICL_FILE_PATH         .
 prepend-path    PATH                    $prefix/bin
 prepend-path    CMAKE_PREFIX_PATH       $prefix
-prepend-path    PYTHONPATH              $prefix/lib
+prepend-path    PYTHONPATH              $prefix/lib/python@PYTHON_VERSION@/site-packages
 prepend-path    ROOT_INCLUDE_PATH       $prefix/include
 prepend-path    CET_PLUGIN_PATH         $prefix/lib
 
