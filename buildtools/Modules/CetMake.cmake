@@ -229,7 +229,7 @@ macro( cet_make )
        ${sub}/*_plugin.cc
        ${sub}/*_service.cc
        ${sub}/*_source.cc
-       ${sub}/*_source.cc
+       ${sub}/*_tool.cc
        ${sub}/*_dict.cpp
        ${sub}/*_map.cpp
        )
