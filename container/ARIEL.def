@@ -8,7 +8,7 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
 
 %labels
    Author Ole Hansen (ole@jlab.org)
-   Version 0.6.3
+   Version 0.6.4
 
 %runscript
    . /etc/profile.d/modules.sh
@@ -45,7 +45,7 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
    #   apt-get install -qy libcfitsio-dev libavahi-compat-libdnssd-dev libldap2-dev qtwebengine5-dev
 
    # Clean up from possible previous build attempt
-   rm -rf /tmp/{Vc,VecGeom,pythia8,ROOT,ARIEL,pythia8} /var/tmp/$LOGNAME-{ROOT,ARIEL}-build
+   rm -rf /tmp/{Vc,VecGeom,pythia8,ROOT,ARIEL} /var/tmp/$LOGNAME-{ROOT,ARIEL}-build
 
    # Vc external for ROOT (vc-dev in the Ubuntu repos works, but is not the most recent)
    if [ ! -f /usr/local/lib/libVc.a ]; then
@@ -97,7 +97,7 @@ MirrorURL: http://mirrors.edge.kernel.org/ubuntu/
    fi
 
    # ROOT
-   ROOTVER=6.22-02
+   ROOTVER=6.22-06
    if [ ! -f /usr/local/ROOT/$ROOTVER/bin/thisroot.sh ]; then
        # Get ROOT source
        cd /tmp
@@ -306,7 +306,7 @@ EOF
  This is ARIEL, the art-based integrated event-processing library.
 
  This container provides a full installation of
-   root 6.22.02  ROOT analysis framework from CERN (https://root.cern)
+   root 6.22.06  ROOT analysis framework from CERN (https://root.cern)
    art  3.06.03  ART event processing framework from FNAL (https://art.fnal.gov)
 
  This is a beta version of this container. Expect things to change.
