@@ -7,8 +7,10 @@ for ARIEL. It has been tested with Singularity 3.5 and 3.6.
 This container is based on Ubuntu 20.04 LTS. The following main software components
 will be installed from source:
 
+* ARIEL 0.6.3 (art 3.06.03)
 * [ROOT 6.22/02](https://root.cern/doc/v622/release-notes.html#release-6.2202)
-* ARIEL 0.5.0 (art 3.06.03)
+* Vc and VecGeom libraries for ROOT
+* Pythia 8.3.0.3
 
 The container can be built on any Linux host that supports Singularity 3.5+.
 Examples for Debian/Ubuntu and CentOS/RHEL/Fedora follow.

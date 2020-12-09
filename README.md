@@ -17,6 +17,7 @@ suites with small patches, mainly to accommodate the modified build
 system and additional platforms and compilers. At present, the build
 system uses a heavily modified version of Fermilab's
 [cetbuildtools](https://cdcvs.fnal.gov/redmine/projects/cetbuildtools/wiki/).
+This is expected to change in the near future.
 
 This release is based on *art* 3.06.03.
 
@@ -62,7 +63,7 @@ There is no need to install these two components separately.
    git submodule update --init
 ~~~~~~~~~~
 
-* Pick an installation location. Currently, the build process requires installing each subpackage immediately after building. For convenience, set an environment variable that points to the top of the installation tree. For example
+* Pick an installation location. Currently, the build process requires installation of each subpackage immediately after building. For convenience, set an environment variable that points to the top of the installation tree. For example
 
 ~~~~~~~~~~bash
    export ARIEL=~/Software/ARIEL
@@ -92,7 +93,7 @@ There is no need to install these two components separately.
    Alternatively, there is a bash setup script:
 
 ~~~~~~~~~~bash
-   source $ARIEL/bin/setup.sh
+   source $ARIEL/bin/setup-ariel.sh
 ~~~~~~~~~~
 
 ### Using the workbook
@@ -101,7 +102,20 @@ See the [workbook README](examples/workbook/README.md)
  
 ### Containers
 
-A definition file for a Singularity container can be found in the `container` directory.
+A definition file for a Singularity container can be found in the
+[`container`](container) directory. See the [README](container/README.md)
+for details.
+
+A pre-built Singularity container with the current version of ARIEL
+can be downloaded from
+[https://solid.jlab.org/files/ARIEL.sif](https://solid.jlab.org/files/ARIEL.sif).
+You must have Singularity installed on your system to use it.
+See the container help text to get started:
+
+```bash
+singularity run-help ARIEL.sif
+```
+
 
 ### Repository Organization
 
@@ -109,7 +123,7 @@ The _base_ branch contains selected point releases of the unmodified Fermilab so
 
 ### About the name
 
-ARIEL: Art-based integrated event-processing library.
+ARIEL: ARt-based Integrated Event-processing Library.
 
 ### License
 
