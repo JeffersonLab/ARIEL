@@ -73,12 +73,15 @@ if( ${found_product_match} LESS 0 )
   endif()
 
   # Find the package (using CMake's FindBoost)
-  find_package( Boost ${dotver} COMPONENTS ${boost_liblist} REQUIRED )
+  set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+  find_package( Boost ${dotver} COMPONENTS ${boost_liblist} REQUIRED QUIET )
+  message(STATUS "FindUpsBoost: Found Boost ${Boost_VERSION}" )
+  unset(CMAKE_FIND_PACKAGE_PREFER_CONFIG)
 
   # Build a UPS-style vx_y_z version string - the actual found version of Boost
   string(CONCAT BOOST_VERS "v" ${Boost_MAJOR_VERSION} "_" ${Boost_MINOR_VERSION} "_" ${Boost_SUBMINOR_VERSION})
 
-  #message(STATUS "find_ups_boost debug: Boost version is ${BOOST_VERS}" )
+  #message(STATUS "find_ups_boost debug: BOOST_VERS is ${BOOST_VERS}" )
   #message(STATUS "find_ups_boost debug: Boost include directory is ${Boost_INCLUDE_DIRS}" )
   #message(STATUS "find_ups_boost debug: Boost library directory is ${Boost_LIBRARY_DIRS}" )
   #message(STATUS "find_ups_boost debug: Boost_FILESYSTEM_LIBRARY is ${Boost_FILESYSTEM_LIBRARY}" )
