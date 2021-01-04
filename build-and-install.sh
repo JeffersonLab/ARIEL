@@ -58,8 +58,8 @@ while [[ $# -gt 0 ]]; do
             BUILDDIR="$2"
             shift 2
             ;;
-        --help)
-            echo ./build-and-install.sh [--debug|--release] [--help] INSTALL_DIR
+        --help|-\?)
+            echo "./build-and-install.sh [--debug|--release|--reldeb] [--clean] [--configure] [--help] INSTALL_DIR"
             exit 0
             ;;
         *)
@@ -108,13 +108,8 @@ for N in ninja-build ninja; do
     fi
 done
 if [[ -z "$BUILDPROG" ]]; then
-    if which nproc > /dev/null; then
-        ncpu=$(nproc)
-    else
-        echo NOTICE: Cannot find nproc. Assuming 2 CPUs. Install coreutils to fix
-        sleep 3
-        ncpu=2
-    fi
+    # Number of logical CPUs on this system
+    ncpu=$(getconf _NPROCESSORS_ONLN)
     BUILDPROG="make -j$ncpu"
 fi
 

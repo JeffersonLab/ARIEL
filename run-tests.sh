@@ -59,14 +59,10 @@ else
     PACKAGES="$*"
 fi
 
+# Number of logical CPUs on this system
+ncpu=$(getconf _NPROCESSORS_ONLN)
+
 # Run tests for each requested package
-if which nproc > /dev/null; then
-    ncpu=$(nproc)
-else
-    echo NOTICE: Cannot find nproc. Assuming 2 CPUs. Install coreutils to fix
-    sleep 3
-    ncpu=2
-fi
 for PKG in $PACKAGES; do
     echo ========= Testing $PKG =========
     cd "$BUILDDIR"
