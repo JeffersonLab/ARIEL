@@ -52,11 +52,13 @@ if { $ariel_workdir eq "_UNDEFINED_" || $workdir_setbymodule } then {
 }
 
 # Find source directory
-set project_srcdir @PROJECT_SOURCE_DIR@/../examples/workbook
-if { [file exists $prefix/workbook] } then {
+set project_srcdir [file normalize @PROJECT_SOURCE_DIR@/../examples/workbook]
+if { [file exists $builddir/../src] } then {
+    set srcdir [file normalize $builddir/../src]
+} elseif { [file exists $prefix/workbook] } then {
     set srcdir $prefix/workbook
 } elseif { [file exists $project_srcdir] } then {
-    set srcdir [file normalize $project_srcdir]
+    set srcdir $project_srcdir
 } elseif { !$is_load } then {
     # Let help/display/test succeed even if srcdir doesn't exist
     set srcdir $prefix/workbook
@@ -88,7 +90,7 @@ if { ($outdir eq "_UNDEFINED_" && $outdir_base eq "_UNDEFINED_") || $outdir_setb
         setenv ART_WORKBOOK_OUTPUT_setbymodule "1"
         if $is_load then {
             if { ! [file exists $outdir] } then {
-                puts stderr "...  Creating ART_WORKBOOK_OUTPUT = $builddir"
+                puts stderr "...  Creating ART_WORKBOOK_OUTPUT = $outdir"
                 file mkdir $outdir
             } else {
                 puts stderr "...  Setting  ART_WORKBOOK_OUTPUT = $outdir"
