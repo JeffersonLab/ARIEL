@@ -333,7 +333,7 @@ EOF
    unset XDG_RUNTIME_DIR
  in this file.
 
- The container sets up enironment modules with configuration modules for the
+ The container sets up environment modules with configuration modules for the
  ARIEL software. The 'root' and 'ariel' modules are loaded automatically.
  To see all available modules, do
 
@@ -375,7 +375,7 @@ EOF
 
  The workbook document has not been updated in a while, so some information
  may be outdated. Any references to the UPS package manager, buildtool etc.
- should be ignored. Neverthless, the bulk of the material about programming
+ should be ignored. Nevertheless, the bulk of the material about programming
  in C++ and writing art modules is still applicable.
 
  ** 3D accelerated graphics **
@@ -400,7 +400,7 @@ EOF
  ** Modifying the container **
  At some point, advanced users may want to install additional software into
  the container or reconfigure certain aspects of the operating system. To enable
- modfications, extract the container to a "sandbox" directory (e.g. myARIEL/)
+ modifications, extract the container to a "sandbox" directory (e.g. myARIEL/)
  and run Singularity on this directory as root in writable mode:
 
    > singularity build --sandbox myARIEL ARIEL.sif
