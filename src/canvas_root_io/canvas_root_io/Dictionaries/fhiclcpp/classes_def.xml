@@ -3,6 +3,7 @@
    <version ClassVersion="11" checksum="1018535707"/>
    <version ClassVersion="10" checksum="1695960590"/>
  </class>
+ <class name="boost::array<unsigned char, 20>" />
  <ioread sourceClass="fhicl::ParameterSetID" version="[-10]"
          targetClass="fhicl::ParameterSetID"
          source="boost::array<unsigned char, 20> id_"

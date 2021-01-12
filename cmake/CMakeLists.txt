@@ -20,6 +20,9 @@ find_ups_root()
 # Get Python version (for PYTHONPATH)
 find_ups_product(python)
 
+# Find Boost to get its include path, which is needed for ROOT_INCLUDE_PATH
+find_ups_boost(v1_66_0)
+
 # Currently, this is all we do here: create the environment setup script
 include(ArielCreateSetup)
 include(ArielCreateModulesfiles)

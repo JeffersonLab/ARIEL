@@ -28,6 +28,9 @@ prepend-path    CET_PLUGIN_PATH         $prefix/lib
 
 if { $osname eq "Darwin" } then {
     prepend-path     DYLD_LIBRARY_PATH   $prefix/lib
+    if { "@Boost_INCLUDE_DIRS@" ne "" } then {
+        append-path  ROOT_INCLUDE_PATH   @Boost_INCLUDE_DIRS@
+    }
 } else {
     prepend-path     LD_LIBRARY_PATH     $prefix/lib
 }
