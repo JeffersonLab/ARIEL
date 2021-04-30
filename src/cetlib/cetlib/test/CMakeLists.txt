@@ -5,7 +5,9 @@
 # ======================================================================
 
 include(CetTest)
-cmake_policy(SET CMP0110 OLD)  # Allow legacy workaround for whitespace in test names
+if(POLICY CMP0110)
+  cmake_policy(SET CMP0110 OLD)  # Allow legacy workaround for whitespace in test names
+endif()
 cet_enable_asserts()
 cet_test_env(CURRENT_DIR=${CMAKE_CURRENT_SOURCE_DIR})
 
